@@ -94,7 +94,6 @@ private:
 	Button* buttonLoadImage;
 	Button* buttonSaveFrame;
 	Button* buttonMorphNext;
-	ListBox* listBox;
 
 };
 

@@ -68,16 +68,6 @@ ParamsSubWindow::ParamsSubWindow(int iParentWidth, int iParentHeight,
 	buttonMorphNext->OnClick = [this]() { return StartNextGeneration(); };
 	liGUI_Elements.push_back(buttonMorphNext);
 
-	listBox = new ListBox("Resources", 30, -180, 220, 5, 6.3);
-	listBox->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
-	listBox->items.push_back("First");
-	listBox->items.push_back("Second1234567890123456789");
-	listBox->items.push_back("Third");
-	listBox->items.push_back("Fourth");
-	listBox->items.push_back("Fifth");
-	listBox->items.push_back("Sixth");
-	liGUI_Elements.push_back(listBox);
-
 	buttonLoadImage = new Button("Load image...", 30,-210, 120, 6.3);
 	buttonLoadImage->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
 	buttonLoadImage->OnClick = [this]() { return LoadImageFromDisk(); };
@@ -147,7 +137,11 @@ void ParamsSubWindow::MouseFunc(int button, int state, int x, int y)
 {
 	OpenGLSubWindow::MouseFunc(button, state, x, y);
 
-	if (MouseFuncGUI(button, state, x, y)) return;
+	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
+		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
+	{
+		if (MouseFuncGUI(button, state, x, y)) return;
+	}
 }
 
 

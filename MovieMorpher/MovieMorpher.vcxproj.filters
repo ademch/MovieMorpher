@@ -70,6 +70,12 @@
     <Filter Include="Header Files\Tools">
       <UniqueIdentifier>{8772b725-1945-4d63-a662-ca7616b7b4fa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\FBOs">
+      <UniqueIdentifier>{0ead9534-e7af-4ce9-b0f5-2af256626306}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\FBOs">
+      <UniqueIdentifier>{998dc4b3-018a-4e2a-ae36-ba63505474fe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -138,9 +144,6 @@
     <ClInclude Include="..\..\!!adGUI\Arrow.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="MorphFBOprocessor.h">
-      <Filter>Header Files\SubWindows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\!!adGUI\OnOffFlipSwitch.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -159,9 +162,6 @@
     <ClInclude Include="..\..\!!adGUI\gui_element.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="TimelineSubWindow.h">
-      <Filter>Header Files\SubWindows</Filter>
-    </ClInclude>
     <ClInclude Include="VideoSaveLoad.h">
       <Filter>Header Files\Main</Filter>
     </ClInclude>
@@ -179,6 +179,18 @@
     </ClInclude>
     <ClInclude Include="..\..\!!adGUI\ListBox.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\!!adGUI\HorScrollBar.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="MorphFBOprocessor.h">
+      <Filter>Header Files\FBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="MediaSubWindow.h">
+      <Filter>Header Files\SubWindows</Filter>
+    </ClInclude>
+    <ClInclude Include="TimelineSubWindow.h">
+      <Filter>Header Files\SubWindows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -245,9 +257,6 @@
     <ClCompile Include="..\..\!!adGUI\Arrow.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="MorphFBOprocessor.cpp">
-      <Filter>Source Files\SubWindows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\!!adGlobals\JPG\jpeg-9e\jdatadst.cpp">
       <Filter>Source Files\Utilities\JPG</Filter>
     </ClCompile>
@@ -260,14 +269,8 @@
     <ClCompile Include="..\..\PS_SDK\libwebp-1.2.2\src\webp\webp_loader.cpp">
       <Filter>Source Files\Utilities\WEBP</Filter>
     </ClCompile>
-    <ClCompile Include="MorphFBOprocessorEmu.cpp">
-      <Filter>Source Files\SubWindows</Filter>
-    </ClCompile>
     <ClCompile Include="ImageSaveLoad.cpp">
       <Filter>Source Files\Main</Filter>
-    </ClCompile>
-    <ClCompile Include="TimelineSubWindow.cpp">
-      <Filter>Source Files\SubWindows</Filter>
     </ClCompile>
     <ClCompile Include="VideoSaveLoad.cpp">
       <Filter>Source Files\Main</Filter>
@@ -286,6 +289,21 @@
     </ClCompile>
     <ClCompile Include="..\..\!!adGlobals\TextureDescriptor.cpp">
       <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\!!adGUI\HorScrollBar.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="MorphFBOprocessorEmu.cpp">
+      <Filter>Source Files\FBOs</Filter>
+    </ClCompile>
+    <ClCompile Include="MorphFBOprocessor.cpp">
+      <Filter>Source Files\FBOs</Filter>
+    </ClCompile>
+    <ClCompile Include="MediaSubWindow.cpp">
+      <Filter>Source Files\SubWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="TimelineSubWindow.cpp">
+      <Filter>Source Files\SubWindows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

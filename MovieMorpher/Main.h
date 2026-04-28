@@ -7,6 +7,11 @@
 #include <vector>
 #include "GLSL_Pipeline.h"
 #include "MorphFBOprocessor.h"
+#include <chrono>
+
+#include "EditorSubWindow.h"
+#include "ParamsSubWindow.h"
+#include "MediaSubWindow.h"
 
 
 GLFONT font;
@@ -35,3 +40,20 @@ std::vector<OpenGLSubWindowWithGUI*> liWindows;
 GLSL_Pipeline glsl_pipeline;
 
 MorphFBOprocessor* fbo;
+
+EditorSubWindow*   windowToolEditor;
+ParamsSubWindow*   windowParams;
+MediaSubWindow*    windowMedia;
+TimelineSubWindow* scrollZoomWindow;
+
+
+std::string msSince1970()
+{
+	using namespace std::chrono;
+
+	auto now = system_clock::now();
+	auto ms = duration_cast<milliseconds>(now.time_since_epoch()).count();
+
+	return std::to_string(ms);
+}
+

@@ -167,6 +167,7 @@
     <ClInclude Include="..\..\!!adGUI\fps.h" />
     <ClInclude Include="..\..\!!adGUI\glfont.h" />
     <ClInclude Include="..\..\!!adGUI\gui_element.h" />
+    <ClInclude Include="..\..\!!adGUI\HorScrollBar.h" />
     <ClInclude Include="..\..\!!adGUI\label.h" />
     <ClInclude Include="..\..\!!adGUI\ListBox.h" />
     <ClInclude Include="..\..\!!adGUI\OnOffFlipSwitch.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="..\..\PS_SDK\libwebp-1.2.2\src\webp\webp_loader.h" />
     <ClInclude Include="EditorSubWindow.h" />
     <ClInclude Include="ImageSaveLoad.h" />
+    <ClInclude Include="MediaSubWindow.h" />
     <ClInclude Include="MorphFBOprocessor.h" />
     <ClInclude Include="MorphingTool.h" />
     <ClInclude Include="GLSL_Pipeline.h" />
@@ -207,6 +209,7 @@
     <ClCompile Include="..\..\!!adGUI\ComboBox.cpp" />
     <ClCompile Include="..\..\!!adGUI\fps.cpp" />
     <ClCompile Include="..\..\!!adGUI\glfont.cpp" />
+    <ClCompile Include="..\..\!!adGUI\HorScrollBar.cpp" />
     <ClCompile Include="..\..\!!adGUI\label.cpp" />
     <ClCompile Include="..\..\!!adGUI\ListBox.cpp" />
     <ClCompile Include="..\..\!!adGUI\OnOffFlipSwitch.cpp" />
@@ -215,6 +218,7 @@
     <ClCompile Include="..\..\PS_SDK\libwebp-1.2.2\src\webp\webp_loader.cpp" />
     <ClCompile Include="EditorSubWindow.cpp" />
     <ClCompile Include="ImageSaveLoad.cpp" />
+    <ClCompile Include="MediaSubWindow.cpp" />
     <ClCompile Include="MorphFBOprocessor.cpp" />
     <ClCompile Include="MorphFBOprocessorEmu.cpp" />
     <ClCompile Include="MorphingTool.cpp" />

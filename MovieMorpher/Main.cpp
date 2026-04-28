@@ -4,9 +4,6 @@
 #include "stdafx.h"
 #include "Main.h"
 #include "../../!!adGlobals/wdir.h"
-#include "EditorSubWindow.h"
-#include "ParamsSubWindow.h"
-#include "TimelineSubWindow.h"
 #include "MorphFBOprocessor.h"
 #include <windowsx.h>
 #include "../../!!adExtensions/extensions.h"
@@ -90,33 +87,36 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	fbo = new MorphFBOprocessor(0, 0, 800, 600);
 
-	EditorSubWindow* windowTool;
-	windowTool = new EditorSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.22, 0.70,0.76);
-	sprintf(windowTool->m_strCaption, "%s", "Zoom");
-	windowTool->bSceneRotationAllowed = false;
-	windowTool->fZoomFactor = 0.8;
-	liWindows.push_back(windowTool);
+	windowToolEditor = new EditorSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.22, 0.70,0.76);
+	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
+	windowToolEditor->bSceneRotationAllowed = false;
+	liWindows.push_back(windowToolEditor);
 
-	ParamsSubWindow* windowParams;
-	windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.02, 0.27,0.96);
+	windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.22, 0.27,0.76);
 	sprintf(windowParams->m_strCaption, "%s", "Params");
 	windowParams->bSceneRotationAllowed = false;
 	windowParams->bSceneDragAllowed = false;
 	windowParams->bSceneZoomAllowed = false;
 	liWindows.push_back(windowParams);
 
-	TimelineSubWindow* windowTimeline;
-	windowTimeline = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.01, 0.02, 0.7, 0.18);
-	sprintf(windowTimeline->m_strCaption, "%s", "Timeline");
-	windowTimeline->bSceneRotationAllowed = false;
-	windowTimeline->bSceneDragAllowed = false;
-	windowTimeline->bSceneZoomAllowed = false;
-	liWindows.push_back(windowTimeline);
+	windowMedia = new MediaSubWindow(iAppWndWidth, iAppWndHeight, 0.01, 0.02, 0.98, 0.18);
+	sprintf(windowMedia->m_strCaption, "%s", "Timeline");
+	windowMedia->bSceneRotationAllowed = false;
+	windowMedia->bSceneDragAllowed = false;
+	windowMedia->bSceneZoomAllowed = false;
+	liWindows.push_back(windowMedia);
+
+	scrollZoomWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.1, 0.05, 0.5, 0.12);
+	scrollZoomWindow->bSceneRotationAllowed = false;
+	scrollZoomWindow->bSceneDragAllowed = false;
+	scrollZoomWindow->bSceneZoomAllowed = false;
+	scrollZoomWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
+	liWindows.push_back(scrollZoomWindow);
 
 	// register mutual pointers
 	fbo->m_ParamsSubWindow        = windowParams;
-	fbo->m_MorphingToolSubWindow  = windowTool;
-	windowTool->m_ParamsSubWindow = windowParams;
+	fbo->m_MorphingToolSubWindow  = windowToolEditor;
+	windowToolEditor->m_ParamsSubWindow = windowParams;
 
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
 
@@ -212,10 +212,16 @@ void keyboard(unsigned char key, int x, int y)
 
 			if (image)
 			{
-				fbo->Reshape(0, 0, width, height);
-				fbo->TextureUpdate(width, height, image);
-				
+				//fbo->Reshape(0, 0, width, height);
+				//fbo->TextureUpdate(width, height, image);
+
+				TextureDescriptor* texDesc = LoadTexture(width, height, image);
 				free(image);
+
+				std::string id = msSince1970();
+				texBank.bank[id] = texDesc;
+
+				//windowParams->listBox->items.push_back(id);
 			}
 			break;
 		}

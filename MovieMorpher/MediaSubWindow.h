@@ -1,20 +1,21 @@
-#ifndef TIMELINESUBSUBWINDOW_H
-#define TIMELINESUBSUBWINDOW_H
+#ifndef MEDIASUBSUBWINDOW_H
+#define MEDIASUBSUBWINDOW_H
 
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include "../../!!adGUI/Slider.h"
 #include "../../!!adGUI/ListBox.h"
 #include "../../!!adGUI/button.h"
+#include "TimelineSubWindow.h"
 #include <vector>
 
 
-class TimelineSubWindow : public OpenGLSubWindowWithGUI
+class MediaSubWindow : public OpenGLSubWindowWithGUI
 {
 public:
-	TimelineSubWindow(int iParentWidth, int iParentHeight,
-				      float fBottomLeftXperc, float fBottomLeftYperc,
-				      float fWidthPerc, float fHeightPerc);
-	~TimelineSubWindow();
+	MediaSubWindow(int iParentWidth, int iParentHeight,
+				   float fBottomLeftXperc, float fBottomLeftYperc,
+				   float fWidthPerc, float fHeightPerc);
+	~MediaSubWindow();
 
 	virtual	void Render();
 

@@ -1,27 +1,34 @@
 #include "stdafx.h"
-#include "TimelineSubWindow.h"
+#include "MediaSubWindow.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 #include "../../!!adGUI/fps.h"
 #include "GLSL_Pipeline.h"
-#include "../../!!adGUI/HorScrollBar.h"
 #include "../../!!adExtensions/extensions.h"
 
 
 extern GLSL_Pipeline glsl_pipeline;
 extern TextureBank texBank;
 
-TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
-									 float fBottomLeftXperc, float fBottomLeftYperc,
-									 float fWidthPerc, float fHeightPerc) :
-				   OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
-										  fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
+MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
+							   float fBottomLeftXperc, float fBottomLeftYperc, float fWidthPerc, float fHeightPerc) :
+	            OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
+				         			   fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
-	HorScrollBar* scrollBar = new HorScrollBar("", 1,1, iParentWidth*fWidthPerc-2, 14);
-	scrollBar->SetAlignment(HALIGN_LEFT, VALIGN_BOTTOM);
-	liGUI_Elements.push_back(scrollBar);
+	listBox = new ListBox("Resources", -400,-40, 200, 5, 6.3);
+	listBox->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	listBox->items.push_back("First");
+	listBox->items.push_back("Second1234567890123456789");
+	listBox->items.push_back("Third");
+	listBox->items.push_back("Fourth");
+	listBox->items.push_back("Fifth");
+	listBox->items.push_back("Sixth");
+	listBox->items.push_back("Seven");
+	listBox->items.push_back("Eight");
+	liGUI_Elements.push_back(listBox);
+
 }
 
-TimelineSubWindow::~TimelineSubWindow()
+MediaSubWindow::~MediaSubWindow()
 {
 	std::vector<GUI_Element*>::iterator iterElement;
 	for (iterElement = liGUI_Elements.begin(); iterElement != liGUI_Elements.end(); iterElement++)
@@ -29,7 +36,7 @@ TimelineSubWindow::~TimelineSubWindow()
 }
 
 
-void TimelineSubWindow::Render()
+void MediaSubWindow::Render()
 {
 	OpenGLSubWindow::Render();
 
@@ -38,7 +45,7 @@ void TimelineSubWindow::Render()
 	RenderGUI();
 }
 
-void TimelineSubWindow::PassiveMotionFunc(int x, int y)
+void MediaSubWindow::PassiveMotionFunc(int x, int y)
 {
 	OpenGLSubWindow::PassiveMotionFunc(x, y);
 
@@ -53,7 +60,7 @@ void TimelineSubWindow::PassiveMotionFunc(int x, int y)
 	}
 }
 
-void TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
+void MediaSubWindow::MouseFunc(int button, int state, int x, int y)
 {
 	OpenGLSubWindow::MouseFunc(button, state, x, y);
 
@@ -65,14 +72,14 @@ void TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 }
 
 
-void TimelineSubWindow::MotionFunc(int x, int y)
+void MediaSubWindow::MotionFunc(int x, int y)
 {
 	OpenGLSubWindow::MotionFunc(x, y);
 
 	MotionFuncGUI(x, y);
 }
 
-void TimelineSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
+void MediaSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
 {
 	OpenGLSubWindow::PassiveMotionFunc(x, y);
 
