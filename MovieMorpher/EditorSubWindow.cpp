@@ -108,46 +108,42 @@ void EditorSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, in
 		iterElement->Reshape(iBottomLeftX, iBottomLeftY, iWidth, iHeight);
 }
 
-
-void EditorSubWindow::PassiveMotionFunc(int x, int y)
+// Passive motion is special, global window cares about all windows
+// to make sure focus, cursor is updated correcly. We do not check for boundaries
+bool EditorSubWindow::PassiveMotionFunc(int x, int y)
 {
 	OpenGLSubWindow::PassiveMotionFunc(x, y);
 
-	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
-		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
-	{
-		bool bResult = PassiveMotionFuncGUI(x, y);
-		// if some GUI element of Editor handled the event then do not traverse further
-		if (bResult) return;
+	bool bResult = PassiveMotionFuncGUI(x, y);
+	// if some GUI element of Editor handled the event then do not traverse further
+	if (bResult) return true;
 
-		// Tools are hendled before their GUI
-		SetupGraphicsPipeline();
+	// Tools are hendled before their GUI
+	SetupGraphicsPipeline();
 
-			Vec3d v3DCoords;
-			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
+		Vec3d v3DCoords;
+		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-			for (auto iterElement : liTools)
-			{
-				bResult = iterElement->PassiveMotionFunc(Vecc3(v3DCoords));
-				// if some Tool handled the event then do not traverse further
-				if (bResult) return;
-			}
+		for (auto iterElement : liTools)
+		{
+			bResult = iterElement->PassiveMotionFunc(Vecc3(v3DCoords));
+			// if some Tool handled the event then do not traverse further
+			if (bResult) return true;
+		}
 
-		// Tools' GUI are hendled after tools itself
-		SetupGraphicsPipelineWithIdentityModelViewMatrix();
+	// Tools' GUI are hendled after tools itself
+	SetupGraphicsPipelineWithIdentityModelViewMatrix();
 
-			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
+		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-			for (auto iterElement : liTools)
-			{
-				bResult = iterElement->PassiveMotionFuncGUI(Vecc3(v3DCoords));
-				// if some Tool GUI handled the event then do not traverse further
-				if (bResult) return;
-			}
+		for (auto iterElement : liTools)
+		{
+			bResult = iterElement->PassiveMotionFuncGUI(Vecc3(v3DCoords));
+			// if some Tool GUI handled the event then do not traverse further
+			if (bResult) return true;
+		}
 
-		// Nobody handled the event
-		if (!bResult) glutSetCursor(GLUT_CURSOR_INHERIT);
-	}
+	return false;
 }
 
 // Mouse button clicked callback

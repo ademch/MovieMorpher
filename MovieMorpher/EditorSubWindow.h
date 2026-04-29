@@ -24,7 +24,7 @@ public:
 
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
 
-	virtual void PassiveMotionFunc(int x, int y);
+	virtual bool PassiveMotionFunc(int x, int y);
 	virtual void MouseFunc(int button, int state, int x, int y);
 	virtual void MotionFunc(int x, int y);
 	virtual bool KeyboardFunc(unsigned char key, int x, int y);

@@ -3,7 +3,7 @@
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 #include "../../!!adGUI/fps.h"
 #include "GLSL_Pipeline.h"
-#include "../../!!adGUI/HorScrollBar.h"
+#include "../../!!adGlobals/glut/glut.h"
 #include "../../!!adExtensions/extensions.h"
 
 
@@ -16,7 +16,7 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 				   OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 										  fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
-	HorScrollBar* scrollBar = new HorScrollBar("", 1,1, iParentWidth*fWidthPerc-2, 14);
+	scrollBar = new HorScrollBar("", 1,1, int(iParentWidth*fWidthPerc)-2, 14);
 	scrollBar->SetAlignment(HALIGN_LEFT, VALIGN_BOTTOM);
 	liGUI_Elements.push_back(scrollBar);
 }
@@ -38,19 +38,22 @@ void TimelineSubWindow::Render()
 	RenderGUI();
 }
 
-void TimelineSubWindow::PassiveMotionFunc(int x, int y)
+void TimelineSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight)
+{
+	OpenGLSubWindowWithGUI::Reshape(iBottomLeftX, iBottomLeftY, iWidth, iHeight);
+
+	scrollBar->Resize(iWidth-2, iHeight);
+
+}
+
+
+// Passive motion is special, global window cares about all windows
+// to make sure focus, cursor is updated correcly. We do not check for boundaries
+bool TimelineSubWindow::PassiveMotionFunc(int x, int y)
 {
 	OpenGLSubWindow::PassiveMotionFunc(x, y);
 
-	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
-		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
-	{
-		bool bResult;
-		bResult = PassiveMotionFuncGUI(x, y);
-
-		if (!bResult)
-			glutSetCursor(GLUT_CURSOR_INHERIT);
-	}
+	return PassiveMotionFuncGUI(x, y);
 }
 
 void TimelineSubWindow::MouseFunc(int button, int state, int x, int y)

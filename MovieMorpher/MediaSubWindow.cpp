@@ -45,19 +45,13 @@ void MediaSubWindow::Render()
 	RenderGUI();
 }
 
-void MediaSubWindow::PassiveMotionFunc(int x, int y)
+// Passive motion is special, global window care about all windows
+// to make sure focus, cursor is updated correcly. We do not check for boundaries
+bool MediaSubWindow::PassiveMotionFunc(int x, int y)
 {
 	OpenGLSubWindow::PassiveMotionFunc(x, y);
 
-	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
-		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
-	{
-		bool bResult;
-		bResult = PassiveMotionFuncGUI(x, y);
-
-		if (!bResult)
-			glutSetCursor(GLUT_CURSOR_INHERIT);
-	}
+	return PassiveMotionFuncGUI(x, y);
 }
 
 void MediaSubWindow::MouseFunc(int button, int state, int x, int y)

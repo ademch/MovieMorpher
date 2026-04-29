@@ -117,19 +117,14 @@ void ParamsSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
 	}
 }
 
-void ParamsSubWindow::PassiveMotionFunc(int x, int y)
+
+// Passive motion is special, global window cares about all windows
+// to make sure focus, cursor is updated correcly. We do not check for boundaries
+bool ParamsSubWindow::PassiveMotionFunc(int x, int y)
 {
 	OpenGLSubWindow::PassiveMotionFunc(x, y);
 
-	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
-		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
-	{
-		bool bResult;
-		bResult = PassiveMotionFuncGUI(x, y);
-
-		if (!bResult)
-			glutSetCursor(GLUT_CURSOR_INHERIT);
-	}
+	return PassiveMotionFuncGUI(x, y);
 }
 
 
