@@ -106,12 +106,20 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	windowMedia->bSceneZoomAllowed = false;
 	liWindows.push_back(windowMedia);
 
-	scrollZoomWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.1, 0.05, 0.5, 0.12);
-	scrollZoomWindow->bSceneRotationAllowed = false;
-	scrollZoomWindow->bSceneDragAllowed = false;
-	scrollZoomWindow->bSceneZoomAllowed = false;
-	scrollZoomWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
-	liWindows.push_back(scrollZoomWindow);
+	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.1, 0.05, 0.5, 0.12);
+	timelineWindow->bSceneRotationAllowed = false;
+	timelineWindow->bSceneDragAllowed = false;
+	timelineWindow->bSceneZoomAllowed = false;
+	timelineWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
+	liWindows.push_back(timelineWindow);
+
+	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.1, 0.03, 0.5, 0.02);
+	timelineSliderWindow->scrollBar->OnChange = [](Matr4 matrUserScale) {	timelineWindow->SetZoom(matrUserScale); };
+	timelineSliderWindow->bSceneRotationAllowed = false;
+	timelineSliderWindow->bSceneDragAllowed = false;
+	timelineSliderWindow->bSceneZoomAllowed = false;
+	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
+	liWindows.push_back(timelineSliderWindow);
 
 	// register mutual pointers
 	fbo->m_ParamsSubWindow        = windowParams;
@@ -212,14 +220,14 @@ void keyboard(unsigned char key, int x, int y)
 
 			if (image)
 			{
-				//fbo->Reshape(0, 0, width, height);
-				//fbo->TextureUpdate(width, height, image);
+				fbo->Reshape(0, 0, width, height);
+				fbo->TextureUpdate(width, height, image);
 
-				TextureDescriptor* texDesc = LoadTexture(width, height, image);
-				free(image);
+				//TextureDescriptor* texDesc = LoadTexture(width, height, image);
+				//free(image);
 
-				std::string id = msSince1970();
-				texBank.bank[id] = texDesc;
+				//std::string id = msSince1970();
+				//texBank.bank[id] = texDesc;
 
 				//windowParams->listBox->items.push_back(id);
 			}

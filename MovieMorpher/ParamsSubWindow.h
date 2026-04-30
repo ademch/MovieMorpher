@@ -58,13 +58,6 @@ public:
 					float fWidthPerc, float fHeightPerc);
 	~ParamsSubWindow();
 
-	virtual	void Render();
-
-	virtual void MouseWheelFunc(int state, int delta, int x, int y);
-	virtual bool PassiveMotionFunc(int x, int y);
-	virtual void MouseFunc(int button, int state, int x, int y);
-	virtual void MotionFunc(int x, int y);
-	
 	bool ShowOriginal();
 
 	float fMorphPower;

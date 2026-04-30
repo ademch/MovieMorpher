@@ -3,6 +3,7 @@
 
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include "../../!!adGUI/HorScrollBar.h"
+#include "../../!!adGUI/VideoSlider.h"
 #include "../../!!adGUI/button.h"
 #include <vector>
 
@@ -15,21 +16,43 @@ public:
 				      float fWidthPerc, float fHeightPerc);
 	~TimelineSubWindow();
 
-	virtual	void Render();
-
-	virtual bool PassiveMotionFunc(int x, int y);
-	virtual void MouseFunc(int button, int state, int x, int y);
-	virtual void MotionFunc(int x, int y);
-	virtual void MouseWheelFunc(int state, int delta, int x, int y);
-
 	virtual void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
 
-	float fMorphRatio;
+	virtual	void Draw()
+	{
+		OpenGLSubWindowWithGUI::Draw();
+	}
+
+	virtual void SetupGraphicsPipelineWithIdentityModelViewMatrix() {};
+
+	void SetZoom(Matr4 _matrUserScale)
+	{
+		gluInvertMatrix(&_matrUserScale.m[0][0], &matrUserScale.m[0][0]);
+	}
 
 protected:
 
 private:
+	VideoSlider*  videoSlider;
+
+};
+
+class TimelineSliderSubWindow : public OpenGLSubWindowWithGUI
+{
+public:
+	TimelineSliderSubWindow(int iParentWidth, int iParentHeight,
+							float fBottomLeftXperc, float fBottomLeftYperc,
+							float fWidthPerc, float fHeightPerc);
+	~TimelineSliderSubWindow();
+
+	virtual void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
+
 	HorScrollBar* scrollBar;
+
+protected:
+
+private:
+
 
 };
 

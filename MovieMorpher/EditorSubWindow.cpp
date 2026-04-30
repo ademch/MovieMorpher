@@ -58,9 +58,9 @@ EditorSubWindow::~EditorSubWindow()
 		delete (*toolIter);
 }
 
-void EditorSubWindow::Render()
+void EditorSubWindow::Draw()
 {
-	OpenGLSubWindow::Render();
+	OpenGLSubWindowWithGUI::Draw();
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	
@@ -79,10 +79,6 @@ void EditorSubWindow::Render()
 	sprintf(m_strCaption, "%s %5.0f%%", "Zoom", fUserScale*100.0f);
 
 	
-	///////
-
-	RenderGUI();
-
 	// propagate common values
 	for (auto iterElement : liTools)
 		iterElement->fUserScale = fUserScale;
@@ -112,9 +108,7 @@ void EditorSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, in
 // to make sure focus, cursor is updated correcly. We do not check for boundaries
 bool EditorSubWindow::PassiveMotionFunc(int x, int y)
 {
-	OpenGLSubWindow::PassiveMotionFunc(x, y);
-
-	bool bResult = PassiveMotionFuncGUI(x, y);
+	bool bResult = OpenGLSubWindowWithGUI::PassiveMotionFunc(x, y);
 	// if some GUI element of Editor handled the event then do not traverse further
 	if (bResult) return true;
 
@@ -147,16 +141,13 @@ bool EditorSubWindow::PassiveMotionFunc(int x, int y)
 }
 
 // Mouse button clicked callback
-void EditorSubWindow::MouseFunc(int button, int state, int x, int y)
+bool EditorSubWindow::MouseFunc(int button, int state, int x, int y)
 {
-	OpenGLSubWindow::MouseFunc(button, state, x, y);
+	if (OpenGLSubWindowWithGUI::MouseFunc(button, state, x, y)) return true;
 
 	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
 		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
 	{
-		// Process subwindow GUI first
-		if (MouseFuncGUI(button, state, x, y)) return;
-
 		SetupGraphicsPipeline();
 
 			Vec3d v3DCoords;
@@ -164,7 +155,7 @@ void EditorSubWindow::MouseFunc(int button, int state, int x, int y)
 
 			for (auto iterElement : liTools)
 			{
-				if (iterElement->MouseFunc(button, state, Vecc3(v3DCoords))) return;
+				if (iterElement->MouseFunc(button, state, Vecc3(v3DCoords))) return true;
 			}
 
 		SetupGraphicsPipelineWithIdentityModelViewMatrix();
@@ -173,9 +164,11 @@ void EditorSubWindow::MouseFunc(int button, int state, int x, int y)
 
 			for (auto iterElement : liTools)
 			{
-				if (iterElement->MouseFuncGUI(button, state, Vecc3(v3DCoords))) return;
+				if (iterElement->MouseFuncGUI(button, state, Vecc3(v3DCoords))) return true;
 			}
 	}
+
+	return false;
 
 }
 

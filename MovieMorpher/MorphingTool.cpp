@@ -403,8 +403,6 @@ bool MorphingTool::MouseFunc(int button, int state, Vec3 ptMouse)
 void MorphingTool::MotionFunc(Vec3 ptMouse)
 {
 	
-	//if (m_bMouseDrawingInProgress) return;
-
 	if (((stateCurrent == STATE_SOURCE_DRAWING_INPUT) || (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)) && m_bMouseDrawingInProgress)
 	{
 		float fRadius = 30;
@@ -416,7 +414,6 @@ void MorphingTool::MotionFunc(Vec3 ptMouse)
 				liDestination.push_back(Vecc2(ptMouse));
 
 			ptPrevPoint = Vecc2(ptMouse);
-			printf(".");
 		}
 	}
 	else if (stateCurrent == STATE_POINT_DRAG)

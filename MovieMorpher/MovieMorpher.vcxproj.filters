@@ -192,6 +192,9 @@
     <ClInclude Include="TimelineSubWindow.h">
       <Filter>Header Files\SubWindows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\!!adGUI\VideoSlider.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

@@ -20,12 +20,12 @@ public:
 					float fWidthPerc, float fHeightPerc);
 	~EditorSubWindow();
 
-	virtual	void Render();
+	virtual	void Draw();
 
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
 
 	virtual bool PassiveMotionFunc(int x, int y);
-	virtual void MouseFunc(int button, int state, int x, int y);
+	virtual bool MouseFunc(int button, int state, int x, int y);
 	virtual void MotionFunc(int x, int y);
 	virtual bool KeyboardFunc(unsigned char key, int x, int y);
 

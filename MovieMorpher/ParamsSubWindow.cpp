@@ -96,58 +96,6 @@ ParamsSubWindow::~ParamsSubWindow()
 }
 
 
-void ParamsSubWindow::Render()
-{
-	OpenGLSubWindow::Render();
-
-	glDisable(GL_LIGHTING);
-
-	RenderGUI();
-}
-
-
-void ParamsSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
-{
-	OpenGLSubWindow::PassiveMotionFunc(x, y);
-
-	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
-		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
-	{
-		MouseWheelFuncGUI(state, delta, x, y);
-	}
-}
-
-
-// Passive motion is special, global window cares about all windows
-// to make sure focus, cursor is updated correcly. We do not check for boundaries
-bool ParamsSubWindow::PassiveMotionFunc(int x, int y)
-{
-	OpenGLSubWindow::PassiveMotionFunc(x, y);
-
-	return PassiveMotionFuncGUI(x, y);
-}
-
-
-void ParamsSubWindow::MouseFunc(int button, int state, int x, int y)
-{
-	OpenGLSubWindow::MouseFunc(button, state, x, y);
-
-	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
-		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
-	{
-		if (MouseFuncGUI(button, state, x, y)) return;
-	}
-}
-
-
-void ParamsSubWindow::MotionFunc(int x, int y)
-{
-	OpenGLSubWindow::MotionFunc(x, y);
-
-	MotionFuncGUI(x, y);
-}
-
-
 bool ParamsSubWindow::LoadImageFromDisk()
 {
 	//get the HWND

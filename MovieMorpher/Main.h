@@ -44,7 +44,8 @@ MorphFBOprocessor* fbo;
 EditorSubWindow*   windowToolEditor;
 ParamsSubWindow*   windowParams;
 MediaSubWindow*    windowMedia;
-TimelineSubWindow* scrollZoomWindow;
+TimelineSubWindow* timelineWindow;
+TimelineSliderSubWindow* timelineSliderWindow;
 
 
 std::string msSince1970()
