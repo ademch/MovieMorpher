@@ -12,6 +12,9 @@
 #include "EditorSubWindow.h"
 #include "ParamsSubWindow.h"
 #include "MediaSubWindow.h"
+#include "TimelineSubWindow.h"
+
+#include "../../!!adGlobals/globalToolTip.h"
 
 
 GLFONT font;
@@ -27,6 +30,7 @@ void keyboard(unsigned char, int, int);
 void keyboardSpecial(int key, int x, int y);
 void MouseFunc(int, int, int, int);
 void MouseWheelFunc(int, int, int, int);
+void MouseHWheelFunc(int, int, int, int);
 void MotionFunc(int x, int y);
 void PassiveMotionFunc(int x, int y);
 void WMClose();
@@ -47,6 +51,8 @@ MediaSubWindow*    windowMedia;
 TimelineSubWindow* timelineWindow;
 TimelineSliderSubWindow* timelineSliderWindow;
 
+ToolTip* tooltip;
+
 
 std::string msSince1970()
 {
@@ -57,4 +63,5 @@ std::string msSince1970()
 
 	return std::to_string(ms);
 }
+
 

@@ -16,10 +16,11 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 				   OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 										  fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
+	matrSliderNonInverted = Mat4MakeIdent();
+
 	static float f = 1000;
-	videoSlider = new VideoSlider("Hello", 4,-10, 0, 4000, &f, 14);
+	videoSlider = new VideoSlider("Hello", 1,-22, 0, 4000, f, 20);
 	videoSlider->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
-	videoSlider->SetBoxWidth(int(iParentWidth*fWidthPerc)-10);
 	liGUI_Elements.push_back(videoSlider);
 
 }
@@ -36,6 +37,23 @@ void TimelineSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 {
 	OpenGLSubWindowWithGUI::Reshape(iBottomLeftX, iBottomLeftY, iWidth, iHeight);
 
+	videoSlider->Resize(iWidth-2, iHeight);
+}
+
+//void TimelineSubWindow::Draw()
+//{
+//	OpenGLSubWindowWithGUI::Draw();
+//
+//	// propagate common values
+//	videoSlider->matrSliderNonInverted = matrSliderNonInverted;
+//}
+
+void TimelineSubWindow::Draw()
+{
+	videoSlider->matrSliderNonInverted = matrSliderNonInverted;
+
+	for (auto iterElement : liGUI_Elements)
+		iterElement->Draw();
 }
 
 
@@ -48,9 +66,8 @@ TimelineSliderSubWindow::TimelineSliderSubWindow(int iParentWidth, int iParentHe
 						 OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 												fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
-	scrollBar = new HorScrollBar("", 1,1, int(iParentWidth*fWidthPerc)-2, 14);
+	scrollBar = new HorScrollBar("", 1,1, int(iParentWidth*fWidthPerc)-2, 15);
 	scrollBar->SetAlignment(HALIGN_LEFT, VALIGN_BOTTOM);
-//	scrollBar->OnChange = [this](Matr4 matrUserScale) {	videoSlider->SetZoom(matrUserScale); };
 	liGUI_Elements.push_back(scrollBar);
 
 }

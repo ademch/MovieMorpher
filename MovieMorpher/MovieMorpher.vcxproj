@@ -97,8 +97,10 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>user32.lib;Comdlg32.lib;jpeg.lib;libwebpdecoder_debug.lib;ffms2.lib</AdditionalDependencies>
+      <AdditionalDependencies>user32.lib;Comdlg32.lib;jpeg.lib;libwebpdecoder_debug.lib;ffms2.lib;gdi32.lib;</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\..\PS_SDK\libwebp-1.2.2\output\debug-static\x86\lib;..\..\!!adGlobals\JPG\jpeg-9e\Release\Win32;..\..\!!adGlobals\glut;..\..\!!adVideo\ffms2_windows_x86\lib</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -157,6 +159,7 @@
     <ClInclude Include="..\..\!!adExtensions\Shaders.h" />
     <ClInclude Include="..\..\!!adGlobals\adOpenGLUtilities.h" />
     <ClInclude Include="..\..\!!adGlobals\bmpHandler.h" />
+    <ClInclude Include="..\..\!!adGlobals\globalToolTip.h" />
     <ClInclude Include="..\..\!!adGlobals\JPG\JPEG_library.h" />
     <ClInclude Include="..\..\!!adGlobals\PNG\lodepng.h" />
     <ClInclude Include="..\..\!!adGlobals\TextureDescriptor.h" />
@@ -197,6 +200,7 @@
     <ClCompile Include="..\..\!!adExtensions\Shaders.cpp" />
     <ClCompile Include="..\..\!!adGlobals\adOpenGLUtilities.cpp" />
     <ClCompile Include="..\..\!!adGlobals\bmpHandler.cpp" />
+    <ClCompile Include="..\..\!!adGlobals\globalToolTip.cpp" />
     <ClCompile Include="..\..\!!adGlobals\JPG\jpeg-9e\jdatadst.cpp" />
     <ClCompile Include="..\..\!!adGlobals\JPG\jpeg-9e\jdatasrc.cpp" />
     <ClCompile Include="..\..\!!adGlobals\JPG\JPEG_library.cpp" />
@@ -216,6 +220,7 @@
     <ClCompile Include="..\..\!!adGUI\OnOffFlipSwitch.cpp" />
     <ClCompile Include="..\..\!!adGUI\SubWindow.cpp" />
     <ClCompile Include="..\..\!!adGUI\SubWindowWithGUI.cpp" />
+    <ClCompile Include="..\..\!!adGUI\VideoSlider.cpp" />
     <ClCompile Include="..\..\PS_SDK\libwebp-1.2.2\src\webp\webp_loader.cpp" />
     <ClCompile Include="EditorSubWindow.cpp" />
     <ClCompile Include="ImageSaveLoad.cpp" />

@@ -195,6 +195,9 @@
     <ClInclude Include="..\..\!!adGUI\VideoSlider.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\!!adGlobals\globalToolTip.h">
+      <Filter>Header Files\Main</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -307,6 +310,12 @@
     </ClCompile>
     <ClCompile Include="TimelineSubWindow.cpp">
       <Filter>Source Files\SubWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\!!adGlobals\globalToolTip.cpp">
+      <Filter>Source Files\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\!!adGUI\VideoSlider.cpp">
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

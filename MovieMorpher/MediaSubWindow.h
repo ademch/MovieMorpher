@@ -2,11 +2,9 @@
 #define MEDIASUBSUBWINDOW_H
 
 #include "../../!!adGUI/SubWindowWithGUI.h"
-#include "../../!!adGUI/Slider.h"
+#include "../../!!adGUI/label.h"
 #include "../../!!adGUI/ListBox.h"
 #include "../../!!adGUI/button.h"
-#include "TimelineSubWindow.h"
-#include <vector>
 
 
 class MediaSubWindow : public OpenGLSubWindowWithGUI
@@ -21,7 +19,8 @@ protected:
 
 private:
 	ListBox* listBox;
-
+	ButtonImage*  buttonImg;
+	Label* label;
 };
 
 
