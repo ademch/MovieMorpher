@@ -88,40 +88,51 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	fbo = new MorphFBOprocessor(0, 0, 800, 450);
 
-	windowToolEditor = new PreviewSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.27, 0.70,0.71);
+	windowToolEditor = new PreviewSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.3, 0.70,0.68);
 	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
 	windowToolEditor->bSceneRotationAllowed = false;
 	liWindows.push_back(windowToolEditor);
 
-	windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.27, 0.27,0.71);
+	windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.3, 0.27,0.68);
 	sprintf(windowParams->m_strCaption, "%s", "Params");
 	windowParams->bSceneRotationAllowed = false;
 	windowParams->bSceneDragAllowed = false;
 	windowParams->bSceneZoomAllowed = false;
 	liWindows.push_back(windowParams);
 
-	windowMedia = new MediaSubWindow(iAppWndWidth, iAppWndHeight, 0.01, 0.02, 0.98, 0.23);
+	windowMedia = new MediaSubWindow(iAppWndWidth, iAppWndHeight, 0.01, 0.02, 0.98, 0.26);
 	//sprintf(windowMedia->m_strCaption, "%s", "Timeline");
 	windowMedia->bSceneRotationAllowed = false;
 	windowMedia->bSceneDragAllowed = false;
 	windowMedia->bSceneZoomAllowed = false;
 	liWindows.push_back(windowMedia);
 
-	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.06, 0.56, 0.17);
+	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.21, 0.56, 0.026);
+	timelineSliderWindow->bSceneRotationAllowed = false;
+	timelineSliderWindow->bSceneDragAllowed = false;
+	timelineSliderWindow->bSceneZoomAllowed = false;
+	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
+	liWindows.push_back(timelineSliderWindow);
+
+	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.06, 0.56, 0.15);
 	timelineWindow->bSceneRotationAllowed = false;
 	timelineWindow->bSceneDragAllowed = false;
 	timelineWindow->bSceneZoomAllowed = false;
 	timelineWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineWindow);
 
-	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.04, 0.56, 0.02);
-	timelineSliderWindow->scrollBar->OnChange = [](Matr4 matrUserScale) {	timelineWindow->SetZoom(matrUserScale); };
-	timelineSliderWindow->bSceneRotationAllowed = false;
-	timelineSliderWindow->bSceneDragAllowed = false;
-	timelineSliderWindow->bSceneZoomAllowed = false;
-	timelineSliderWindow->bRenderGUIdecoration = false;
-	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
-	liWindows.push_back(timelineSliderWindow);
+	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.04, 0.56, 0.02);
+	timelineScrollBarWindow->scrollBar->OnChange = [](Matr4 matrUserScale)
+	{
+		timelineSliderWindow->SetZoom(matrUserScale);
+		timelineWindow->SetZoom(matrUserScale);
+	};
+	timelineScrollBarWindow->bSceneRotationAllowed = false;
+	timelineScrollBarWindow->bSceneDragAllowed = false;
+	timelineScrollBarWindow->bSceneZoomAllowed = false;
+	timelineScrollBarWindow->bRenderGUIdecoration = false;
+	timelineScrollBarWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
+	liWindows.push_back(timelineScrollBarWindow);
 
 	// register mutual pointers
 	fbo->m_ParamsSubWindow        = windowParams;

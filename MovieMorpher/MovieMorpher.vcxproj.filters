@@ -201,6 +201,9 @@
     <ClInclude Include="PreviewSubWindow.h">
       <Filter>Header Files\SubWindows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\!!adGUI\TimelineTrack.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -322,6 +325,9 @@
     </ClCompile>
     <ClCompile Include="PreviewSubWindow.cpp">
       <Filter>Source Files\SubWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\!!adGUI\TimelineTrack.cpp">
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

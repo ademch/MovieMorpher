@@ -48,8 +48,9 @@ MorphFBOprocessor* fbo;
 PreviewSubWindow*   windowToolEditor;
 ParamsSubWindow*   windowParams;
 MediaSubWindow*    windowMedia;
-TimelineSubWindow* timelineWindow;
 TimelineSliderSubWindow* timelineSliderWindow;
+TimelineSubWindow* timelineWindow;
+TimelineScrollBarSubWindow* timelineScrollBarWindow;
 
 ToolTip* tooltip;
 

@@ -177,6 +177,7 @@
     <ClInclude Include="..\..\!!adGUI\Slider.h" />
     <ClInclude Include="..\..\!!adGUI\SubWindow.h" />
     <ClInclude Include="..\..\!!adGUI\SubWindowWithGUI.h" />
+    <ClInclude Include="..\..\!!adGUI\TimelineTrack.h" />
     <ClInclude Include="..\..\!!adGUI\ToolBoxSubWindowWithGUI.h" />
     <ClInclude Include="..\..\!!adGUI\VideoSlider.h" />
     <ClInclude Include="..\..\adTarget\!!adGUI\ToolBase.h" />
@@ -221,6 +222,7 @@
     <ClCompile Include="..\..\!!adGUI\OnOffFlipSwitch.cpp" />
     <ClCompile Include="..\..\!!adGUI\SubWindow.cpp" />
     <ClCompile Include="..\..\!!adGUI\SubWindowWithGUI.cpp" />
+    <ClCompile Include="..\..\!!adGUI\TimelineTrack.cpp" />
     <ClCompile Include="..\..\!!adGUI\ToolBoxSubWindowWithGUI.cpp" />
     <ClCompile Include="..\..\!!adGUI\VideoSlider.cpp" />
     <ClCompile Include="..\..\PS_SDK\libwebp-1.2.2\src\webp\webp_loader.cpp" />
