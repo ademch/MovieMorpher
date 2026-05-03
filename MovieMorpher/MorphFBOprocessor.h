@@ -5,7 +5,7 @@
 #include "../../!!adExtensions/Shaders.h"
 #include <list>
 #include "ParamsSubWindow.h"
-#include "EditorSubWindow.h"
+#include "PreviewSubWindow.h"
 
 
 class MorphFBOprocessor : public OpenGLSubWindow
@@ -13,8 +13,7 @@ class MorphFBOprocessor : public OpenGLSubWindow
 public:
 	FrameBufferObject* fbo;
 
-	ParamsSubWindow* m_ParamsSubWindow;
-	EditorSubWindow* m_MorphingToolSubWindow;
+	ParamsSubWindow*  m_ParamsSubWindow;
 
 	std::list<Vec2> mesh_listEmu;
 

@@ -18,7 +18,6 @@ MorphFBOprocessor::MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWi
 	bSceneZoomAllowed     = false;
 
 	m_ParamsSubWindow       = NULL;
-	m_MorphingToolSubWindow = NULL;
 
 	clrBackground = Vecc3(0.2f, 0.2f, 0.2f);
 
@@ -73,7 +72,7 @@ void MorphFBOprocessor::Render()
 			glUniform1iARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("tex1"), 1);  // src/dst lines
 			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRadius"), m_ParamsSubWindow->fMorphRadius);
 			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphPower"),  m_ParamsSubWindow->fMorphPower);
-			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRatio"), m_ParamsSubWindow->fMorphRatio);
+			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRatio"),  m_ParamsSubWindow->fMorphRatio);
 
 				RenderTexturedQuadMesh(texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID,
 									   -m_iWidth/2.0f, -m_iHeight/2.0f, m_iWidth, m_iHeight, 0.0f, 110*float(m_iWidth)/float(m_iHeight), 110 );

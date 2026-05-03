@@ -171,9 +171,6 @@
     <ClInclude Include="..\..\adTarget\!!adGUI\ToolBase.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="EditorSubWindow.h">
-      <Filter>Header Files\SubWindows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\!!adGUI\SubWindowWithGUI.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -197,6 +194,12 @@
     </ClInclude>
     <ClInclude Include="..\..\!!adGlobals\globalToolTip.h">
       <Filter>Header Files\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\!!adGUI\ToolBoxSubWindowWithGUI.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="PreviewSubWindow.h">
+      <Filter>Header Files\SubWindows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -284,9 +287,6 @@
     <ClCompile Include="MorphingTool.cpp">
       <Filter>Source Files\Tools</Filter>
     </ClCompile>
-    <ClCompile Include="EditorSubWindow.cpp">
-      <Filter>Source Files\SubWindows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\!!adGUI\SubWindowWithGUI.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
@@ -316,6 +316,12 @@
     </ClCompile>
     <ClCompile Include="..\..\!!adGUI\VideoSlider.cpp">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\!!adGUI\ToolBoxSubWindowWithGUI.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="PreviewSubWindow.cpp">
+      <Filter>Source Files\SubWindows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -88,7 +88,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	fbo = new MorphFBOprocessor(0, 0, 800, 450);
 
-	windowToolEditor = new EditorSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.27, 0.70,0.71);
+	windowToolEditor = new PreviewSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.27, 0.70,0.71);
 	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
 	windowToolEditor->bSceneRotationAllowed = false;
 	liWindows.push_back(windowToolEditor);
@@ -125,7 +125,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	// register mutual pointers
 	fbo->m_ParamsSubWindow        = windowParams;
-	fbo->m_MorphingToolSubWindow  = windowToolEditor;
 	windowToolEditor->m_ParamsSubWindow = windowParams;
 
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
