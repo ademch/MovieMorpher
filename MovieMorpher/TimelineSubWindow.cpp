@@ -18,15 +18,15 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 {
 	matrSliderNonInverted = Mat4MakeIdent();
 
-	TimelineTrack*  track = new TimelineTrack(5,-40 - 10, m_iWidth-10, 40);
+	TimelineTrack*  track = new TimelineTrack(5,-40 - 10, m_iWidth-10, m_iHeight/3.0);
 	track->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 	liGUI_Elements.push_back(track);
 
-	track = new TimelineTrack(5,-80 -10 -5, m_iWidth-10, 40);
+	track = new TimelineTrack(5,-80 -10 -5, m_iWidth-10, m_iHeight/3.0);
 	track->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 	liGUI_Elements.push_back(track);
 
-	track = new TimelineTrack(5,-120 -10 -10, m_iWidth-10, 40);
+	track = new TimelineTrack(5,-120 -10 -10, m_iWidth-10, m_iHeight/3.0);
 	track->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 	liGUI_Elements.push_back(track);
 
@@ -43,6 +43,12 @@ void TimelineSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 {
 	OpenGLSubWindowWithGUI::Reshape(iBottomLeftX, iBottomLeftY, iWidth, iHeight);
 
+	for (auto* iterElement : liGUI_Elements)
+	{
+		if (auto* track = dynamic_cast<TimelineTrack*>(iterElement))
+			track->Resize(iWidth-10, m_iHeight/3.0);
+	}
+	
 }
 
 

@@ -33,7 +33,7 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 
 	buttonImg = new ButtonImage("", -266, 10, 30);
 	buttonImg->LoadImage("Icons\\Image7.bmp");
-	buttonImg->strHint = "Play start to end";
+	buttonImg->strHint = "Play from start to end";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 
@@ -59,16 +59,16 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	label->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(label);
 
-	buttonImg = new ButtonImage("", 20, 20, 32);
+	buttonImg = new ButtonImage("", -80, 20, 32);
 	buttonImg->LoadImage("Icons\\Image9.bmp");
 	buttonImg->strHint = "Add video track...";
-	buttonImg->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
+	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 
-	buttonImg = new ButtonImage("", 20, -20, 32);
+	buttonImg = new ButtonImage("", -80, -20, 32);
 	buttonImg->LoadImage("Icons\\Image10.bmp");
 	buttonImg->strHint = "Add image...";
-	buttonImg->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
+	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 }
 

@@ -107,21 +107,21 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	windowMedia->bSceneZoomAllowed = false;
 	liWindows.push_back(windowMedia);
 
-	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.21, 0.56, 0.026);
+	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.22, 0.64, 0.026);
 	timelineSliderWindow->bSceneRotationAllowed = false;
 	timelineSliderWindow->bSceneDragAllowed = false;
 	timelineSliderWindow->bSceneZoomAllowed = false;
 	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineSliderWindow);
 
-	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.06, 0.56, 0.15);
+	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.07, 0.64, 0.15);
 	timelineWindow->bSceneRotationAllowed = false;
 	timelineWindow->bSceneDragAllowed = false;
 	timelineWindow->bSceneZoomAllowed = false;
 	timelineWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineWindow);
 
-	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.04, 0.56, 0.02);
+	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.05, 0.64, 0.02);
 	timelineScrollBarWindow->scrollBar->OnChange = [](Matr4 matrUserScale)
 	{
 		timelineSliderWindow->SetZoom(matrUserScale);
