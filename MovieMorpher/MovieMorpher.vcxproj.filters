@@ -64,12 +64,6 @@
     <Filter Include="Header Files\Utilities\PNG">
       <UniqueIdentifier>{8a9d03ba-8283-4352-acf0-a36f7aad0042}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Tools">
-      <UniqueIdentifier>{ddba3086-074e-472c-85ce-85e69aa91dd5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Tools">
-      <UniqueIdentifier>{8772b725-1945-4d63-a662-ca7616b7b4fa}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\FBOs">
       <UniqueIdentifier>{0ead9534-e7af-4ce9-b0f5-2af256626306}</UniqueIdentifier>
     </Filter>
@@ -165,12 +159,6 @@
     <ClInclude Include="VideoSaveLoad.h">
       <Filter>Header Files\Main</Filter>
     </ClInclude>
-    <ClInclude Include="MorphingTool.h">
-      <Filter>Header Files\Tools</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\adTarget\!!adGUI\ToolBase.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\!!adGUI\SubWindowWithGUI.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -195,14 +183,11 @@
     <ClInclude Include="..\..\!!adGlobals\globalToolTip.h">
       <Filter>Header Files\Main</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\!!adGUI\ToolBoxSubWindowWithGUI.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="PreviewSubWindow.h">
-      <Filter>Header Files\SubWindows</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\!!adGUI\TimelineTrack.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="MorphingToolSubWindow.h">
+      <Filter>Header Files\SubWindows</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -287,9 +272,6 @@
     <ClCompile Include="VideoSaveLoad.cpp">
       <Filter>Source Files\Main</Filter>
     </ClCompile>
-    <ClCompile Include="MorphingTool.cpp">
-      <Filter>Source Files\Tools</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\!!adGUI\SubWindowWithGUI.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
@@ -320,14 +302,11 @@
     <ClCompile Include="..\..\!!adGUI\VideoSlider.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\!!adGUI\ToolBoxSubWindowWithGUI.cpp">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="PreviewSubWindow.cpp">
-      <Filter>Source Files\SubWindows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\!!adGUI\TimelineTrack.cpp">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="MorphingToolSubWindow.cpp">
+      <Filter>Source Files\SubWindows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

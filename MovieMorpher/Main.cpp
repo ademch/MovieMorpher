@@ -88,8 +88,10 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	fbo = new MorphFBOprocessor(0, 0, 800, 450);
 
-	windowToolEditor = new PreviewSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.3, 0.70,0.68);
+	windowToolEditor = new MorphingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.3, 0.70,0.68);
 	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
+	windowToolEditor->lambdaPointsAreVisible  = []() { return windowParams ? windowParams->PointsAreVisible() : true; };
+	windowToolEditor->lambdaMakePointsVisible = []() { return windowParams->MakePointsVisible(); };
 	windowToolEditor->bSceneRotationAllowed = false;
 	liWindows.push_back(windowToolEditor);
 

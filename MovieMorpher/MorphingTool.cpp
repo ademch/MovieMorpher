@@ -179,22 +179,30 @@ bool MorphingTool::PassiveMotionFunc(Vec3 ptMouse)
 {
 	float fJitter = 5;
 
-	if (stateCurrent == STATE_IDLE)
-	{
-		for (auto point : liDestination)
+	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
+		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
+	{	
+		if (stateCurrent == STATE_IDLE)
 		{
-			if (PointDistSqr(ptMouse, Vecc3(point.X, point.Y, const_fPointsDepth)) < sqr(fJitter / fUserScale))
+	
+	
+	
+	
+			for (auto point : liDestination)
 			{
-				glutSetCursor(GLUT_CURSOR_TOP_SIDE);
-				return true;
+				if (PointDistSqr(ptMouse, Vecc3(point.X, point.Y, const_fPointsDepth)) < sqr(fJitter / fUserScale))
+				{
+					glutSetCursor(GLUT_CURSOR_TOP_SIDE);
+					return true;
+				}
 			}
 		}
-	}
-	else if ((stateCurrent == STATE_SOURCE_POINT_INPUT)   || (stateCurrent == STATE_DESTINATION_POINT_INPUT) ||
-		     (stateCurrent == STATE_SOURCE_DRAWING_INPUT) || (stateCurrent == STATE_DESTINATION_DRAWING_INPUT))
-	{
-		glutSetCursor(GLUT_CURSOR_TOP_SIDE);
-		return true;
+		else if ((stateCurrent == STATE_SOURCE_POINT_INPUT)   || (stateCurrent == STATE_DESTINATION_POINT_INPUT) ||
+			     (stateCurrent == STATE_SOURCE_DRAWING_INPUT) || (stateCurrent == STATE_DESTINATION_DRAWING_INPUT))
+		{
+			glutSetCursor(GLUT_CURSOR_TOP_SIDE);
+			return true;
+		}
 	}
 
 	return false;

@@ -5,7 +5,6 @@
 #include "../../!!adExtensions/Shaders.h"
 #include <list>
 #include "ParamsSubWindow.h"
-#include "PreviewSubWindow.h"
 
 
 class MorphFBOprocessor : public OpenGLSubWindow
