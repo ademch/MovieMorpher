@@ -40,20 +40,16 @@ void TimelineSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 	videoSlider->Resize(iWidth-2, iHeight);
 }
 
-//void TimelineSubWindow::Draw()
-//{
-//	OpenGLSubWindowWithGUI::Draw();
-//
-//	// propagate common values
-//	videoSlider->matrSliderNonInverted = matrSliderNonInverted;
-//}
 
 void TimelineSubWindow::Draw()
 {
+	// propagate common values
 	videoSlider->matrSliderNonInverted = matrSliderNonInverted;
 
 	for (auto iterElement : liGUI_Elements)
 		iterElement->Draw();
+
+	printf("Val=%d\n", videoSlider->GetValue());
 }
 
 

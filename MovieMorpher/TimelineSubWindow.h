@@ -18,24 +18,8 @@ public:
 
 	virtual void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
 
+	// We render liGUI_Elements through Draw to have matrUserScale applied during rendering of liGUI_Elements
 	void RenderGUI() {};
-
-
-	//virtual void SetupGraphicsPipelineWithIdentityModelViewMatrix()
-	//{
-	//	// with this call we convert GUI behavior to a tool behavior,
-	//	// ie. gui starts to work in the same coordinates as the tool
-	//	OpenGLSubWindowWithGUI::SetupGraphicsPipeline();
-	//};
-
-	//// observe special modelview matix for this window
-	//void RenderGUI() override
-	//{
-	//	SetupGraphicsPipeline();
-
-	//	for (auto iterElement : liGUI_Elements)
-	//		iterElement->Draw();
-	//}
 
 	void Draw() override;
 

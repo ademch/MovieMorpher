@@ -86,7 +86,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		}
 	printf("done\n");
 
-	fbo = new MorphFBOprocessor(0, 0, 800, 600);
+	fbo = new MorphFBOprocessor(0, 0, 800, 450);
 
 	windowToolEditor = new EditorSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.27, 0.70,0.71);
 	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
@@ -363,9 +363,9 @@ static LRESULT CALLBACK winProcUser(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 
 void WMClose()
 {
-	std::vector<OpenGLSubWindowWithGUI*>::iterator iterWindow;
-	for (iterWindow = liWindows.begin(); iterWindow != liWindows.end(); iterWindow++)
-		delete (*iterWindow);
+	// Life: Lambda functions refer to killed windows
+	for (auto* window : liWindows)
+		delete window;
 
 	delete fbo;
 
