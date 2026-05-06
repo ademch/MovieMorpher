@@ -10,6 +10,7 @@
 #include "ImageSaveLoad.h"
 #include "VideoSaveLoad.h"
 #include "../../!!adGlobals/globalToolTip.h"
+#include "../../!!adGUI/VideoPositionMediator.h"
 
 TextureBank  texBank;
 
@@ -86,6 +87,8 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		}
 	printf("done\n");
 
+	PositionMediator positionMediator;
+
 	fbo = new MorphFBOprocessor(0, 0, 800, 450);
 
 	windowToolEditor = new MorphingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.3, 0.70,0.68);
@@ -109,14 +112,14 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	windowMedia->bSceneZoomAllowed = false;
 	liWindows.push_back(windowMedia);
 
-	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.22, 0.64, 0.026);
+	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.22, 0.64, 0.026, &positionMediator);
 	timelineSliderWindow->bSceneRotationAllowed = false;
 	timelineSliderWindow->bSceneDragAllowed = false;
 	timelineSliderWindow->bSceneZoomAllowed = false;
 	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineSliderWindow);
 
-	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.07, 0.64, 0.15);
+	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.07, 0.64, 0.15, &positionMediator);
 	timelineWindow->bSceneRotationAllowed = false;
 	timelineWindow->bSceneDragAllowed = false;
 	timelineWindow->bSceneZoomAllowed = false;

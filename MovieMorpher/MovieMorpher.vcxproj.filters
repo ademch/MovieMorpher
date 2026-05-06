@@ -189,6 +189,9 @@
     <ClInclude Include="MorphingToolSubWindow.h">
       <Filter>Header Files\SubWindows</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\!!adGUI\VideoPositionMediator.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">

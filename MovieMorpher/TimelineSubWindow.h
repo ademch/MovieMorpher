@@ -7,6 +7,7 @@
 #include "../../!!adGUI/TimelineTrack.h"
 #include "../../!!adGUI/button.h"
 #include <vector>
+#include "../../!!adGUI/VideoPositionMediator.h"
 
 
 class TimelineSliderSubWindow : public OpenGLSubWindowWithGUI
@@ -14,7 +15,8 @@ class TimelineSliderSubWindow : public OpenGLSubWindowWithGUI
 public:
 	TimelineSliderSubWindow(int iParentWidth, int iParentHeight,
 							float fBottomLeftXperc, float fBottomLeftYperc,
-							float fWidthPerc, float fHeightPerc);
+							float fWidthPerc, float fHeightPerc,
+							PositionMediator* mediator);
 	~TimelineSliderSubWindow();
 
 	virtual void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
@@ -60,14 +62,16 @@ private:
 };
 
 
-
 class TimelineSubWindow : public OpenGLSubWindowWithGUI
 {
 public:
 	TimelineSubWindow(int iParentWidth, int iParentHeight,
 					  float fBottomLeftXperc, float fBottomLeftYperc,
-					  float fWidthPerc, float fHeightPerc);
+					  float fWidthPerc, float fHeightPerc,
+					  PositionMediator* mediator);
 	~TimelineSubWindow();
+
+	std::function<void(float)>      OnChange;
 
 	virtual void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
 
@@ -75,8 +79,11 @@ public:
 	void RenderGUI() {};
 
 	void Draw() override;
+	bool MouseWheelFunc(int state, int delta, int x, int y) override;
 
 	Matr4 matrSliderNonInverted;
+
+	void SetPos(float _val);
 
 	void SetZoom(Matr4 _matrUserScale)
 	{
@@ -84,9 +91,11 @@ public:
 		matrSliderNonInverted = _matrUserScale;
 	}
 
+protected:
+
 	float m_fSliderX;
 
-protected:
+	int iVerticalPan;
 
 private:
 

@@ -178,6 +178,7 @@
     <ClInclude Include="..\..\!!adGUI\SubWindow.h" />
     <ClInclude Include="..\..\!!adGUI\SubWindowWithGUI.h" />
     <ClInclude Include="..\..\!!adGUI\TimelineTrack.h" />
+    <ClInclude Include="..\..\!!adGUI\VideoPositionMediator.h" />
     <ClInclude Include="..\..\!!adGUI\VideoSlider.h" />
     <ClInclude Include="..\..\PS_SDK\libwebp-1.2.2\src\webp\webp_loader.h" />
     <ClInclude Include="ImageSaveLoad.h" />
