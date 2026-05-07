@@ -63,8 +63,8 @@ MorphingToolSubWindow::MorphingToolSubWindow(int iParentWidth, int iParentHeight
 
 	comboBox = new ComboBox("Default", -180,10, 170, 6.3);
 	comboBox->SetAlignment(HALIGN_RIGHT, VALIGN_BOTTOM);
-	comboBox->bVisible = false;
-	comboBox->bEnabled = false;
+	comboBox->bVisible = true;
+	comboBox->bEnabled = true;
 	liGUI_Elements.push_back(comboBox);
 
 	buttonResetView = new Button("Reset view", -180,-30, 100, 6); 
