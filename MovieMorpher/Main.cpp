@@ -101,47 +101,62 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.3, 0.27,0.68);
 	sprintf(windowParams->m_strCaption, "%s", "Params");
 	windowParams->bSceneRotationAllowed = false;
-	windowParams->bSceneDragAllowed = false;
-	windowParams->bSceneZoomAllowed = false;
+	windowParams->bSceneDragAllowed     = false;
+	windowParams->bSceneZoomAllowed     = false;
 	liWindows.push_back(windowParams);
 
 	windowMedia = new MediaSubWindow(iAppWndWidth, iAppWndHeight, 0.01, 0.02, 0.98, 0.26);
 	//sprintf(windowMedia->m_strCaption, "%s", "Timeline");
 	windowMedia->bSceneRotationAllowed = false;
-	windowMedia->bSceneDragAllowed = false;
-	windowMedia->bSceneZoomAllowed = false;
+	windowMedia->bSceneDragAllowed     = false;
+	windowMedia->bSceneZoomAllowed     = false;
 	liWindows.push_back(windowMedia);
 
-	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.22, 0.64, 0.026, &positionMediator);
+
+	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.22, 0.62, 0.024, &positionMediator);
 	timelineSliderWindow->bSceneRotationAllowed = false;
-	timelineSliderWindow->bSceneDragAllowed = false;
-	timelineSliderWindow->bSceneZoomAllowed = false;
+	timelineSliderWindow->bSceneDragAllowed     = false;
+	timelineSliderWindow->bSceneZoomAllowed     = false;
 	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineSliderWindow);
 
-	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.07, 0.64, 0.15, &positionMediator);
+
+	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.62, 0.15, &positionMediator);
 	timelineWindow->bSceneRotationAllowed = false;
-	timelineWindow->bSceneDragAllowed = false;
-	timelineWindow->bSceneZoomAllowed = false;
+	timelineWindow->bSceneDragAllowed     = false;
+	timelineWindow->bSceneZoomAllowed     = false;
 	timelineWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineWindow);
 
-	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.04, 0.05, 0.64, 0.02);
+
+	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.05, 0.62, 0.02);
+	timelineScrollBarWindow->bSceneRotationAllowed = false;
+	timelineScrollBarWindow->bSceneDragAllowed     = false;
+	timelineScrollBarWindow->bSceneZoomAllowed     = false;
 	timelineScrollBarWindow->scrollBar->OnChange = [](Matr4 matrUserScale)
 	{
 		timelineSliderWindow->SetZoom(matrUserScale);
 		timelineWindow->SetZoom(matrUserScale);
 	};
-	timelineScrollBarWindow->bSceneRotationAllowed = false;
-	timelineScrollBarWindow->bSceneDragAllowed = false;
-	timelineScrollBarWindow->bSceneZoomAllowed = false;
 	timelineScrollBarWindow->bRenderGUIdecoration = false;
 	timelineScrollBarWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineScrollBarWindow);
 
+
+	timelineTrackParams = new TrackParamsSubWindow(iAppWndWidth, iAppWndHeight, 0.02, 0.07, 0.06, 0.15);
+	timelineTrackParams->bSceneRotationAllowed = false;
+	timelineTrackParams->bSceneDragAllowed     = false;
+	timelineTrackParams->bSceneZoomAllowed     = false;
+	timelineTrackParams->bRenderGUIdecoration  = false;
+	timelineTrackParams->clrFrame = Vecc3(0.1, 0.5, 0.1);
+	liWindows.push_back(timelineTrackParams);
+
+
 	// register mutual pointers
 	fbo->m_ParamsSubWindow        = windowParams;
 	windowToolEditor->m_ParamsSubWindow = windowParams;
+
+	timelineWindow->OnVerticalPanChange = [](Vec3 vTranslation) {	timelineTrackParams->SetVerticalTranslation(vTranslation);  };
 
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
 

@@ -52,6 +52,7 @@ MediaSubWindow*             windowMedia;
 TimelineSliderSubWindow*    timelineSliderWindow;
 TimelineSubWindow*          timelineWindow;
 TimelineScrollBarSubWindow* timelineScrollBarWindow;
+TrackParamsSubWindow*       timelineTrackParams;
 
 ToolTip* tooltip;
 

@@ -26,31 +26,31 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	//liGUI_Elements.push_back(listBox);
 
 	buttonImg = new ButtonImage("", -300, 10, 30);
-	buttonImg->LoadImage("Icons\\Image4.bmp");
+	buttonImg->LoadImg("Icons\\Image4.bmp");
 	buttonImg->strHint = "Play selection in loop";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 
 	buttonImg = new ButtonImage("", -266, 10, 30);
-	buttonImg->LoadImage("Icons\\Image7.bmp");
+	buttonImg->LoadImg("Icons\\Image7.bmp");
 	buttonImg->strHint = "Play from start to end";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 
 	buttonImg = new ButtonImage("", -232, 10, 30);
-	buttonImg->LoadImage("Icons\\Image6.bmp");
+	buttonImg->LoadImg("Icons\\Image6.bmp");
 	buttonImg->strHint = "Pause playback";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 
 	buttonImg = new ButtonImage("", -198, 10, 30);
-	buttonImg->LoadImage("Icons\\Image5.bmp");
+	buttonImg->LoadImg("Icons\\Image5.bmp");
 	buttonImg->strHint = "Play from cursor";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 
 	buttonImg = new ButtonImage("", -164, 10, 30);
-	buttonImg->LoadImage("Icons\\Image8.bmp");
+	buttonImg->LoadImg("Icons\\Image8.bmp");
 	buttonImg->strHint = "Stop playback";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
@@ -60,13 +60,13 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	liGUI_Elements.push_back(label);
 
 	buttonImg = new ButtonImage("", -80, 20, 32);
-	buttonImg->LoadImage("Icons\\Image9.bmp");
+	buttonImg->LoadImg("Icons\\Image9.bmp");
 	buttonImg->strHint = "Add video track...";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 
 	buttonImg = new ButtonImage("", -80, -20, 32);
-	buttonImg->LoadImage("Icons\\Image10.bmp");
+	buttonImg->LoadImg("Icons\\Image10.bmp");
 	buttonImg->strHint = "Add image...";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
