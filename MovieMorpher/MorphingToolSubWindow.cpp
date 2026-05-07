@@ -83,13 +83,6 @@ MorphingToolSubWindow::MorphingToolSubWindow(int iParentWidth, int iParentHeight
 }
 
 
-MorphingToolSubWindow::~MorphingToolSubWindow()
-{
-	std::vector<GUI_Element*>::iterator iterElement;
-	for (iterElement = liGUI_Elements.begin(); iterElement != liGUI_Elements.end(); iterElement++)
-		delete (*iterElement);
-}
-
 void MorphingToolSubWindow::Draw()
 {
 	OpenGLSubWindowWithGUI::Draw();

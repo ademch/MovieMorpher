@@ -72,12 +72,7 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	liGUI_Elements.push_back(buttonImg);
 }
 
-MediaSubWindow::~MediaSubWindow()
-{
-	std::vector<GUI_Element*>::iterator iterElement;
-	for (iterElement = liGUI_Elements.begin(); iterElement != liGUI_Elements.end(); iterElement++)
-		delete (*iterElement);
-}
+
 
 
 

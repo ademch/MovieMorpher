@@ -13,7 +13,7 @@ public:
 	MediaSubWindow(int iParentWidth, int iParentHeight,
 				   float fBottomLeftXperc, float fBottomLeftYperc,
 				   float fWidthPerc, float fHeightPerc);
-	~MediaSubWindow();
+	~MediaSubWindow() {}
 
 protected:
 

@@ -88,13 +88,6 @@ ParamsSubWindow::ParamsSubWindow(int iParentWidth, int iParentHeight,
 
 }
 
-ParamsSubWindow::~ParamsSubWindow()
-{
-	std::vector<GUI_Element*>::iterator iterElement;
-	for (iterElement = liGUI_Elements.begin(); iterElement != liGUI_Elements.end(); iterElement++)
-		delete (*iterElement);
-}
-
 
 bool ParamsSubWindow::LoadImageFromDisk()
 {

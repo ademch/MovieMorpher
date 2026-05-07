@@ -193,6 +193,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TimelineSubWindow.h" />
     <ClInclude Include="VideoSaveLoad.h" />
+    <ClInclude Include="WarpingToolSubWindow.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\!!adExtensions\extensions.cpp" />
@@ -239,6 +240,7 @@
     </ClCompile>
     <ClCompile Include="TimelineSubWindow.cpp" />
     <ClCompile Include="VideoSaveLoad.cpp" />
+    <ClCompile Include="WarpingToolSubWindow.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MovieMorpher.rc" />

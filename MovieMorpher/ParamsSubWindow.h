@@ -56,7 +56,7 @@ public:
 	ParamsSubWindow(int iParentWidth, int iParentHeight,
 					float fBottomLeftXperc, float fBottomLeftYperc,
 					float fWidthPerc, float fHeightPerc);
-	~ParamsSubWindow();
+	~ParamsSubWindow() {}
 
 	bool ShowOriginal();
 

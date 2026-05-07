@@ -54,11 +54,6 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	iVerticalPan = 0.0;
 }
 
-TimelineSubWindow::~TimelineSubWindow()
-{
-	for (auto* iterElement : liGUI_Elements)
-		delete iterElement;
-}
 
 float TimelineSubWindow::GetSliderValue()
 {
@@ -263,12 +258,6 @@ TimelineSliderSubWindow::TimelineSliderSubWindow(int iParentWidth, int iParentHe
 
 }
 
-TimelineSliderSubWindow::~TimelineSliderSubWindow()
-{
-	for (auto* iterElement : liGUI_Elements)
-		delete iterElement;
-}
-
 
 void TimelineSliderSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight)
 {
@@ -303,13 +292,6 @@ TimelineScrollBarSubWindow::TimelineScrollBarSubWindow(int iParentWidth, int iPa
 	scrollBar->SetAlignment(HALIGN_LEFT, VALIGN_BOTTOM);
 	liGUI_Elements.push_back(scrollBar);
 
-}
-
-TimelineScrollBarSubWindow::~TimelineScrollBarSubWindow()
-{
-	std::vector<GUI_Element*>::iterator iterElement;
-	for (iterElement = liGUI_Elements.begin(); iterElement != liGUI_Elements.end(); iterElement++)
-		delete (*iterElement);
 }
 
 
@@ -361,12 +343,6 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 		liGUI_Elements.push_back(buttonImg);
 	}
 
-}
-
-TrackParamsSubWindow::~TrackParamsSubWindow()
-{
-	for (auto* iterElement : liGUI_Elements)
-		delete iterElement;
 }
 
 

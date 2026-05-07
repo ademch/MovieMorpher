@@ -20,7 +20,7 @@ public:
 							float fBottomLeftXperc, float fBottomLeftYperc,
 							float fWidthPerc, float fHeightPerc,
 							PositionMediator* mediator);
-	~TimelineSliderSubWindow();
+	~TimelineSliderSubWindow() {}
 
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) override;
 
@@ -46,7 +46,7 @@ public:
 	TimelineScrollBarSubWindow(int iParentWidth, int iParentHeight,
 							float fBottomLeftXperc, float fBottomLeftYperc,
 							float fWidthPerc, float fHeightPerc);
-	~TimelineScrollBarSubWindow();
+	~TimelineScrollBarSubWindow() {}
 
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) override;
 
@@ -62,7 +62,7 @@ public:
 					  float fBottomLeftXperc, float fBottomLeftYperc,
 					  float fWidthPerc, float fHeightPerc,
 					  PositionMediator* mediator);
-	~TimelineSubWindow();
+	~TimelineSubWindow() {}
 
 	std::function<void(float)>        OnSliderPosChange;
 	std::function<void(float, float)> OnSelectionChange;
@@ -113,7 +113,7 @@ public:
 	TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 					     float fBottomLeftXperc, float fBottomLeftYperc,
 					     float fWidthPerc, float fHeightPerc);
-	~TrackParamsSubWindow();
+	~TrackParamsSubWindow() {}
 
 	//std::function<void(float)>      OnChange;
 	std::function<void(Vec3)> OnVerticalPanChange;

@@ -192,6 +192,9 @@
     <ClInclude Include="..\..\!!adGUI\VideoPositionMediator.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="WarpingToolSubWindow.h">
+      <Filter>Header Files\SubWindows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -309,6 +312,9 @@
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="MorphingToolSubWindow.cpp">
+      <Filter>Source Files\SubWindows</Filter>
+    </ClCompile>
+    <ClCompile Include="WarpingToolSubWindow.cpp">
       <Filter>Source Files\SubWindows</Filter>
     </ClCompile>
   </ItemGroup>
