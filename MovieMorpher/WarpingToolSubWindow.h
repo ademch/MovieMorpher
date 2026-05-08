@@ -17,18 +17,6 @@ enum StateTransform_enum {
 	STATE_TRANS_TRANSLATE
 };
 
-struct MatrixEntry {
-	
-	MatrixEntry(Matr4 _m = Mat4MakeIdent(), bool _bFinalized = false)
-	{
-		m = _m;
-		bFinalized = _bFinalized;
-	}
-
-	Matr4 m;
-	bool  bFinalized;
-};
-
 class WarpingToolSubWindow : public MorphingToolSubWindow
 {
 public:
@@ -49,15 +37,17 @@ public:
 protected:
 
 	std::vector<Vec2>   liScalingHandles;
-	Vec2 ptTranslateHandle;
+	Vec2 ptTranslHandle;
 	Vec2 ptRotateHandle;
 
-	std::vector<MatrixEntry>  liMatrixConveyor;
+	Matr4 matrImmediateVisualization;
 
 private:
 
 	Vec2 m_ptHandleClicked;
 	Vec2 m_ptHandlePivot;
+	Vec2 m_ptHandlePivotUp;
+	Vec2 m_ptHandlePivotRight;
 
 	Vec2 ptPrevPoint;
 

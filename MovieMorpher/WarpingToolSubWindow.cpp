@@ -22,8 +22,10 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	liScalingHandles.push_back(Vecc2(-200, -200));
 	liScalingHandles.push_back(Vecc2(-200,  200));
 
-	ptTranslateHandle = Vecc2();
+	ptTranslHandle = Vecc2();
 	ptRotateHandle = Vecc2(100, 0);
+
+	matrImmediateVisualization = Mat4MakeIdent();
 }
 
 
@@ -31,8 +33,7 @@ void WarpingToolSubWindow::Draw()
 {
 	MorphingToolSubWindow::Draw();
 
-	for (auto& matr : liMatrixConveyor)
-		glMultMatrixf(&matr.m.m[0][0]);
+	glMultMatrixf(&matrImmediateVisualization.m[0][0]);
 
 	glEnable(GL_LINE_STIPPLE);
 	glLineStipple(2, 0xAAAA);
@@ -40,13 +41,13 @@ void WarpingToolSubWindow::Draw()
 		glColor3f(0, 0.69, 0);
 
 		glBegin(GL_LINE_LOOP);
-		for (auto element : liScalingHandles) {
+		for (auto& element : liScalingHandles) {
 			glVertex3f(element.X, element.Y, 2);
 		}
 		glEnd();
 
 		glBegin(GL_LINES);
-			glVertex3f(ptTranslateHandle.X, ptTranslateHandle.Y, const_fPointsDepth);
+			glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
 			glVertex3f(ptRotateHandle.X,    ptRotateHandle.Y,    const_fPointsDepth);
 		glEnd();
 	glDisable(GL_LINE_STIPPLE);
@@ -54,17 +55,17 @@ void WarpingToolSubWindow::Draw()
 	glPointSize(9);
 	glColor3f(0.93, 0.8, 0);
 	glBegin(GL_POINTS);
-		for (auto element : liScalingHandles) {
+		for (auto& element : liScalingHandles) {
 			glVertex3f(element.X, element.Y, const_fPointsDepth);
 		}
 	glEnd();
 
 	glLineWidth(1);
-	DrawCircle(Vecc3(ptTranslateHandle, 3), 50, 40);
+	DrawCircle(Vecc3(ptTranslHandle, 3), 50, 40);
 	glEnable(GL_POINT_SMOOTH);
 		glPointSize(10);
 		glBegin(GL_POINTS);
-			glVertex3f(ptTranslateHandle.X, ptTranslateHandle.Y, const_fPointsDepth);
+			glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
 		glEnd();
 
 		glPointSize(10);
@@ -89,35 +90,22 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 		{
 			SetupGraphicsPipeline();
 
-			Vec3 vHandle = Vecc3(1.0, 1.0, 1.0);
-			for (auto& matr : liMatrixConveyor)
-			{
-				vHandle = matr.m^vHandle;
-				glMultMatrixf(&matr.m.m[0][0]);
-			}
-
 			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
 			for (auto& point : liScalingHandles)
 			{
 				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(point.X, point.Y, const_fPointsDepth);
-
-				if (( sqr(dxdydz.X) < sqr(const_fHandleRadius/(fUserScale*vHandle.X)) ) &&
-					( sqr(dxdydz.Y) < sqr(const_fHandleRadius/(fUserScale*vHandle.Y)) ) && 
-					( sqr(dxdydz.Z) < sqr(const_fHandleRadius/(fUserScale*vHandle.Z)) ))
+				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
 					glutSetCursor(GLUT_CURSOR_INFO);
 					return true;
 				}
 			}
 
-			Vec2& ptTrans = ptTranslateHandle;
+			Vec2& ptTrans = ptTranslHandle;
 			{
 				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(ptTrans.X, ptTrans.Y, const_fPointsDepth);
-
-				if (( sqr(dxdydz.X) < sqr(const_fHandleRadius/(fUserScale*vHandle.X)) ) &&
-					( sqr(dxdydz.Y) < sqr(const_fHandleRadius/(fUserScale*vHandle.Y)) ) && 
-					( sqr(dxdydz.Z) < sqr(const_fHandleRadius/(fUserScale*vHandle.Z)) ))
+				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
 					glutSetCursor(GLUT_CURSOR_INFO);
 					return true;
@@ -127,10 +115,7 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 			Vec2& ptRotate = ptRotateHandle;
 			{
 				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotate.X, ptRotate.Y, const_fPointsDepth);
-
-				if (( sqr(dxdydz.X) < sqr(const_fHandleRadius/(fUserScale*vHandle.X)) ) &&
-					( sqr(dxdydz.Y) < sqr(const_fHandleRadius/(fUserScale*vHandle.Y)) ) && 
-					( sqr(dxdydz.Z) < sqr(const_fHandleRadius/(fUserScale*vHandle.Z)) ))
+				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
 					glutSetCursor(GLUT_CURSOR_INFO);
 					return true;
@@ -155,13 +140,6 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 
 		SetupGraphicsPipeline();
 
-		Vec3 vHandle = Vecc3(1.0, 1.0, 1.0);
-		for (auto& matr : liMatrixConveyor)
-		{
-			vHandle = matr.m^vHandle;
-			glMultMatrixf(&matr.m.m[0][0]);
-		}
-
 		Vec3d v3DCoords;
 		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
@@ -173,10 +151,7 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 				auto& point = liScalingHandles[i];
 
 				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(point.X, point.Y, const_fPointsDepth);
-
-				if (( sqr(dxdydz.X) < sqr(fJitter/(fUserScale*vHandle.X)) ) &&
-					( sqr(dxdydz.Y) < sqr(fJitter/(fUserScale*vHandle.Y)) ) && 
-					( sqr(dxdydz.Z) < sqr(fJitter/(fUserScale*vHandle.Z)) ))
+				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
 					stateTransform = STATE_TRANS_SCALE;
 
@@ -188,6 +163,12 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 					size_t iCorner = (i + 2) % liScalingHandles.size();
 					m_ptHandlePivot = liScalingHandles[iCorner];
 
+					iCorner = (i + 3) % liScalingHandles.size();
+					m_ptHandlePivotUp = liScalingHandles[iCorner];
+
+					iCorner = (i + 1) % liScalingHandles.size();
+					m_ptHandlePivotRight = liScalingHandles[iCorner];
+
 					ptPrevPoint = Vecc2(x, y);
 
 					return true;
@@ -195,14 +176,11 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 			}
 
 			// TRANSLATION
-			auto& ptTranslate = ptTranslateHandle;
+			auto& ptTranslate = ptTranslHandle;
 
 			Vec3 dxdydz;
 			dxdydz = Vecc3(v3DCoords) - Vecc3(ptTranslate.X, ptTranslate.Y, const_fPointsDepth);
-
-			if (( sqr(dxdydz.X) < sqr(fJitter/(fUserScale*vHandle.X)) ) &&
-				( sqr(dxdydz.Y) < sqr(fJitter/(fUserScale*vHandle.Y)) ) && 
-				( sqr(dxdydz.Z) < sqr(fJitter/(fUserScale*vHandle.Z)) ))
+			if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 			{
 				stateTransform = STATE_TRANS_TRANSLATE;
 
@@ -219,17 +197,14 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 			auto& ptRotate = ptRotateHandle;
 
 			dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotate.X, ptRotate.Y, const_fPointsDepth);
-
-			if (( sqr(dxdydz.X) < sqr(fJitter/(fUserScale*vHandle.X)) ) &&
-				( sqr(dxdydz.Y) < sqr(fJitter/(fUserScale*vHandle.Y)) ) && 
-				( sqr(dxdydz.Z) < sqr(fJitter/(fUserScale*vHandle.Z)) ))
+			if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 			{
 				stateTransform = STATE_TRANS_ROTATE;
 
 				glutSetCursor(GLUT_CURSOR_INFO);
 
 				m_ptHandleClicked = ptRotate;
-				m_ptHandlePivot   = ptTranslateHandle;
+				m_ptHandlePivot   = ptTranslHandle;
 
 				ptPrevPoint = Vecc2(x, y);
 
@@ -243,8 +218,15 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 	{
 		stateTransform = STATE_TRANS_IDLE;
 
-		if (liMatrixConveyor.size() > 0)
-			liMatrixConveyor.back().bFinalized = true;
+		// Transform all handles
+		for (auto& element : liScalingHandles) {
+			element = Vecc2( matrImmediateVisualization*Vecc3(element) );
+		}
+
+		ptTranslHandle = Vecc2( matrImmediateVisualization*Vecc3(ptTranslHandle) );
+		ptRotateHandle = Vecc2( matrImmediateVisualization*Vecc3(ptRotateHandle) );
+
+		matrImmediateVisualization = Mat4MakeIdent();
 	}
 
 	return false;
@@ -261,12 +243,6 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 
 		SetupGraphicsPipeline();
 
-		for (auto& matr : liMatrixConveyor)
-		{
-			if (!matr.bFinalized) continue;
-			glMultMatrixf(&matr.m.m[0][0]);
-		}
-
 		Vec3d v3DCoords;
 		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
@@ -274,19 +250,23 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 		{
 			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
 			{
-
-				if ((liMatrixConveyor.size() == 0) || (liMatrixConveyor.back().bFinalized))
-					liMatrixConveyor.emplace_back();
-				
 				Matr4 matrTrans = Mat4MakeTrans(-m_ptHandlePivot.X, -m_ptHandlePivot.Y, 0.0);
 
-				matrTrans = Mat4MakeScale((v3DCoords.X - m_ptHandlePivot.X)/(m_ptHandleClicked.X - m_ptHandlePivot.X),
-										  (v3DCoords.Y - m_ptHandlePivot.Y)/(m_ptHandleClicked.Y - m_ptHandlePivot.Y),
-					                      1.0f)*matrTrans;
+				// Prepare a local coordinate system of a current rectangle
+				Vec3 vPivotUp    = Vecc3(m_ptHandlePivotUp    - m_ptHandlePivot);
+				Vec3 vPivotRight = Vecc3(m_ptHandlePivotRight - m_ptHandlePivot);
 
-				matrTrans = Mat4MakeTrans(m_ptHandlePivot.X, m_ptHandlePivot.Y, 0.0)*matrTrans;
+				// Project v3DCoords on rais starting at m_ptHandlePivot
+				Vec3 xProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotUp)    );
+				Vec3 yProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotRight) );
 
-				liMatrixConveyor.back() = matrTrans;
+					  // Calulcate matrix that transforms existing local coordinate system into new coordinate system
+					  matrTrans = Mat4MakeTransformFromVectors(vPivotUp, vPivotRight,
+															   xProj - Vecc3(m_ptHandlePivot), yProj - Vecc3(m_ptHandlePivot))*matrTrans;
+
+					  matrTrans = Mat4MakeTrans(m_ptHandlePivot.X, m_ptHandlePivot.Y, 0.0)*matrTrans;
+
+				matrImmediateVisualization = matrTrans;
 			}
 		}
 
@@ -294,14 +274,11 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 		{
 			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
 			{
-				if ((liMatrixConveyor.size() == 0) || (liMatrixConveyor.back().bFinalized))
-					liMatrixConveyor.emplace_back();
-
 				Matr4 matrTrans = Mat4MakeTrans( v3DCoords.X - m_ptHandleClicked.X, 
 												 v3DCoords.Y - m_ptHandleClicked.Y,
 												 1.0f);
 
-				liMatrixConveyor.back() = matrTrans;
+				matrImmediateVisualization = matrTrans;
 			}
 		}
 
@@ -309,16 +286,17 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 		{
 			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
 			{
-				if ((liMatrixConveyor.size() == 0) || (liMatrixConveyor.back().bFinalized))
-					liMatrixConveyor.emplace_back();
-
 				Vec2 vec1 = m_ptHandleClicked - m_ptHandlePivot;
 				Vec2 vec2 = Vecc2(v3DCoords)  - m_ptHandlePivot;
 				float angle = AngleBetweenVectorsCCW(vec1, vec2)*RADIANS_TO_DEGREES;
 
-				Matr4 matrRot = Mat4MakeRot(angle, Vecc3(m_ptHandlePivot, 1.0) );
+				Matr4 matrRot = Mat4MakeTrans(-m_ptHandlePivot.X, -m_ptHandlePivot.Y, 0.0);
 
-				liMatrixConveyor.back() = matrRot;
+				      matrRot = Mat4MakeRot(angle, Vecc3(0,0, 1.0) )*matrRot;
+
+					  matrRot = Mat4MakeTrans(m_ptHandlePivot.X, m_ptHandlePivot.Y, 0.0)*matrRot;
+
+				matrImmediateVisualization = matrRot;
 			}
 		}
 	}
