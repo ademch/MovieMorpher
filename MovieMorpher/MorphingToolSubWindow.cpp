@@ -106,43 +106,47 @@ void MorphingToolSubWindow::Draw()
 	if (lambdaPointsAreVisible())
 	{
 		// SOURCE
-		//glEnable(GL_LINE_SMOOTH);
-		glLineWidth(const_fLineWidth);
-		glColor3f(0.83, 0.69, 0);
-		std::vector<Vec2> listOutSrc;
-		CatmullSubdivide(liSource, listOutSrc, 10);
-		glBegin(GL_LINE_STRIP);
-			for (auto element : listOutSrc) {
-				glVertex3f(element.X, element.Y, 0.1);
-			}
-		glEnd();
+		{
+			//glEnable(GL_LINE_SMOOTH);
+			glLineWidth(const_fLineWidth);
+			glColor3f(0.83, 0.69, 0);
+			std::vector<Vec2> listOutSrc;
+			CatmullSubdivide(liSource, listOutSrc, 10);
+			glBegin(GL_LINE_STRIP);
+				for (auto element : listOutSrc) {
+					glVertex3f(element.X, element.Y, 0.1);
+				}
+			glEnd();
 
-		glPointSize(const_fPointsSize);
-		glColor3f(0.93, 0.8, 0);
-		glBegin(GL_POINTS);
-			for (auto element : liSource) {
-				glVertex3f(element.X, element.Y, const_fPointsDepth);
-			}
-		glEnd();
+			glPointSize(const_fPointsSize);
+			glColor3f(0.93, 0.8, 0);
+			glBegin(GL_POINTS);
+				for (auto element : liSource) {
+					glVertex3f(element.X, element.Y, const_fPointsDepth);
+				}
+			glEnd();
+		}
 
 		// DESTINATION
-		glLineWidth(const_fLineWidth);
-		glColor3f(0.23, 0.71, 0);
-		std::vector<Vec2> listOutDst;
-		CatmullSubdivide(liDestination, listOutDst, 10);
-		glBegin(GL_LINE_STRIP);
-			for (auto element : listOutDst) {
-				glVertex3f(element.X, element.Y, 0.1);
-			}
-		glEnd();
+		{
+			glLineWidth(const_fLineWidth);
+			glColor3f(0.23, 0.71, 0);
+			std::vector<Vec2> listOutDst;
+			CatmullSubdivide(liDestination, listOutDst, 10);
+			glBegin(GL_LINE_STRIP);
+				for (auto element : listOutDst) {
+					glVertex3f(element.X, element.Y, 0.1);
+				}
+			glEnd();
 
-		glPointSize(const_fPointsSize);
-		glColor3f(0.3, 0.8, 0);
-		glBegin(GL_POINTS);
-			for (auto element : liDestination) {
-				glVertex3f(element.X, element.Y, const_fPointsDepth);
-			}
-		glEnd();
+			glPointSize(const_fPointsSize);
+			glColor3f(0.3, 0.8, 0);
+			glBegin(GL_POINTS);
+				for (auto element : liDestination) {
+					glVertex3f(element.X, element.Y, const_fPointsDepth);
+				}
+			glEnd();
+		}
 
 		glColor3f(1,0,0);
 		glLineWidth(3);

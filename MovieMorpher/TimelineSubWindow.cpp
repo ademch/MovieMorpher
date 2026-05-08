@@ -275,7 +275,7 @@ void TimelineSliderSubWindow::Draw()
 	for (auto iterElement : liGUI_Elements)
 		iterElement->Draw();
 
-	printf("Val=%f\n", videoSlider->GetValue());
+	//printf("Val=%f\n", videoSlider->GetValue());
 }
 
 

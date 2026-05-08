@@ -9,7 +9,7 @@
 #include "MorphFBOprocessor.h"
 #include <chrono>
 
-#include "MorphingToolSubWindow.h"
+#include "WarpingToolSubWindow.h"
 #include "ParamsSubWindow.h"
 #include "MediaSubWindow.h"
 #include "TimelineSubWindow.h"
@@ -45,7 +45,7 @@ GLSL_Pipeline glsl_pipeline;
 
 MorphFBOprocessor* fbo;
 
-MorphingToolSubWindow*      windowToolEditor;
+WarpingToolSubWindow*       windowToolEditor;
 ParamsSubWindow*            windowParams;
 MediaSubWindow*             windowMedia;
 

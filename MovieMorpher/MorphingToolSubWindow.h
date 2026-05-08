@@ -25,12 +25,12 @@ public:
 						  float fWidthPerc, float fHeightPerc);
 	~MorphingToolSubWindow() {}
 
-	virtual	void Draw();
+	void Draw() override;
 
-	virtual bool PassiveMotionFunc(int x, int y);
-	virtual bool MouseFunc(int button, int state, int x, int y);
-	virtual void MotionFunc(int x, int y);
-	virtual bool KeyboardFunc(unsigned char key, int x, int y);
+	bool PassiveMotionFunc(int x, int y) override;
+	bool MouseFunc(int button, int state, int x, int y) override;
+	void MotionFunc(int x, int y) override;
+	bool KeyboardFunc(unsigned char key, int x, int y) override;
 
 	bool SrcCurveIsDone() { return bSrcCurveIsDone; }
 	bool DstCurveIsDone() { return bDstCurveIsDone; }
@@ -38,8 +38,6 @@ public:
 	void ClearSourceLine();
 	void ClearDestinationLine();
 	bool MorphNow();
-
-	StateInput_enum stateCurrent;
 
 	std::function<bool()> lambdaPointsAreVisible  = []() { return true; };
 	std::function<void()> lambdaMakePointsVisible = []() {  };
@@ -63,6 +61,8 @@ protected:
 	Vec2 ptPrevPoint;
 
 private:
+	StateInput_enum stateCurrent;
+
 	bool m_bMouseDrawingInProgress;
 
 	bool bSrcCurveIsDone;
