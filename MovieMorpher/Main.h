@@ -28,6 +28,7 @@ void ReshapeFunc(GLsizei w, GLsizei h);
 void globaldraw();
 void keyboard(unsigned char, int, int);
 void keyboardSpecial(int key, int x, int y);
+void keyboardAux(int key, int state, int x, int y);
 void MouseFunc(int, int, int, int);
 void MouseWheelFunc(int, int, int, int);
 void MouseHWheelFunc(int, int, int, int);

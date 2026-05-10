@@ -12,7 +12,8 @@
 
 enum StateTransform_enum {
 	STATE_TRANS_IDLE,
-	STATE_TRANS_SCALE,
+	STATE_TRANS_SCALE_PROPORTIONAL,
+	STATE_TRANS_SCALE_NONPROPORTIONAL,
 	STATE_TRANS_ROTATE,
 	STATE_TRANS_TRANSLATE
 };
@@ -31,6 +32,7 @@ public:
 	bool MouseFunc(int button, int state, int x, int y) override;
 	void MotionFunc(int x, int y) override;
 	bool KeyboardFunc(unsigned char key, int x, int y) override;
+	void KeyboardAux(int key, int state, int x, int y) override;
 
 	StateTransform_enum stateTransform;
 
@@ -48,8 +50,11 @@ private:
 	Vec2 m_ptHandlePivot;
 	Vec2 m_ptHandlePivotUp;
 	Vec2 m_ptHandlePivotRight;
+	Vec2 m_ptHandleCenter;
 
 	Vec2 ptPrevPoint;
+
+	HCURSOR hCurSpecial;
 
 };
 

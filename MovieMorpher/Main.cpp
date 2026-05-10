@@ -301,6 +301,14 @@ void MotionFunc(int x, int y)
 		iterWindow->MotionFunc(x, iAppWndHeight - y);
 }
 
+
+// (in) x,y - window coords from (0,0) to (w,h)
+void keyboardAux(int key, int state, int x, int y)
+{
+	for (auto iterWindow : liWindows)
+		iterWindow->KeyboardAux(key, state, x, iAppWndHeight - y);
+}
+
 // Passive motion is special, global window has to care about all child windows
 // to make sure focus, cursor is updated correcly
 void PassiveMotionFunc(int x, int y)
@@ -357,15 +365,49 @@ static LRESULT CALLBACK winProcUser(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 	switch (Msg)
 	{
 	case WM_MOUSEWHEEL:
-		MouseWheelFunc(GET_KEYSTATE_WPARAM(wParam), GET_WHEEL_DELTA_WPARAM(wParam),
-			           GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		MouseWheelFunc(GET_KEYSTATE_WPARAM(wParam),
+			           GET_WHEEL_DELTA_WPARAM(wParam),
+			           GET_X_LPARAM(lParam),
+			           GET_Y_LPARAM(lParam));
 		return 0;
 		break;
+	
 	case WM_MOUSEHWHEEL:
-		MouseHWheelFunc(GET_KEYSTATE_WPARAM(wParam), GET_WHEEL_DELTA_WPARAM(wParam),
-					    GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+		MouseHWheelFunc(GET_KEYSTATE_WPARAM(wParam),
+			            GET_WHEEL_DELTA_WPARAM(wParam),
+					    GET_X_LPARAM(lParam),
+			            GET_Y_LPARAM(lParam));
 		return 0;
 		break;
+	
+	case WM_KEYDOWN:
+		if (wParam == VK_SHIFT)
+		{
+			POINT p;
+
+			GetCursorPos(&p);
+			ScreenToClient(hwnd, &p);
+
+			if ((p.x >= 0) && (p.y >= 0) && (p.x < iAppWndWidth) && (p.y < iAppWndHeight))
+				keyboardAux(GLUT_ACTIVE_SHIFT, GLUT_DOWN, p.x, p.y);
+		}
+		return CallWindowProc(currentWndProc, handle, Msg, wParam, lParam);
+		break;
+	
+	case WM_KEYUP:
+		if (wParam == VK_SHIFT)
+		{
+			POINT p;
+
+			GetCursorPos(&p);
+			ScreenToClient(hwnd, &p);
+
+			if ((p.x >= 0) && (p.y >= 0) && (p.x < iAppWndWidth) && (p.y < iAppWndHeight))
+				keyboardAux(GLUT_ACTIVE_SHIFT, GLUT_UP, p.x, p.y);
+		}
+		return CallWindowProc(currentWndProc, handle, Msg, wParam, lParam);
+		break;
+	
 	default:
 		//printf("%d\n", Msg);
 

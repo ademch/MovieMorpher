@@ -4,9 +4,9 @@
 #include <vector>
 #include <functional>
 
-const float const_fPointsDepth = 3;
-const float const_fPointsSize = 7;
-const float const_fHandleRadius   = 5;
+const float const_fPointsDepth   = 3;
+const float const_fPointsSize    = 12;
+const float const_fHandleRadius  = 5;
 
 WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 										   float fBottomLeftXperc, float fBottomLeftYperc,
@@ -23,9 +23,11 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	liScalingHandles.push_back(Vecc2(-200,  200));
 
 	ptTranslHandle = Vecc2();
-	ptRotateHandle = Vecc2(100, 0);
+	ptRotateHandle = Vecc2(200*0.618, 0);
 
 	matrImmediateVisualization = Mat4MakeIdent();
+
+	hCurSpecial     = LoadCursorFromFileW(L"aero_moveProp.cur");
 }
 
 
@@ -37,7 +39,7 @@ void WarpingToolSubWindow::Draw()
 
 	glEnable(GL_LINE_STIPPLE);
 	glLineStipple(2, 0xAAAA);
-		glLineWidth(2);
+		glLineWidth(3);
 		glColor3f(0, 0.69, 0);
 
 		glBegin(GL_LINE_LOOP);
@@ -46,13 +48,25 @@ void WarpingToolSubWindow::Draw()
 		}
 		glEnd();
 
+		// Line from the center to rotation handle
 		glBegin(GL_LINES);
 			glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
-			glVertex3f(ptRotateHandle.X,    ptRotateHandle.Y,    const_fPointsDepth);
+			glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
 		glEnd();
+
+		if (stateTransform == STATE_TRANS_SCALE_PROPORTIONAL)
+		{
+			Vec2 vDirLine = VecNormalize( m_ptHandleClicked - m_ptHandlePivot );
+			Vec2 ptOnLine = m_ptHandlePivot + 1000.0*vDirLine;
+			glBegin(GL_LINES);
+				glVertex3f(m_ptHandlePivot.X,   m_ptHandlePivot.Y,   const_fPointsDepth);
+				glVertex3f(ptOnLine.X,          ptOnLine.Y,          const_fPointsDepth);
+			glEnd();
+		}
 	glDisable(GL_LINE_STIPPLE);
 
-	glPointSize(9);
+	// Draw handles of a rectangle
+	glPointSize(const_fPointsSize);
 	glColor3f(0.93, 0.8, 0);
 	glBegin(GL_POINTS);
 		for (auto& element : liScalingHandles) {
@@ -63,12 +77,12 @@ void WarpingToolSubWindow::Draw()
 	glLineWidth(1);
 	DrawCircle(Vecc3(ptTranslHandle, 3), 50, 40);
 	glEnable(GL_POINT_SMOOTH);
-		glPointSize(10);
+		glPointSize(const_fPointsSize);
 		glBegin(GL_POINTS);
 			glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
 		glEnd();
 
-		glPointSize(10);
+		glPointSize(const_fPointsSize);
 		glBegin(GL_POINTS);
 			glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
 		glEnd();
@@ -97,7 +111,14 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(point.X, point.Y, const_fPointsDepth);
 				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
-					glutSetCursor(GLUT_CURSOR_INFO);
+					if (GetKeyState(VK_SHIFT) & 0x8000)
+						glutSetCursor(GLUT_CURSOR_INFO);
+					else
+					{
+						glutSetCursor(GLUT_CURSOR_NONE);
+						SetCursor(hCurSpecial);
+					}
+					
 					return true;
 				}
 			}
@@ -130,8 +151,6 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 
 bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 {
-	float fJitter       = 5;
-
 	if (MorphingToolSubWindow::MouseFunc(button, state, x, y)) return true;
 
 	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
@@ -153,9 +172,19 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(point.X, point.Y, const_fPointsDepth);
 				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
-					stateTransform = STATE_TRANS_SCALE;
+					if (GetKeyState(VK_SHIFT) & 0x8000)
+					{
+						stateTransform = STATE_TRANS_SCALE_NONPROPORTIONAL;
 
-					glutSetCursor(GLUT_CURSOR_INFO);
+						glutSetCursor(GLUT_CURSOR_INFO);
+					}
+					else
+					{
+						stateTransform = STATE_TRANS_SCALE_PROPORTIONAL;
+
+						glutSetCursor(GLUT_CURSOR_NONE);
+						SetCursor(hCurSpecial);
+					}
 
 					m_ptHandleClicked = point;
 
@@ -168,6 +197,8 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 
 					iCorner = (i + 1) % liScalingHandles.size();
 					m_ptHandlePivotRight = liScalingHandles[iCorner];
+
+					m_ptHandleCenter = ptTranslHandle;
 
 					ptPrevPoint = Vecc2(x, y);
 
@@ -211,7 +242,6 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 				return true;
 			}
 		}
-
 	}
 	
 	if ((stateTransform != STATE_TRANS_IDLE) && (button == GLUT_LEFT_BUTTON) && (state == GLUT_UP))
@@ -246,7 +276,7 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 		Vec3d v3DCoords;
 		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-		if (stateTransform == STATE_TRANS_SCALE)
+		if (stateTransform == STATE_TRANS_SCALE_PROPORTIONAL)
 		{
 			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
 			{
@@ -256,19 +286,52 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 				Vec3 vPivotUp    = Vecc3(m_ptHandlePivotUp    - m_ptHandlePivot);
 				Vec3 vPivotRight = Vecc3(m_ptHandlePivotRight - m_ptHandlePivot);
 
-				// Project v3DCoords on rais starting at m_ptHandlePivot
-				Vec3 xProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotUp)    );
-				Vec3 yProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotRight) );
+				// Project v3DCoords on rays starting at m_ptHandlePivot
+				float fDotX, fDotY;
+				Vec3 xProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotRight), fDotX);
+				Vec3 yProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotUp),    fDotY);
 
-					  // Calulcate matrix that transforms existing local coordinate system into new coordinate system
-					  matrTrans = Mat4MakeTransformFromVectors(vPivotUp, vPivotRight,
-															   xProj - Vecc3(m_ptHandlePivot), yProj - Vecc3(m_ptHandlePivot))*matrTrans;
+				float fAspect = VecLength(vPivotRight) / VecLength(vPivotUp);
 
-					  matrTrans = Mat4MakeTrans(m_ptHandlePivot.X, m_ptHandlePivot.Y, 0.0)*matrTrans;
+				if (fDotX/fDotY < fAspect)
+					yProj = Vecc3(m_ptHandlePivot) + fDotX/fAspect*VecNormalize(vPivotUp);
+				else
+					xProj = Vecc3(m_ptHandlePivot) + fDotY*fAspect*VecNormalize(vPivotRight);
+
+				// Calulcate matrix that transforms existing local coordinate system into new coordinate system
+				matrTrans = Mat4MakeTransformFromVectors(vPivotUp, vPivotRight,
+														 yProj - Vecc3(m_ptHandlePivot), xProj - Vecc3(m_ptHandlePivot))*matrTrans;
+
+				matrTrans = Mat4MakeTrans(m_ptHandlePivot.X, m_ptHandlePivot.Y, 0.0)*matrTrans;
 
 				matrImmediateVisualization = matrTrans;
 			}
 		}
+		else
+		if (stateTransform == STATE_TRANS_SCALE_NONPROPORTIONAL)
+		{
+			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
+			{
+				Matr4 matrTrans = Mat4MakeTrans(-m_ptHandlePivot.X, -m_ptHandlePivot.Y, 0.0);
+
+				// Prepare a local coordinate system of a current rectangle
+				Vec3 vPivotUp    = Vecc3(m_ptHandlePivotUp    - m_ptHandlePivot);
+				Vec3 vPivotRight = Vecc3(m_ptHandlePivotRight - m_ptHandlePivot);
+
+				// Project v3DCoords on rays starting at m_ptHandlePivot
+				Vec3 xProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotRight)    );
+				Vec3 yProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotUp) );
+
+				// Calulcate matrix that transforms existing local coordinate system into new coordinate system
+				matrTrans = Mat4MakeTransformFromVectors(vPivotUp, vPivotRight,
+														 yProj - Vecc3(m_ptHandlePivot), xProj - Vecc3(m_ptHandlePivot))*matrTrans;
+
+				matrTrans = Mat4MakeTrans(m_ptHandlePivot.X, m_ptHandlePivot.Y, 0.0)*matrTrans;
+
+				matrImmediateVisualization = matrTrans;
+			}
+		}
+
 
 		if (stateTransform == STATE_TRANS_TRANSLATE)
 		{
@@ -306,4 +369,12 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 bool WarpingToolSubWindow::KeyboardFunc(unsigned char key, int x, int y)
 {
 	return false;
+}
+
+void WarpingToolSubWindow::KeyboardAux(int key, int state, int x, int y)
+{
+	if (key == GLUT_ACTIVE_SHIFT)
+	{
+		PassiveMotionFunc(x, y);
+	}
 }
