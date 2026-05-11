@@ -7,6 +7,8 @@
 #include "../../!!adGUI/button.h"
 #include <vector>
 #include "../../!!adGUI/VideoPositionMediator.h"
+#include "../../!!adGUI/TimelineTrack.h"
+#include "../../!!adGUI/TrackClip.h"
 
 
 class TimelineSliderSubWindow : public OpenGLSubWindowWithGUI
@@ -61,7 +63,7 @@ public:
 	TimelineSubWindow(int iParentWidth, int iParentHeight,
 					  float fBottomLeftXperc, float fBottomLeftYperc,
 					  float fWidthPerc, float fHeightPerc,
-					  PositionMediator* mediator);
+					  PositionMediator* _mediator);
 	~TimelineSubWindow() {}
 
 	std::function<void(float)>        OnSliderPosChange;
@@ -86,6 +88,8 @@ public:
 		matrSliderNonInverted = _matrUserScale;
 	}
 
+	void AddClip(TrackClip* _clip);
+
 protected:
 
 	float m_fSliderX;
@@ -104,6 +108,10 @@ protected:
 	float GetSelectionStartValue();
 	float GetSelectionEndValue();
 
+	PositionMediator* mediator;
+
+	//std::vector<GUI_Element*> liTracks;
+
 };
 
 
@@ -118,8 +126,6 @@ public:
 	//std::function<void(float)>      OnChange;
 	std::function<void(Vec3)> OnVerticalPanChange;
 
-
-	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) override;
 
 	// GUI is movable with MV matrix
 	void SetupGraphicsPipelineWithIdentityModelViewMatrix() override

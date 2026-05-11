@@ -1,8 +1,10 @@
 #include "stdafx.h"
 #include "MediaSubWindow.h"
-#include "../../!!adGlobals/adOpenGLUtilities.h"
 #include "GLSL_Pipeline.h"
+#include "../../!!adGUI/button.h"
+#include "../../!!adGUI/label.h"
 #include "../../!!adExtensions/extensions.h"
+#include "../../!!adGUI/TrackClip.h"
 
 
 extern GLSL_Pipeline glsl_pipeline;
@@ -25,6 +27,9 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	//listBox->items.push_back("Eight");
 	//liGUI_Elements.push_back(listBox);
 
+	windowTimeLine = NULL;
+
+	ButtonImage* buttonImg;
 	buttonImg = new ButtonImage("", -300, 10, 30);
 	buttonImg->LoadImg("Icons\\Image4.bmp");
 	buttonImg->strHint = "Play selection in loop";
@@ -55,6 +60,7 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 
+	Label* label;
 	label = new Label("00:00:00.234", -300, -40, 12 );
 	label->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(label);
@@ -69,11 +75,18 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	buttonImg->LoadImg("Icons\\Image10.bmp");
 	buttonImg->strHint = "Add image...";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	buttonImg->OnClick = [this]() {	return this->AddTrackPicture(); };
 	liGUI_Elements.push_back(buttonImg);
 }
 
 
 
+bool MediaSubWindow::AddTrackPicture()
+{
+	windowTimeLine->AddClip(NULL);
+
+	return true;
+}
 
 
 

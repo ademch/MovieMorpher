@@ -91,8 +91,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	windowToolEditor = new WarpingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.3, 0.70,0.68);
 	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
-	windowToolEditor->lambdaPointsAreVisible  = []() { return windowParams ? windowParams->PointsAreVisible() : true; };
-	windowToolEditor->lambdaMakePointsVisible = []() { return windowParams->MakePointsVisible(); };
 	windowToolEditor->bSceneRotationAllowed = false;
 	liWindows.push_back(windowToolEditor);
 
@@ -137,7 +135,8 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 
 	// register mutual pointers
-	windowToolEditor->m_ParamsSubWindow = windowParams;
+	windowToolEditor->SetParamsSubWindow(windowParams);
+	windowMedia->SetTimelineSubWindow(timelineWindow);
 
 	timelineWindow->OnVerticalPanChange = [](Vec3 vTranslation) {	timelineTrackParams->SetVerticalTranslation(vTranslation);  };
 
@@ -192,13 +191,10 @@ void globaldraw()
 
 	glLoadIdentity();
 
-//	fbo->Render();TODO
-
 	for (auto iterWindow : liWindows)
 	{
 		if (auto wnd = dynamic_cast<WarpingToolSubWindow*>(iterWindow))
 		{
-			//if (wnd == windowToolEditor) continue;
 			wnd->CopyView(wnd);
 		}
 
@@ -300,19 +296,19 @@ void keyboardSpecial(int key, int x, int y)
 }
 
 // (in) x,y - window coords from (0,0) to (w,h)
+void keyboardAux(int key, int state, int x, int y)
+{
+	for (auto iterWindow : liWindows)
+		iterWindow->KeyboardAux(key, state, x, iAppWndHeight - y);
+}
+
+// (in) x,y - window coords from (0,0) to (w,h)
 void MotionFunc(int x, int y)
 {
 	for (auto iterWindow : liWindows)
 		iterWindow->MotionFunc(x, iAppWndHeight - y);
 }
 
-
-// (in) x,y - window coords from (0,0) to (w,h)
-void keyboardAux(int key, int state, int x, int y)
-{
-	for (auto iterWindow : liWindows)
-		iterWindow->KeyboardAux(key, state, x, iAppWndHeight - y);
-}
 
 // Passive motion is special, global window has to care about all child windows
 // to make sure focus, cursor is updated correcly
@@ -333,8 +329,13 @@ void PassiveMotionFunc(int x, int y)
 
 void MouseFunc(int button, int state, int x, int y)
 {
+	bool bResult;
+
 	for (auto iterWindow : liWindows)
-		iterWindow->MouseFunc(button, state, x, iAppWndHeight - y);
+	{
+		bResult = iterWindow->MouseFunc(button, state, x, iAppWndHeight - y);
+		if (bResult) break;
+	}
 }
 
 void MouseWheelFunc(int state, int delta, int x, int y)

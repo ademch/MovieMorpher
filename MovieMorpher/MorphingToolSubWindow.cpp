@@ -105,7 +105,7 @@ void MorphingToolSubWindow::Draw()
 
 	sprintf(m_strCaption, "%s %5.0f%%", "Zoom", fUserScale*100.0f);
 
-	if (lambdaPointsAreVisible())
+	if (m_ParamsSubWindow->PointsAreVisible())
 	{
 		// SOURCE
 		{
@@ -556,7 +556,7 @@ void MorphingToolSubWindow::ReDrawFBO()
 	fbo->fMorphRadius   = m_ParamsSubWindow->fMorphRadius;
 	fbo->fMorphPower    = m_ParamsSubWindow->fMorphPower;
 	fbo->fMorphRatio    = m_ParamsSubWindow->fMorphRatio;
-	fbo->bShowWireframe = m_ParamsSubWindow->ShowWireframe();
+	fbo->bShowWireframe = m_ParamsSubWindow->IsWireframeShown();
 
 	fbo->Render();
 }
@@ -578,7 +578,7 @@ bool MorphingToolSubWindow::SourcePolylineClicked()
 		buttonSource->_text = "Drawing";
 
 		// nice touch
-		lambdaMakePointsVisible();
+		m_ParamsSubWindow->MakePointsVisible();
 	}
 
 	return true;
@@ -601,7 +601,7 @@ bool MorphingToolSubWindow::DestinationPolylineClicked()
 		glutSetCursor(GLUT_CURSOR_TOP_SIDE);
 
 		// nice touch
-		lambdaMakePointsVisible();
+		m_ParamsSubWindow->MakePointsVisible();
 	}
 
 	return true;

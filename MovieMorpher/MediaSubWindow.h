@@ -2,9 +2,7 @@
 #define MEDIASUBSUBWINDOW_H
 
 #include "../../!!adGUI/SubWindowWithGUI.h"
-#include "../../!!adGUI/label.h"
-#include "../../!!adGUI/ListBox.h"
-#include "../../!!adGUI/button.h"
+#include "TimelineSubWindow.h"
 
 
 class MediaSubWindow : public OpenGLSubWindowWithGUI
@@ -15,12 +13,19 @@ public:
 				   float fWidthPerc, float fHeightPerc);
 	~MediaSubWindow() {}
 
+	void SetTimelineSubWindow(TimelineSubWindow* wnd)
+	{
+		windowTimeLine = wnd;
+	}
+
 protected:
 
+	bool AddTrackPicture();
+
+	TimelineSubWindow* windowTimeLine;
+
 private:
-	ListBox* listBox;
-	ButtonImage*  buttonImg;
-	Label* label;
+
 };
 
 

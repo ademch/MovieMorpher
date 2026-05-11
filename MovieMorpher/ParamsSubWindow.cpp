@@ -160,7 +160,7 @@ void ParamsSubWindow::MakePointsVisible()
 	onoffswitchShowPoints->bON = true;
 }
 
-bool ParamsSubWindow::ShowWireframe()
+bool ParamsSubWindow::IsWireframeShown()
 {
 	return onoffswitchWireframe->bON;
 }

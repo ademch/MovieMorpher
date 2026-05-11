@@ -65,7 +65,7 @@ public:
 	float fMorphRatio;
 
 	bool PointsAreVisible();
-	bool ShowWireframe();
+	bool IsWireframeShown();
 	void MakePointsVisible();
 
 protected:

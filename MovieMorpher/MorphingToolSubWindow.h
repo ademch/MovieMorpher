@@ -43,10 +43,10 @@ public:
 	void ClearDestinationLine();
 	bool MorphNow();
 
-	std::function<bool()> lambdaPointsAreVisible  = []() { return true; };
-	std::function<void()> lambdaMakePointsVisible = []() {  };
-
-	ParamsSubWindow* m_ParamsSubWindow;
+	void SetParamsSubWindow(ParamsSubWindow* m_Wnd)
+	{
+		m_ParamsSubWindow = m_Wnd;
+	}
 
 protected:
 	void UploadMorphingLines();
@@ -67,6 +67,8 @@ protected:
 	MorphFBOprocessor* fbo;
 
 	void ReDrawFBO();
+
+	ParamsSubWindow* m_ParamsSubWindow;
 
 private:
 	StateInput_enum stateCurrent;

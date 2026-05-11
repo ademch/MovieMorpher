@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "TimelineSubWindow.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
-#include "../../!!adGUI/TimelineTrack.h"
 #include "../../!!adGUI/button.h"
 #include "../../!!adGUI/fps.h"
 #include "GLSL_Pipeline.h"
@@ -11,12 +10,12 @@
 
 const int iTrackHeight  = 40;
 const int iTrackPadding = 10;
-const int iTrackCount   = 5;
+const int const_iTrackCount   = 5;
 
 TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 									 float fBottomLeftXperc, float fBottomLeftYperc,
 									 float fWidthPerc, float fHeightPerc,
-									 PositionMediator* mediator) :
+									 PositionMediator* _mediator) :
 				   OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 										  fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
@@ -27,11 +26,13 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 
 	m_fSliderX = 0;
 
-	OnSliderPosChange = [this, mediator](float fPos)
+	mediator = _mediator;
+
+	OnSliderPosChange = [this](float fPos)
 	{
 		mediator->SetPos(this, fPos);
 	};
-	OnSelectionChange = [this, mediator](float fSelectionStart, float fSelectionEnd)
+	OnSelectionChange = [this](float fSelectionStart, float fSelectionEnd)
 	{
 		mediator->SetSelection(this, fSelectionStart, fSelectionEnd);
 	};
@@ -44,14 +45,29 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	//	if (origin != videoSlider) SetPosInit(fVal, _iStartSec, _iEndSec);
 	//});
 
-	for (int16_t iTrack = 1; iTrack <= iTrackCount; iTrack++)
+	for (int16_t iTrack = 1; iTrack <= const_iTrackCount; iTrack++)
 	{
 		TimelineTrack*  track = new TimelineTrack(iTrack, 5, -iTrackHeight*iTrack - iTrackPadding*iTrack, m_iWidth-10, iTrackHeight);
 		track->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 		liGUI_Elements.push_back(track);
+		// shortcut
+		//liTracks.push_back(track);
 	}
 
 	iVerticalPan = 0.0;
+}
+
+void TimelineSubWindow::AddClip(TrackClip* _clip)
+{
+	int iTrack = TimelineTrack::iSelected;
+	TrackClip* clip = new TrackClip(1, 5, -iTrackHeight*iTrack - iTrackPadding*iTrack +10, Width(), 20);
+	clip->SetPos(0, 100.0/4000.0);
+
+	clip->iTrack = iTrack;
+	clip->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
+	liGUI_Elements.push_back(clip);
+
+	clip->Reposition(-Width()/2 + clip->iHPosShift, Height()/2 + clip->iVPosShift);
 }
 
 
@@ -77,8 +93,8 @@ void TimelineSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 
 	for (auto* iterElement : liGUI_Elements)
 	{
-		if (auto* track = dynamic_cast<TimelineTrack*>(iterElement))
-			track->Resize(iWidth-10, m_iHeight/3.0);
+		auto* track = dynamic_cast<GUI_ElementResizable*>(iterElement);
+		track->Resize(iWidth-10, m_iHeight/3.0);
 	}
 }
 
@@ -107,8 +123,6 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 					bSelectionIsValid   = false;
 					if (OnSelectionChange != NULL) OnSelectionChange( 0.0f, 0.0f );
 				}
-
-
 
 				iStartDragX = x;
 				iStartDragY = y;
@@ -165,7 +179,7 @@ bool TimelineSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
 	{
 		if (delta < 0)
 		{
-			if (m_iHeight + iVerticalPan < (iTrackHeight + iTrackPadding)*iTrackCount + 10)
+			if (m_iHeight + iVerticalPan < (iTrackHeight + iTrackPadding)*const_iTrackCount + 10)
 				iVerticalPan += 10;
 		}
 		else
@@ -188,36 +202,42 @@ bool TimelineSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
 
 void TimelineSubWindow::Draw()
 {
-	// draw position line
-	{
-		glColor3f(1,0,0);
-
-		glLineWidth(1);
-		glLine( m_fSliderX, - m_iHeight/2,
-			    m_fSliderX,   m_iHeight/2, 5);
-	}
-
-
 	for (auto iterElement : liGUI_Elements)
 	{
 		// propagate common values
-		if (auto* track = dynamic_cast<TimelineTrack*>(iterElement))
-			track->matrSliderNonInverted = Mat4MakeTrans(0, -vUserSceneTranslation.Y, 0)*matrSliderNonInverted; // minus to get nonInverted vUserSceneTranslation
+		auto* track = dynamic_cast<GUI_ElementResizable*>(iterElement);
+		track->matrSliderNonInverted = Mat4MakeTrans(0, -vUserSceneTranslation.Y, 0)*matrSliderNonInverted; // minus to get nonInverted vUserSceneTranslation
 		
 		iterElement->Draw();
 	}
 
-	// Draw selection moir
-	if (bSelectionIsValid)
-	{
-		glColor4f(1,1,1, 0.2);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			glQuad(m_fSelectionStartX, - m_iHeight/2, m_fSelectionEndX - m_fSelectionStartX, m_iHeight, 10);
+	SetupGraphicsPipelineWithIdentityModelViewMatrix();
 
-		glDisable(GL_BLEND);
-	}
+	// matrUserScale contains transformation from HorrScrollBar,
+	// while vUserSceneTranslation contains vertical scroll which we do not want
+	glMultMatrixf(&matrUserScale.m[0][0]);
+
+		// draw position line
+		{
+			glColor3f(1,0,0);
+
+			glLineWidth(1);
+			glLine( m_fSliderX, - m_iHeight/2,
+					m_fSliderX,   m_iHeight/2, 5);
+		}
+
+		// Draw selection moir
+		if (bSelectionIsValid)
+		{
+			glColor4f(1,1,1, 0.2);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+				glQuad(m_fSelectionStartX, - m_iHeight/2, m_fSelectionEndX - m_fSelectionStartX, m_iHeight, 10);
+
+			glDisable(GL_BLEND);
+		}
 }
 
 
@@ -322,7 +342,7 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 	//	if (origin != videoSlider) SetPosInit(fVal, _iStartSec, _iEndSec);
 	//});
 
-	for (int16_t iTrack = 1; iTrack <= iTrackCount; iTrack++)
+	for (int16_t iTrack = 1; iTrack <= const_iTrackCount; iTrack++)
 	{
 		ButtonImage* buttonImg = new ButtonImage("", -60, -iTrackHeight*iTrack - iTrackPadding*iTrack + 4, 32);
 		std::string filename = "Icons\\Number" +  std::to_string(iTrack) + ".bmp";
@@ -333,7 +353,7 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 		liGUI_Elements.push_back(buttonImg);
 	}
 
-	for (int16_t iTrack = 1; iTrack <= iTrackCount; iTrack++)
+	for (int16_t iTrack = 1; iTrack <= const_iTrackCount; iTrack++)
 	{
 		ButtonImage* buttonImg = new ButtonImage("", -20, -iTrackHeight*iTrack - iTrackPadding*iTrack + 4, 12);
 		buttonImg->LoadImg("Icons\\Image12.bmp");
@@ -343,18 +363,6 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 		liGUI_Elements.push_back(buttonImg);
 	}
 
-}
-
-
-void TrackParamsSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight)
-{
-	OpenGLSubWindowWithGUI::Reshape(iBottomLeftX, iBottomLeftY, iWidth, iHeight);
-
-	for (auto* iterElement : liGUI_Elements)
-	{
-		if (auto* track = dynamic_cast<TimelineTrack*>(iterElement))
-			track->Resize(iWidth-10, m_iHeight/3.0);
-	}
 }
 
 
