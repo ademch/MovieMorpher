@@ -17,8 +17,6 @@ MorphFBOprocessor::MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWi
 	bSceneDragAllowed     = false;
 	bSceneZoomAllowed     = false;
 
-	m_ParamsSubWindow       = NULL;
-
 	clrBackground = Vecc3(0.2f, 0.2f, 0.2f);
 
 	texBank.bank[TEXTURE_INPUT_IMAGE]   = AllocFrameTexture(iWidth, iHeight, 4);
@@ -27,6 +25,12 @@ MorphFBOprocessor::MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWi
 	fbo = new FrameBufferObject(iWidth, iHeight);
 	texBank.bank[TEXTURE_MORPHED_IMAGE] = fbo->Init();
 
+	fMorphRadius = 1.0f;
+	fMorphPower  = 1.0f;
+	fMorphRatio  = 1.0f;
+	bShowWireframe = false;
+
+	bOutdated = true;
 }
 
 void MorphFBOprocessor::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight)
@@ -62,7 +66,7 @@ void MorphFBOprocessor::Render()
 
 		OpenGLSubWindow::Render();
 
-		if (m_ParamsSubWindow->ShowWireframe())
+		if (bShowWireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		//glLineWidth(1);
 
@@ -70,9 +74,9 @@ void MorphFBOprocessor::Render()
 
 			glUniform1iARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("tex0"), 0);	// image
 			glUniform1iARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("tex1"), 1);  // src/dst lines
-			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRadius"), m_ParamsSubWindow->fMorphRadius);
-			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphPower"),  m_ParamsSubWindow->fMorphPower);
-			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRatio"),  m_ParamsSubWindow->fMorphRatio);
+			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRadius"), fMorphRadius);
+			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphPower"),  fMorphPower);
+			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRatio"),  fMorphRatio);
 
 				RenderTexturedQuadMesh(texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID,
 									   -m_iWidth/2.0f, -m_iHeight/2.0f, m_iWidth, m_iHeight, 0.0f, 110*float(m_iWidth)/float(m_iHeight), 110 );

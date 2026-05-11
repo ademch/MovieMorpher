@@ -89,8 +89,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	PositionMediator positionMediator;
 
-	fbo = new MorphFBOprocessor(0, 0, 800, 450);
-
 	windowToolEditor = new WarpingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.3, 0.70,0.68);
 	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
 	windowToolEditor->lambdaPointsAreVisible  = []() { return windowParams ? windowParams->PointsAreVisible() : true; };
@@ -139,7 +137,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 
 	// register mutual pointers
-	fbo->m_ParamsSubWindow        = windowParams;
 	windowToolEditor->m_ParamsSubWindow = windowParams;
 
 	timelineWindow->OnVerticalPanChange = [](Vec3 vTranslation) {	timelineTrackParams->SetVerticalTranslation(vTranslation);  };
@@ -195,10 +192,18 @@ void globaldraw()
 
 	glLoadIdentity();
 
-	fbo->Render();
+//	fbo->Render();TODO
 
 	for (auto iterWindow : liWindows)
+	{
+		if (auto wnd = dynamic_cast<WarpingToolSubWindow*>(iterWindow))
+		{
+			//if (wnd == windowToolEditor) continue;
+			wnd->CopyView(wnd);
+		}
+
 		iterWindow->Render();
+	}
 
 	Sleep(25);
 
@@ -220,7 +225,7 @@ void keyboard(unsigned char key, int x, int y)
 		if (res) break;
 	}
 
-	res = fbo->KeyboardFunc(key, x, y);
+//	res = fbo->KeyboardFunc(key, x, y);TODO
 	if (res) return;
 
 	switch (key)
@@ -242,8 +247,8 @@ void keyboard(unsigned char key, int x, int y)
 
 			if (image)
 			{
-				fbo->Reshape(0, 0, width, height);
-				fbo->TextureUpdate(width, height, image);
+//				fbo->Reshape(0, 0, width, height);TODO
+//				fbo->TextureUpdate(width, height, image);
 
 				//TextureDescriptor* texDesc = LoadTexture(width, height, image);
 				//free(image);
@@ -424,8 +429,6 @@ void WMClose()
 	// Life: Lambda functions refer to killed windows
 	for (auto* window : liWindows)
 		delete window;
-
-	delete fbo;
 
 	glFontDestroy(&font);
 

@@ -8,6 +8,10 @@ const float const_fPointsDepth   = 3;
 const float const_fPointsSize    = 12;
 const float const_fHandleRadius  = 5;
 
+#define TRANS_PIVOTRIGHT	1
+#define TRANS_PIVOT			2
+#define TRANS_PIVOTUP		3
+
 WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 										   float fBottomLeftXperc, float fBottomLeftYperc,
 										   float fWidthPerc, float fHeightPerc) :
@@ -17,77 +21,95 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 {
 	stateTransform = STATE_TRANS_IDLE;
 
-	liScalingHandles.push_back(Vecc2( 200,  200));
-	liScalingHandles.push_back(Vecc2( 200, -200));
-	liScalingHandles.push_back(Vecc2(-200, -200));
-	liScalingHandles.push_back(Vecc2(-200,  200));
+	m_iJoystickFrameWidth  = fbo->Width();
+	m_iJoystickFrameHeight = fbo->Height();
+
+	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0) );
+	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0));
+	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0));
+	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0));
 
 	ptTranslHandle = Vecc2();
-	ptRotateHandle = Vecc2(200*0.618, 0);
+	ptRotateHandle = Vecc2(m_iJoystickFrameWidth/2.0*0.618, 0);
 
 	matrImmediateVisualization = Mat4MakeIdent();
+	matrObjectOrigin2joystickBasis = Mat4MakeIdent();
 
 	hCurSpecial     = LoadCursorFromFileW(L"aero_moveProp.cur");
+
 }
 
 
 void WarpingToolSubWindow::Draw()
 {
-	MorphingToolSubWindow::Draw();
-
+	
+	// the last transformation is previewed until the mouse button is released using this matrix
+	// When the button is released matrObjectOrigin2joystickBasis is recomputed and this matrix is reset to identity
 	glMultMatrixf(&matrImmediateVisualization.m[0][0]);
 
-	glEnable(GL_LINE_STIPPLE);
-	glLineStipple(2, 0xAAAA);
-		glLineWidth(3);
-		glColor3f(0, 0.69, 0);
+	// basis 1,1,1 is transformed to joystick basis on every mouseup
+	glMultMatrixf(&matrObjectOrigin2joystickBasis.m[0][0]);
+	
+	// draw object
+	MorphingToolSubWindow::Draw();
 
-		glBegin(GL_LINE_LOOP);
-		for (auto& element : liScalingHandles) {
-			glVertex3f(element.X, element.Y, 2);
-		}
-		glEnd();
+	SetupGraphicsPipeline();
 
-		// Line from the center to rotation handle
-		glBegin(GL_LINES);
-			glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
-			glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
-		glEnd();
+		glMultMatrixf(&matrImmediateVisualization.m[0][0]);
 
-		if (stateTransform == STATE_TRANS_SCALE_PROPORTIONAL)
-		{
-			Vec2 vDirLine = VecNormalize( m_ptHandleClicked - m_ptHandlePivot );
-			Vec2 ptOnLine = m_ptHandlePivot + 1000.0*vDirLine;
-			glBegin(GL_LINES);
-				glVertex3f(m_ptHandlePivot.X,   m_ptHandlePivot.Y,   const_fPointsDepth);
-				glVertex3f(ptOnLine.X,          ptOnLine.Y,          const_fPointsDepth);
+		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(2, 0xAAAA);
+			glLineWidth(3);
+			glColor3f(0, 0.69, 0);
+
+			glBegin(GL_LINE_LOOP);
+			for (auto& element : liScalingHandles) {
+				glVertex3f(element.X, element.Y, 2);
+			}
 			glEnd();
-		}
-	glDisable(GL_LINE_STIPPLE);
 
-	// Draw handles of a rectangle
-	glPointSize(const_fPointsSize);
-	glColor3f(0.93, 0.8, 0);
-	glBegin(GL_POINTS);
-		for (auto& element : liScalingHandles) {
-			glVertex3f(element.X, element.Y, const_fPointsDepth);
-		}
-	glEnd();
+			// Line from the center to rotation handle
+			glBegin(GL_LINES);
+				glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
+				glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
+			glEnd();
 
-	glLineWidth(1);
-	DrawCircle(Vecc3(ptTranslHandle, 3), 50, 40);
-	glEnable(GL_POINT_SMOOTH);
+			if (stateTransform == STATE_TRANS_SCALE_PROPORTIONAL)
+			{
+				glLineWidth(1);
+
+				Vec2 vDirLine = VecNormalize( m_ptHandleClicked - m_ptHandlePivot );
+				Vec2 ptOnLine = m_ptHandlePivot + 10000.0*vDirLine;
+				glBegin(GL_LINES);
+					glVertex3f(m_ptHandlePivot.X,   m_ptHandlePivot.Y,   const_fPointsDepth);
+					glVertex3f(ptOnLine.X,          ptOnLine.Y,          const_fPointsDepth);
+				glEnd();
+			}
+		glDisable(GL_LINE_STIPPLE);
+
+		// Draw handles of a rectangle
 		glPointSize(const_fPointsSize);
+		glColor3f(0.93, 0.8, 0);
 		glBegin(GL_POINTS);
-			glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
+			for (auto& element : liScalingHandles) {
+				glVertex3f(element.X, element.Y, const_fPointsDepth);
+			}
 		glEnd();
 
-		glPointSize(const_fPointsSize);
-		glBegin(GL_POINTS);
-			glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
-		glEnd();
+		glLineWidth(1);
+		DrawCircle(Vecc3(ptTranslHandle, 3), 50, 40);
+		glEnable(GL_POINT_SMOOTH);
+			glPointSize(const_fPointsSize);
+			glBegin(GL_POINTS);
+				glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
+			glEnd();
 
-	glDisable(GL_POINT_SMOOTH);
+			glPointSize(const_fPointsSize);
+			glBegin(GL_POINTS);
+				glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
+			glEnd();
+
+		glDisable(GL_POINT_SMOOTH);
 
 }
 
@@ -198,8 +220,6 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 					iCorner = (i + 1) % liScalingHandles.size();
 					m_ptHandlePivotRight = liScalingHandles[iCorner];
 
-					m_ptHandleCenter = ptTranslHandle;
-
 					ptPrevPoint = Vecc2(x, y);
 
 					return true;
@@ -257,6 +277,17 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 		ptRotateHandle = Vecc2( matrImmediateVisualization*Vecc3(ptRotateHandle) );
 
 		matrImmediateVisualization = Mat4MakeIdent();
+
+		m_ptHandlePivot			= liScalingHandles[TRANS_PIVOT];
+		m_ptHandlePivotUp		= liScalingHandles[TRANS_PIVOTUP];
+		m_ptHandlePivotRight	= liScalingHandles[TRANS_PIVOTRIGHT];
+
+		matrObjectOrigin2joystickBasis = Mat4MakeTransformFromVectors(Vecc3(),
+																	  Vecc3(m_iJoystickFrameWidth, 0),
+			                                                          Vecc3(0, m_iJoystickFrameHeight),
+																	  Vecc3(ptTranslHandle),
+																	  Vecc3(m_ptHandlePivotRight - m_ptHandlePivot),
+																	  Vecc3(m_ptHandlePivotUp    - m_ptHandlePivot));
 	}
 
 	return false;
@@ -270,7 +301,6 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
 		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
 	{
-
 		SetupGraphicsPipeline();
 
 		Vec3d v3DCoords;

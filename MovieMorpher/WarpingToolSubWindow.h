@@ -24,7 +24,9 @@ public:
 	WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 						 float fBottomLeftXperc, float fBottomLeftYperc,
 						 float fWidthPerc, float fHeightPerc);
-	~WarpingToolSubWindow() {}
+	~WarpingToolSubWindow()
+	{
+	}
 
 	void Draw() override;
 
@@ -43,18 +45,24 @@ protected:
 	Vec2 ptRotateHandle;
 
 	Matr4 matrImmediateVisualization;
+	Matr4 matrObjectOrigin2joystickBasis;
+
 
 private:
 
+	// immediate named copies of the handles' coordinates
 	Vec2 m_ptHandleClicked;
 	Vec2 m_ptHandlePivot;
 	Vec2 m_ptHandlePivotUp;
 	Vec2 m_ptHandlePivotRight;
-	Vec2 m_ptHandleCenter;
 
 	Vec2 ptPrevPoint;
 
 	HCURSOR hCurSpecial;
+
+	// shortcut for fbo width and height
+	int m_iJoystickFrameWidth;
+	int m_iJoystickFrameHeight;
 
 };
 

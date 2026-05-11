@@ -70,11 +70,6 @@ void MorphFBOprocessor::ShaderEmulate()
 	const float FLOAT_EPS  = 0.001f;
 	const float P_INFINITY = 1000000.0f;
 
-	float fVotingRadius = 100;
-	float fMorphRadius = m_ParamsSubWindow->fMorphRadius;
-	float fMorphPower  = m_ParamsSubWindow->fMorphPower;
-	float fMorphRatio  = m_ParamsSubWindow->fMorphRatio;
-
 	for (auto &vPosition : mesh_listEmu)
 	{
 		int iMorphPointsCount = texBank[TEXTURE_FLOAT_BUFFER]->m_width;
@@ -91,8 +86,8 @@ void MorphFBOprocessor::ShaderEmulate()
 
 			float dist = PointDist(ptSrc, vPosition);
 			float weight = 0;
-			if (dist < fVotingRadius)
-				weight = pow(cos(dist / fVotingRadius * PI) / 2.0f + 0.5f, fMorphPower);//pow((fMorphParameterA + dist), -fMorphParameterB);
+			if (dist < fMorphRadius)
+				weight = pow(cos(dist / fMorphRadius * PI) / 2.0f + 0.5f, fMorphPower);//pow((fMorphParameterA + dist), -fMorphParameterB);
 			fTotalWeight += weight;
 			vShift = vShift + weight * (ptLerp - ptSrc);
 		}

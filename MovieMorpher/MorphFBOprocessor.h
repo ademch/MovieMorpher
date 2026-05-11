@@ -12,8 +12,6 @@ class MorphFBOprocessor : public OpenGLSubWindow
 public:
 	FrameBufferObject* fbo;
 
-	ParamsSubWindow*  m_ParamsSubWindow;
-
 	std::list<Vec2> mesh_listEmu;
 
 	MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
@@ -26,6 +24,13 @@ public:
 	void _TextureUpdate_Test(int iWidth, int iHeight, int nrChannels);
 
 	virtual bool KeyboardFunc(unsigned char key, int x, int y);
+
+	float fMorphRadius;
+	float fMorphPower;
+	float fMorphRatio;
+	bool  bShowWireframe;
+
+	bool bOutdated;
 
 protected:
 

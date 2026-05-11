@@ -6,7 +6,6 @@
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include <vector>
 #include "GLSL_Pipeline.h"
-#include "MorphFBOprocessor.h"
 #include <chrono>
 
 #include "WarpingToolSubWindow.h"
@@ -43,8 +42,6 @@ static LRESULT CALLBACK winProcUser(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 std::vector<OpenGLSubWindowWithGUI*> liWindows;
 
 GLSL_Pipeline glsl_pipeline;
-
-MorphFBOprocessor* fbo;
 
 WarpingToolSubWindow*       windowToolEditor;
 ParamsSubWindow*            windowParams;

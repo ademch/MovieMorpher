@@ -80,6 +80,8 @@ MorphingToolSubWindow::MorphingToolSubWindow(int iParentWidth, int iParentHeight
 
 	ptPrevPoint = Vecc2();
 
+	fbo = new MorphFBOprocessor(0, 0, 800, 450);
+
 }
 
 
@@ -97,7 +99,7 @@ void MorphingToolSubWindow::Draw()
 	//std::string sSelected = comboBox->GetSelected();
 	RenderTexturedQuad(texDescr->m_uiTextureID,
 				  	  -texDescr->m_width/2, -texDescr->m_height/2,
-					   texDescr->m_width, texDescr->m_height);
+					   texDescr->m_width,    texDescr->m_height);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -177,6 +179,9 @@ void MorphingToolSubWindow::Draw()
 		buttonDestination->bEnabled = true;
 	}
 
+
+	if (fbo->bOutdated)
+		ReDrawFBO();
 }
 
 
@@ -206,6 +211,8 @@ void MorphingToolSubWindow::UploadMorphingLines()
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0,1, listOutDst.size(), 1, GL_RG, GL_FLOAT, listOutDst.data());
 
 	glActiveTextureARB(GL_TEXTURE0);
+
+	fbo->bOutdated = true;
 }
 
 
@@ -543,6 +550,16 @@ bool MorphingToolSubWindow::KeyboardFunc(unsigned char key, int x, int y)
 	return res;
 }
 
+
+void MorphingToolSubWindow::ReDrawFBO()
+{
+	fbo->fMorphRadius   = m_ParamsSubWindow->fMorphRadius;
+	fbo->fMorphPower    = m_ParamsSubWindow->fMorphPower;
+	fbo->fMorphRatio    = m_ParamsSubWindow->fMorphRatio;
+	fbo->bShowWireframe = m_ParamsSubWindow->ShowWireframe();
+
+	fbo->Render();
+}
 
 bool MorphingToolSubWindow::SourcePolylineClicked()
 {

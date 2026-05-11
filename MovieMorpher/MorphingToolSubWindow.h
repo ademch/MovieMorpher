@@ -3,6 +3,7 @@
 
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include "ParamsSubWindow.h"
+#include "MorphFBOprocessor.h"
 #include "../../!!adGUI/gui_element.h"
 #include "../../!!adGUI/ComboBox.h"
 #include "../../!!adGUI/button.h"
@@ -23,7 +24,10 @@ public:
 	MorphingToolSubWindow(int iParentWidth, int iParentHeight,
 						  float fBottomLeftXperc, float fBottomLeftYperc,
 						  float fWidthPerc, float fHeightPerc);
-	~MorphingToolSubWindow() {}
+	~MorphingToolSubWindow()
+	{
+		delete fbo;
+	}
 
 	void Draw() override;
 
@@ -59,6 +63,10 @@ protected:
 	std::vector<Vec2> liSource;
 	std::vector<Vec2> liDestination;
 	Vec2 ptPrevPoint;
+
+	MorphFBOprocessor* fbo;
+
+	void ReDrawFBO();
 
 private:
 	StateInput_enum stateCurrent;
