@@ -87,8 +87,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		}
 	printf("done\n");
 
-	PositionMediator positionMediator;
-
 	windowToolEditor = new WarpingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.3, 0.70,0.68);
 	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
 	windowToolEditor->bSceneRotationAllowed = false;
@@ -105,13 +103,13 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	liWindows.push_back(windowMedia);
 
 
-	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.22, 0.62, 0.024, &positionMediator);
+	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.22, 0.62, 0.024);
 	timelineSliderWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineSliderWindow);
 
 
-	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.62, 0.15, &positionMediator);
+	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.62, 0.15);
 	timelineWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	timelineWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineWindow);
@@ -141,6 +139,8 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	timelineWindow->OnVerticalPanChange = [](Vec3 vTranslation) {	timelineTrackParams->SetVerticalTranslation(vTranslation);  };
 
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
+
+	PositionMediator::Get()->InitPos(NULL, 0.0f, 600);
 
 	VideoInit();
 
@@ -201,7 +201,7 @@ void globaldraw()
 		iterWindow->Render();
 	}
 
-	Sleep(25);
+	Sleep(20);
 
 	ToolTip::Get()->UpdateTimer();
 

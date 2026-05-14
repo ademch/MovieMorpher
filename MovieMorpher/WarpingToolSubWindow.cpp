@@ -365,7 +365,7 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 
 		if (stateTransform == STATE_TRANS_TRANSLATE)
 		{
-			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
+			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3) // todo 3 userscale
 			{
 				Matr4 matrTrans = Mat4MakeTrans( v3DCoords.X - m_ptHandleClicked.X, 
 												 v3DCoords.Y - m_ptHandleClicked.Y,

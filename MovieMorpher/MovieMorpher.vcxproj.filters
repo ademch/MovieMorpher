@@ -326,6 +326,9 @@
     <ClCompile Include="..\..\!!adGUI\TrackClip.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\!!adGUI\VideoPositionMediator.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MovieMorpher.rc">

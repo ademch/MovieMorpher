@@ -225,6 +225,7 @@
     <ClCompile Include="..\..\!!adGUI\SubWindowWithGUI.cpp" />
     <ClCompile Include="..\..\!!adGUI\TimelineTrack.cpp" />
     <ClCompile Include="..\..\!!adGUI\TrackClip.cpp" />
+    <ClCompile Include="..\..\!!adGUI\VideoPositionMediator.cpp" />
     <ClCompile Include="..\..\!!adGUI\VideoSlider.cpp" />
     <ClCompile Include="..\..\PS_SDK\libwebp-1.2.2\src\webp\webp_loader.cpp" />
     <ClCompile Include="ImageSaveLoad.cpp" />

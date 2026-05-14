@@ -14,8 +14,7 @@ const int const_iTrackCount   = 5;
 
 TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 									 float fBottomLeftXperc, float fBottomLeftYperc,
-									 float fWidthPerc, float fHeightPerc,
-									 PositionMediator* _mediator) :
+									 float fWidthPerc, float fHeightPerc) :
 				   OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 										  fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
@@ -26,17 +25,15 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 
 	m_fSliderX = 0;
 
-	mediator = _mediator;
-
 	OnSliderPosChange = [this](float fPos)
 	{
-		mediator->SetPos(this, fPos);
+		PositionMediator::Get()->SetPos(this, fPos);
 	};
 	OnSelectionChange = [this](float fSelectionStart, float fSelectionEnd)
 	{
-		mediator->SetSelection(this, fSelectionStart, fSelectionEnd);
+		PositionMediator::Get()->SetSelection(this, fSelectionStart, fSelectionEnd);
 	};
-	mediator->subscribeForPos([this](void* origin, float fVal)
+	PositionMediator::Get()->subscribeForPos([this](void* origin, float fVal)
 	{
 		if (origin != this) SetSliderPos(fVal);
 	});
@@ -60,8 +57,10 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 void TimelineSubWindow::AddClip(TrackClip* _clip)
 {
 	int iTrack = TimelineTrack::iSelected;
-	TrackClip* clip = new TrackClip(1, 5, -iTrackHeight*iTrack - iTrackPadding*iTrack +10, Width(), 20);
-	clip->SetPos(0, 100.0/4000.0);
+	TrackClip* clip = new TrackClip(1, 5, -iTrackHeight*iTrack - iTrackPadding*iTrack +10, Width()-10, 20);
+	
+	//float iDuration = mediator->Duration();
+	clip->SetPos(0, 100.0);
 
 	clip->iTrack = iTrack;
 	clip->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
@@ -144,6 +143,8 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 // OnDrag
 void TimelineSubWindow::MotionFunc(int x, int y)
 {
+	OpenGLSubWindowWithGUI::MotionFunc(x, y);
+
 	if (bMouseButtonPressed)
 	{
 		if (!bSelectionIsValid)
@@ -252,27 +253,26 @@ void TimelineSubWindow::SetSliderPos(float _val)
 
 TimelineSliderSubWindow::TimelineSliderSubWindow(int iParentWidth, int iParentHeight,
 												 float fBottomLeftXperc, float fBottomLeftYperc,
-												 float fWidthPerc, float fHeightPerc,
-												 PositionMediator* mediator) :
+												 float fWidthPerc, float fHeightPerc) :
 						 OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 												fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
 	matrSliderNonInverted = Mat4MakeIdent();
 
 	static float f = 1000;
-	videoSlider = new VideoSlider(1,0, 20, mediator);
+	videoSlider = new VideoSlider(5,0, 20);
 	videoSlider->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
-	videoSlider->OnChange = [this, mediator](float fVal)
+	videoSlider->OnChange = [this](float fVal)
 	{
-		mediator->SetPos(videoSlider, fVal);
+		PositionMediator::Get()->SetPos(videoSlider, fVal);
 	};
-	mediator->subscribeForPos([this](void* origin, float fVal)
+	PositionMediator::Get()->subscribeForPos([this](void* origin, float fVal)
 	{
 		if (origin != videoSlider) videoSlider->SetPos(fVal);
 	});
-	mediator->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iStartSec, unsigned int _iEndSec)
+	PositionMediator::Get()->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iEndSec)
 	{
-		if (origin != videoSlider) videoSlider->SetPosInit(fVal, _iStartSec, _iEndSec);
+		if (origin != videoSlider) videoSlider->SetPosInit(fVal, _iEndSec);
 	});
 	liGUI_Elements.push_back(videoSlider);
 
@@ -283,7 +283,7 @@ void TimelineSliderSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iW
 {
 	OpenGLSubWindowWithGUI::Reshape(iBottomLeftX, iBottomLeftY, iWidth, iHeight);
 
-	videoSlider->Resize(iWidth-2, iHeight);
+	videoSlider->Resize(iWidth-10, iHeight);
 }
 
 

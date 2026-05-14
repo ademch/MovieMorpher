@@ -20,8 +20,7 @@ class TimelineSliderSubWindow : public OpenGLSubWindowWithGUI
 public:
 	TimelineSliderSubWindow(int iParentWidth, int iParentHeight,
 							float fBottomLeftXperc, float fBottomLeftYperc,
-							float fWidthPerc, float fHeightPerc,
-							PositionMediator* mediator);
+							float fWidthPerc, float fHeightPerc);
 	~TimelineSliderSubWindow() {}
 
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) override;
@@ -62,8 +61,7 @@ class TimelineSubWindow : public OpenGLSubWindowWithGUI
 public:
 	TimelineSubWindow(int iParentWidth, int iParentHeight,
 					  float fBottomLeftXperc, float fBottomLeftYperc,
-					  float fWidthPerc, float fHeightPerc,
-					  PositionMediator* _mediator);
+					  float fWidthPerc, float fHeightPerc);
 	~TimelineSubWindow() {}
 
 	std::function<void(float)>        OnSliderPosChange;
@@ -107,8 +105,6 @@ protected:
 	float GetSliderValue();
 	float GetSelectionStartValue();
 	float GetSelectionEndValue();
-
-	PositionMediator* mediator;
 
 	//std::vector<GUI_Element*> liTracks;
 
