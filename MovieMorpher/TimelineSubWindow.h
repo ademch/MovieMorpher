@@ -4,8 +4,6 @@
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include "../../!!adGUI/HorScrollBar.h"
 #include "../../!!adGUI/VideoSlider.h"
-#include "../../!!adGUI/button.h"
-#include <vector>
 #include "../../!!adGUI/VideoPositionMediator.h"
 #include "../../!!adGUI/TimelineTrack.h"
 #include "../../!!adGUI/TrackClip.h"
@@ -13,12 +11,6 @@
 
 class TimelineSliderSubWindow : public OpenGLSubWindowWithGUI
 {
-	VideoSlider*  videoSlider;
-	
-	Matr4 matrSliderNonInverted;
-
-	int iBorder;
-
 public:
 	TimelineSliderSubWindow(int iParentWidth, int iParentHeight,
 							float fBottomLeftXperc, float fBottomLeftYperc,
@@ -41,6 +33,13 @@ public:
 		matrSliderNonInverted = _matrUserScale;
 	}
 
+private:
+
+	int iBorder;
+
+	Matr4 matrSliderNonInverted;
+
+	VideoSlider*  videoSlider;
 };
 
 
@@ -98,7 +97,7 @@ protected:
 
 	float m_fSliderPos01;
 
-	bool bSelectionIsValid;
+	bool  bSelectionIsValid;
 	float m_fSelectionStartX0_1;
 	float m_fSelectionEndX0_1;
 

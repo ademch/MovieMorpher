@@ -2,8 +2,6 @@
 #include "TimelineSubWindow.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 #include "../../!!adGUI/button.h"
-#include "../../!!adGUI/fps.h"
-#include "GLSL_Pipeline.h"
 #include "../../!!adGlobals/glut/glut.h"
 #include "../../!!adExtensions/extensions.h"
 
@@ -25,7 +23,7 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	matrSliderNonInverted = Mat4MakeIdent();
 
 	m_fSliderPos01 = 0;
-	iBorder      = 5;
+	iBorder        = 5;
 
 	OnSliderPosChange = [this](float fPos)
 	                    {  PositionMediator::Get()->SetPos(this, fPos); };
@@ -55,11 +53,11 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 void TimelineSubWindow::AddClip(TrackClip* _clip)
 {
 	int iTrack = TimelineTrack::iSelected;
-	TrackClip* clip = new TrackClip(1,
-		                            iBorder,
-		                            -iTrackHeight*iTrack - iTrackPadding*iTrack +10,
-									Width(),
-		                            20);
+	TrackClip* clip = new TrackClip(1,													// id
+		                            iBorder,											// px
+		                            -iTrackHeight*iTrack - iTrackPadding*iTrack +10,	// py
+									Width(),											// width
+		                            20);												// height
 	
 	//float iDuration = mediator->Duration();
 	clip->SetAttr(0, 100.0);
@@ -143,7 +141,8 @@ void TimelineSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 // OnClick
 bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 {
-	bool bResult = OpenGLSubWindowWithGUI::MouseFunc(button, state, x, y);
+	// here go tracks and clips
+	if (OpenGLSubWindowWithGUI::MouseFunc(button, state, x, y)) return true;
 
 	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
 		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
@@ -180,7 +179,7 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 
 	bMouseButtonPressed = false;
 
-	return bResult;
+	return false;
 }
 
 // OnDrag

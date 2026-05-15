@@ -3,6 +3,7 @@
 
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include "TimelineSubWindow.h"
+#include "../../!!adGUI/label.h"
 
 
 class MediaSubWindow : public OpenGLSubWindowWithGUI
@@ -18,11 +19,14 @@ public:
 		windowTimeLine = wnd;
 	}
 
+	void RenderGUI() override;
+
 protected:
 
 	bool AddTrackPicture();
 
 	TimelineSubWindow* windowTimeLine;
+	Label* labelPlayhead;
 
 private:
 

@@ -2,7 +2,6 @@
 #include "MediaSubWindow.h"
 #include "GLSL_Pipeline.h"
 #include "../../!!adGUI/button.h"
-#include "../../!!adGUI/label.h"
 #include "../../!!adExtensions/extensions.h"
 #include "../../!!adGUI/TrackClip.h"
 
@@ -60,10 +59,10 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(buttonImg);
 
-	Label* label;
-	label = new Label("00:00:00.234", -300, -40, 12 );
-	label->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	liGUI_Elements.push_back(label);
+	labelPlayhead = new Label("00:00:00.234", -301, -40, 11.9f);
+	labelPlayhead->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	labelPlayhead->vColor = Vecc4(0.1f, 0.7f, 0.1f, 1.0f);
+	liGUI_Elements.push_back(labelPlayhead);
 
 	buttonImg = new ButtonImage("", -80, 20, 32);
 	buttonImg->LoadImg("Icons\\Image9.bmp");
@@ -90,3 +89,21 @@ bool MediaSubWindow::AddTrackPicture()
 
 
 
+void MediaSubWindow::RenderGUI()
+{
+	PositionMediator* mediator = PositionMediator::Get();
+
+	int hours   = int(mediator->Pos01()*mediator->Duration())/3600;
+	int minutes = int(mediator->Pos01()*mediator->Duration())/60;
+	int seconds = int(mediator->Pos01()*mediator->Duration())%60;
+	
+	double intpart;
+	int milliseconds = int(modf(mediator->Pos01()*mediator->Duration(), &intpart)*1000);
+
+	static char buf[256];
+	snprintf(buf, sizeof(buf), "%02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
+
+	labelPlayhead->_text = buf;
+
+	OpenGLSubWindowWithGUI::RenderGUI();
+}
