@@ -11,7 +11,7 @@
 const int iTrackHeight  = 40;
 const int iTrackPadding = 10;
 const int const_iTrackCount   = 5;
-const int iBorder             = 5;
+
 
 TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 									 float fBottomLeftXperc, float fBottomLeftYperc,
@@ -24,24 +24,24 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	
 	matrSliderNonInverted = Mat4MakeIdent();
 
-	m_fSliderX = 0;
+	m_fSliderPos01 = 0;
+	iBorder      = 5;
 
 	OnSliderPosChange = [this](float fPos)
 	                    {  PositionMediator::Get()->SetPos(this, fPos); };
 	OnSelectionChange = [this](float fSelectionStart, float fSelectionEnd)
 	                    { PositionMediator::Get()->SetSelection(this, fSelectionStart, fSelectionEnd); };
-	PositionMediator::Get()->subscribeForPos([this](void* origin, float fVal) { if (origin != this) SetSliderPos(fVal); });
-	//mediator->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iStartSec, unsigned int _iEndSec)
-	//{
-	//	if (origin != videoSlider) SetPosInit(fVal, _iStartSec, _iEndSec);
-	//});
+	PositionMediator::Get()->subscribeForPos([this](void* origin, float fVal)
+						{ if (origin != this) SetSliderPos0_1(fVal); });
+	PositionMediator::Get()->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iDuration)
+						{ if (origin != this) SetSliderPos0_1(fVal); });
 
 	for (int16_t iTrack = 1; iTrack <= const_iTrackCount; iTrack++)
 	{
 		TimelineTrack*  track = new TimelineTrack(iTrack,
 			                                      iBorder,
 			                                      -iTrackHeight*iTrack - iTrackPadding*iTrack,
-			                                      m_iWidth-iBorder*2,
+			                                      Width(),
 			                                      iTrackHeight);
 		track->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 		liGUI_Elements.push_back(track);
@@ -58,39 +58,74 @@ void TimelineSubWindow::AddClip(TrackClip* _clip)
 	TrackClip* clip = new TrackClip(1,
 		                            iBorder,
 		                            -iTrackHeight*iTrack - iTrackPadding*iTrack +10,
-		                            Width()-iBorder*2,
+									Width(),
 		                            20);
 	
 	//float iDuration = mediator->Duration();
-	clip->SetPos(0, 100.0);
+	clip->SetAttr(0, 100.0);
 
 	clip->iTrack = iTrack;
 	clip->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 	liGUI_Elements.push_back(clip);
 
-	clip->Reposition(-Width()/2 + clip->iHPosShift, Height()/2 + clip->iVPosShift);
+	clip->Reposition(-Width()/2, Height()/2 + clip->iVPosShift);
 }
 
 
 // Called from outside
-void TimelineSubWindow::SetSliderPos(float _val)
+void TimelineSubWindow::SetSliderPos0_1(float _val)
 {
-	m_fSliderX = (_val - 0.5)*(m_iWidth-iBorder*2);
+	m_fSliderPos01 = _val;
 }
 
-float TimelineSubWindow::GetSliderValue()
-{
-	return (m_fSliderX + (m_iWidth-iBorder*2)/2.0) / (m_iWidth-iBorder*2); 
-}
 
-float TimelineSubWindow::GetSelectionStartValue()
+void TimelineSubWindow::Draw()
 {
-	return (m_fSelectionStartX + (m_iWidth-iBorder*2)/2.0) / (m_iWidth-iBorder*2);
-}
+	for (auto iterElement : liGUI_Elements)
+	{
+		// propagate common values
+		auto* track = dynamic_cast<GUI_ElementResizable*>(iterElement);
+		track->matrSliderNonInverted = Mat4MakeTrans(0, -vUserSceneTranslation.Y, 0)*matrSliderNonInverted; // minus to get nonInverted vUserSceneTranslation
 
-float TimelineSubWindow::GetSelectionEndValue()
-{
-	return (m_fSelectionEndX + (m_iWidth-iBorder*2)/2.0) / (m_iWidth-iBorder*2);
+		iterElement->Draw();
+	}
+
+
+	SetupGraphicsPipelineWithIdentityModelViewMatrix();
+
+	// matrUserScale contains transformation from HorrScrollBar,
+	// while vUserSceneTranslation contains vertical scroll which we do not want
+	glMultMatrixf(&matrUserScale.m[0][0]);
+
+	// draw position line
+	{
+		float m_fSliderX = (m_fSliderPos01 - 0.5)*Width();
+
+		glColor3f(1,0,0);
+
+		glLineWidth(1);
+		glLine( m_fSliderX, - m_iHeight/2,
+				m_fSliderX,   m_iHeight/2, 20);
+	}
+
+	// Draw selection moir
+	if (bSelectionIsValid)
+	{
+		float fSelectionStartX = (m_fSelectionStartX0_1 - 0.5) * Width();
+		float fSelectionEndX   = (m_fSelectionEndX0_1   - 0.5) * Width();
+
+		glColor4f(1,1,1, 0.2);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+			glQuad( fSelectionStartX,
+				   -m_iHeight/2,
+				    fSelectionEndX - fSelectionStartX,
+				    m_iHeight,
+				    10);
+
+		glDisable(GL_BLEND);
+	}
 }
 
 
@@ -101,7 +136,7 @@ void TimelineSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 	for (auto* iterElement : liGUI_Elements)
 	{
 		auto* track = dynamic_cast<GUI_ElementResizable*>(iterElement);
-		track->Resize(iWidth - iBorder*2, m_iHeight/3.0);
+		track->Resize(Width(), m_iHeight/3.0);
 	}
 }
 
@@ -134,7 +169,7 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 				iStartDragX = x;
 				iStartDragY = y;
 
-				m_fSelectionStartX = (matrSliderNonInverted * Vecc3(v3DCoords.X)).X;
+				m_fSelectionStartX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2.0) / Width();
 
 				//if (OnChange != NULL) OnChange(Mat4MakeTrans(vUserSceneTranslation.X, 0, 0)*matrUserScale);
 
@@ -165,12 +200,11 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 			Vec3d v3DCoords;
 			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-			m_fSliderX = m_fSelectionStartX;
-			if (OnSliderPosChange != NULL) OnSliderPosChange( GetSliderValue() );
+			m_fSliderPos01 = m_fSelectionStartX0_1;
+			if (OnSliderPosChange != NULL) OnSliderPosChange( m_fSliderPos01 );
 
-			m_fSelectionEndX = (matrSliderNonInverted * Vecc3(v3DCoords.X)).X;
-			if (OnSelectionChange != NULL) OnSelectionChange( GetSelectionStartValue(), GetSelectionEndValue() );
-
+			m_fSelectionEndX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2.0) / Width();
+			if (OnSelectionChange != NULL) OnSelectionChange( m_fSelectionStartX0_1, m_fSelectionEndX0_1 );
 	}
 
 }
@@ -206,46 +240,6 @@ bool TimelineSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
 }
 
 
-void TimelineSubWindow::Draw()
-{
-	for (auto iterElement : liGUI_Elements)
-	{
-		// propagate common values
-		auto* track = dynamic_cast<GUI_ElementResizable*>(iterElement);
-		track->matrSliderNonInverted = Mat4MakeTrans(0, -vUserSceneTranslation.Y, 0)*matrSliderNonInverted; // minus to get nonInverted vUserSceneTranslation
-		
-		iterElement->Draw();
-	}
-
-
-	SetupGraphicsPipelineWithIdentityModelViewMatrix();
-
-	// matrUserScale contains transformation from HorrScrollBar,
-	// while vUserSceneTranslation contains vertical scroll which we do not want
-	glMultMatrixf(&matrUserScale.m[0][0]);
-
-		// draw position line
-		{
-			glColor3f(1,0,0);
-
-			glLineWidth(1);
-			glLine( m_fSliderX, - m_iHeight/2,
-					m_fSliderX,   m_iHeight/2, 5);
-		}
-
-		// Draw selection moir
-		if (bSelectionIsValid)
-		{
-			glColor4f(1,1,1, 0.2);
-			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-				glQuad(m_fSelectionStartX, - m_iHeight/2, m_fSelectionEndX - m_fSelectionStartX, m_iHeight, 10);
-
-			glDisable(GL_BLEND);
-		}
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -257,14 +251,16 @@ TimelineSliderSubWindow::TimelineSliderSubWindow(int iParentWidth, int iParentHe
 {
 	matrSliderNonInverted = Mat4MakeIdent();
 
+	iBorder = 5;
+
 	static float f = 1000;
-	videoSlider = new VideoSlider(5,0, 20);
+	videoSlider = new VideoSlider(iBorder,0, 20);
 	videoSlider->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
 	videoSlider->OnChange = [this](float fVal)
 							{ PositionMediator::Get()->SetPos(videoSlider, fVal); };
 	PositionMediator::Get()->subscribeForPos([this](void* origin, float fVal)
 	{
-		if (origin != videoSlider) videoSlider->SetPos(fVal);
+		if (origin != videoSlider) videoSlider->SetPos0_1(fVal);
 	});
 	PositionMediator::Get()->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iEndSec)
 	{
@@ -279,7 +275,7 @@ void TimelineSliderSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iW
 {
 	OpenGLSubWindowWithGUI::Reshape(iBottomLeftX, iBottomLeftY, iWidth, iHeight);
 
-	videoSlider->Resize(iWidth-iBorder*2, iHeight);
+	videoSlider->Resize(Width(), iHeight);
 }
 
 
@@ -291,7 +287,7 @@ void TimelineSliderSubWindow::Draw()
 	for (auto iterElement : liGUI_Elements)
 		iterElement->Draw();
 
-	//printf("Val=%f\n", videoSlider->GetValue());
+	//printf("Val=%f\n", videoSlider->GetPos01());
 }
 
 
@@ -304,7 +300,7 @@ TimelineScrollBarSubWindow::TimelineScrollBarSubWindow(int iParentWidth, int iPa
 						    OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 												   fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
-	scrollBar = new HorScrollBar("", 1,1, int(iParentWidth*fWidthPerc)-2, 15);
+	scrollBar = new HorScrollBar("", 1,1);
 	scrollBar->SetAlignment(HALIGN_LEFT, VALIGN_BOTTOM);
 	liGUI_Elements.push_back(scrollBar);
 
@@ -316,7 +312,6 @@ void TimelineScrollBarSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int
 	OpenGLSubWindowWithGUI::Reshape(iBottomLeftX, iBottomLeftY, iWidth, iHeight);
 
 	scrollBar->Resize(iWidth-2, iHeight);
-
 }
 
 
@@ -331,7 +326,7 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 {
 	//OnChange = [this, mediator](float fVal)
 	//{
-	//	mediator->SetSliderPos(this, fVal);
+	//	mediator->SetSliderPos0_1(this, fVal);
 	//};
 	//mediator->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iStartSec, unsigned int _iEndSec)
 	//{

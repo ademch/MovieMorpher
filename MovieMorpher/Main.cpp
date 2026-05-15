@@ -120,14 +120,13 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	liWindows.push_back(timelineTrackParams);
 
 
-	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.05, 0.62, 0.02);
-	timelineScrollBarWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
+	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.048, 0.62, 0.022);
+	timelineScrollBarWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE );
 	timelineScrollBarWindow->scrollBar->OnChange = [](Matr4 matrUserScale)
 	{
 		timelineSliderWindow->SetZoom(matrUserScale);
 		timelineWindow->SetZoom(matrUserScale);
 	};
-	timelineScrollBarWindow->bRenderGUIdecoration = false;
 	timelineScrollBarWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineScrollBarWindow);
 
@@ -140,7 +139,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
 
-	PositionMediator::Get()->InitPos(NULL, 0.0f, 600);
+	PositionMediator::Get()->Init(NULL, 0.0f, 600);
 
 	VideoInit();
 

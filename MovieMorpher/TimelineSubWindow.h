@@ -17,11 +17,15 @@ class TimelineSliderSubWindow : public OpenGLSubWindowWithGUI
 	
 	Matr4 matrSliderNonInverted;
 
+	int iBorder;
+
 public:
 	TimelineSliderSubWindow(int iParentWidth, int iParentHeight,
 							float fBottomLeftXperc, float fBottomLeftYperc,
 							float fWidthPerc, float fHeightPerc);
 	~TimelineSliderSubWindow() {}
+
+	int Width()  { return m_iWidth - iBorder*2;  }	// HIDES parent implementation
 
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) override;
 
@@ -64,6 +68,8 @@ public:
 					  float fWidthPerc, float fHeightPerc);
 	~TimelineSubWindow() {}
 
+	int Width()  { return m_iWidth - iBorder*2;  }	// HIDES parent implementation
+
 	std::function<void(float)>        OnSliderPosChange;
 	std::function<void(float, float)> OnSelectionChange;
 	std::function<void(Vec3)>         OnVerticalPanChange;
@@ -78,7 +84,7 @@ public:
 	bool MouseFunc(int button, int state, int x, int y) override;
 	void MotionFunc(int x, int y) override;
 
-	void SetSliderPos(float _val);
+	void SetSliderPos0_1(float _val);
 
 	void SetZoom(Matr4 _matrUserScale)
 	{
@@ -90,11 +96,11 @@ public:
 
 protected:
 
-	float m_fSliderX;
+	float m_fSliderPos01;
 
 	bool bSelectionIsValid;
-	float m_fSelectionStartX;
-	float m_fSelectionEndX;
+	float m_fSelectionStartX0_1;
+	float m_fSelectionEndX0_1;
 
 	int iVerticalPan;
 	Matr4 matrSliderNonInverted;
@@ -102,9 +108,7 @@ protected:
 	bool bMouseButtonPressed;
 	int  iStartDragX, iStartDragY;
 
-	float GetSliderValue();
-	float GetSelectionStartValue();
-	float GetSelectionEndValue();
+	int iBorder;
 
 	//std::vector<GUI_Element*> liTracks;
 
