@@ -8,6 +8,8 @@
 #include "../../!!adGUI/TimelineTrack.h"
 #include "../../!!adGUI/TrackClip.h"
 
+extern const int g_iClipPadding;
+
 
 class TimelineSliderSubWindow : public OpenGLSubWindowWithGUI
 {
@@ -109,7 +111,7 @@ protected:
 
 	int iBorder;
 
-	//std::vector<GUI_Element*> liTracks;
+	std::vector<TrackClip*> liTracks;
 
 };
 

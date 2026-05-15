@@ -87,34 +87,34 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		}
 	printf("done\n");
 
-	windowToolEditor = new WarpingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.3, 0.70,0.68);
+	windowToolEditor = new WarpingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.35, 0.70,0.63);
 	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
 	windowToolEditor->bSceneRotationAllowed = false;
 	liWindows.push_back(windowToolEditor);
 
-	windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.3, 0.27,0.68);
+	windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.35, 0.27,0.63);
 	sprintf(windowParams->m_strCaption, "%s", "Params");
 	windowParams->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	liWindows.push_back(windowParams);
 
-	windowMedia = new MediaSubWindow(iAppWndWidth, iAppWndHeight, 0.01, 0.02, 0.98, 0.26);
+	windowMedia = new MediaSubWindow(iAppWndWidth, iAppWndHeight, 0.01, 0.02, 0.98, 0.31);
 	//sprintf(windowMedia->m_strCaption, "%s", "Timeline");
 	windowMedia->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	liWindows.push_back(windowMedia);
 
 
-	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.22, 0.62, 0.024);
+	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.27, 0.62, 0.024);
 	timelineSliderWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineSliderWindow);
 
 
-	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.62, 0.15);
+	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.62, 0.2);
 	timelineWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	timelineWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineWindow);
 
-	timelineTrackParams = new TrackParamsSubWindow(iAppWndWidth, iAppWndHeight, 0.02, 0.07, 0.06, 0.15);
+	timelineTrackParams = new TrackParamsSubWindow(iAppWndWidth, iAppWndHeight, 0.02, 0.07, 0.06, 0.2);
 	timelineTrackParams->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE | GUI_DECORATION_FALSE);
 	timelineTrackParams->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineTrackParams);

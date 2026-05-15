@@ -6,9 +6,10 @@
 #include "../../!!adExtensions/extensions.h"
 
 
-const int iTrackHeight  = 40;
-const int iTrackPadding = 10;
-const int const_iTrackCount   = 5;
+const int g_iTrackHeight  = 40;
+const int g_iTrackPadding = 10;
+const int g_iClipPadding  = 10;
+const int g_iTrackCount   = 5;
 
 
 TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
@@ -34,13 +35,13 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	PositionMediator::Get()->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iDuration)
 						{ if (origin != this) SetSliderPos0_1(fVal); });
 
-	for (int16_t iTrack = 1; iTrack <= const_iTrackCount; iTrack++)
+	for (int16_t iTrack = 1; iTrack <= g_iTrackCount; iTrack++)
 	{
 		TimelineTrack*  track = new TimelineTrack(iTrack,
 			                                      iBorder,
-			                                      -iTrackHeight*iTrack - iTrackPadding*iTrack,
+			                                      -g_iTrackHeight*iTrack - g_iTrackPadding*iTrack,
 			                                      Width(),
-			                                      iTrackHeight);
+			                                      g_iTrackHeight);
 		track->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 		liGUI_Elements.push_back(track);
 		// shortcut
@@ -53,11 +54,11 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 void TimelineSubWindow::AddClip(TrackClip* _clip)
 {
 	int iTrack = TimelineTrack::iSelected;
-	TrackClip* clip = new TrackClip(1,													// id
-		                            iBorder,											// px
-		                            -iTrackHeight*iTrack - iTrackPadding*iTrack +10,	// py
-									Width(),											// width
-		                            20);												// height
+	TrackClip* clip = new TrackClip(liTracks.size(),													// id
+		                            iBorder,															// x
+									-g_iTrackHeight*iTrack - g_iTrackPadding*iTrack + g_iClipPadding,	// y
+									Width(),															// width
+		                            20);																// height
 	
 	//float iDuration = mediator->Duration();
 	clip->SetAttr(0, 100.0);
@@ -65,8 +66,11 @@ void TimelineSubWindow::AddClip(TrackClip* _clip)
 	clip->iTrack = iTrack;
 	clip->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 	liGUI_Elements.push_back(clip);
+	
+	TrackClip::iSelected = clip->id;
+	liTracks.push_back(clip);
 
-	clip->Reposition(-Width()/2, Height()/2 + clip->iVPosShift);
+	clip->Reposition(-m_iWidth/2 + clip->iHPosShift, m_iHeight/2 + clip->iVPosShift);
 }
 
 
@@ -218,7 +222,7 @@ bool TimelineSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
 	{
 		if (delta < 0)
 		{
-			if (m_iHeight + iVerticalPan < (iTrackHeight + iTrackPadding)*const_iTrackCount + 10)
+			if (m_iHeight + iVerticalPan < (g_iTrackHeight + g_iTrackPadding)*g_iTrackCount + 10)
 				iVerticalPan += 10;
 		}
 		else
@@ -332,9 +336,9 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 	//	if (origin != videoSlider) SetPosInit(fVal, _iStartSec, _iEndSec);
 	//});
 
-	for (int16_t iTrack = 1; iTrack <= const_iTrackCount; iTrack++)
+	for (int16_t iTrack = 1; iTrack <= g_iTrackCount; iTrack++)
 	{
-		ButtonImage* buttonImg = new ButtonImage("", -60, -iTrackHeight*iTrack - iTrackPadding*iTrack + 4, 32);
+		ButtonImage* buttonImg = new ButtonImage("", -60, -g_iTrackHeight*iTrack - g_iTrackPadding*iTrack + 4, 32);
 		std::string filename = "Icons\\Number" +  std::to_string(iTrack) + ".bmp";
 		buttonImg->LoadImg(filename.c_str());
 		buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_TOP);
@@ -343,9 +347,9 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 		liGUI_Elements.push_back(buttonImg);
 	}
 
-	for (int16_t iTrack = 1; iTrack <= const_iTrackCount; iTrack++)
+	for (int16_t iTrack = 1; iTrack <= g_iTrackCount; iTrack++)
 	{
-		ButtonImage* buttonImg = new ButtonImage("", -20, -iTrackHeight*iTrack - iTrackPadding*iTrack + 4, 12);
+		ButtonImage* buttonImg = new ButtonImage("", -20, -g_iTrackHeight*iTrack - g_iTrackPadding*iTrack + 4, 12);
 		buttonImg->LoadImg("Icons\\Image12.bmp");
 		buttonImg->LoadImgDownState("Icons\\Image13.bmp");
 		buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_TOP);
