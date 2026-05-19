@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "MediaSubWindow.h"
 #include "GLSL_Pipeline.h"
-#include "../../!!adGUI/button.h"
 #include "../../!!adExtensions/extensions.h"
 #include "../../!!adGUI/TrackClip.h"
+#include "../../!!adVideo/FFMS_Video.h"
 
 
 extern GLSL_Pipeline glsl_pipeline;
@@ -26,44 +26,68 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	//listBox->items.push_back("Eight");
 	//liGUI_Elements.push_back(listBox);
 
+	SoundAL::Initialize();
+	SoundAL::PrintSndInfo();
+
+	video = new FFMS_Video();
+	video->Initialize();
+
+	video->LoadMPEG("E:\\Or\\MovieMorpher\\Debug\\output00.mp4");
+
 	windowTimeLine = NULL;
 
-	ButtonImage* buttonImg;
-	buttonImg = new ButtonImage("", -300, 10, 30);
-	buttonImg->LoadImg("Icons\\Image4.bmp");
-	buttonImg->strHint = "Play selection in loop";
-	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	liGUI_Elements.push_back(buttonImg);
+	PushButtonImage* pushButtonImg;
+	pushButtonImg = new PushButtonImage("PlayLoop", -300, 10, 30);
+	pushButtonImg->LoadImg("Icons\\Image4.bmp");
+	pushButtonImg->strHint = "Play selection in loop";
+	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
 
-	buttonImg = new ButtonImage("", -266, 10, 30);
-	buttonImg->LoadImg("Icons\\Image7.bmp");
-	buttonImg->strHint = "Play from start to end";
-	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	liGUI_Elements.push_back(buttonImg);
+	liButtons.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
 
-	buttonImg = new ButtonImage("", -232, 10, 30);
-	buttonImg->LoadImg("Icons\\Image6.bmp");
-	buttonImg->strHint = "Pause playback";
-	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	liGUI_Elements.push_back(buttonImg);
+	pushButtonImg = new PushButtonImage("PlayS2E", -266, 10, 30);
+	pushButtonImg->LoadImg("Icons\\Image7.bmp");
+	pushButtonImg->strHint = "Play from start to end";
+	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
 
-	buttonImg = new ButtonImage("", -198, 10, 30);
-	buttonImg->LoadImg("Icons\\Image5.bmp");
-	buttonImg->strHint = "Play from cursor";
-	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	liGUI_Elements.push_back(buttonImg);
+	liButtons.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
 
-	buttonImg = new ButtonImage("", -164, 10, 30);
-	buttonImg->LoadImg("Icons\\Image8.bmp");
-	buttonImg->strHint = "Stop playback";
-	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	liGUI_Elements.push_back(buttonImg);
+	pushButtonImg = new PushButtonImage("Pause", -232, 10, 30);
+	pushButtonImg->LoadImg("Icons\\Image6.bmp");
+	pushButtonImg->strHint = "Pause playback";
+	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
+
+	liButtons.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
+
+	pushButtonImg = new PushButtonImage("PlayFcursor", -198, 10, 30);
+	pushButtonImg->LoadImg("Icons\\Image5.bmp");
+	pushButtonImg->strHint = "Play from cursor";
+	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
+
+	liButtons.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
+
+	pushButtonImg = new PushButtonImage("Stop", -164, 10, 30);
+	pushButtonImg->LoadImg("Icons\\Image8.bmp");
+	pushButtonImg->strHint = "Stop playback";
+	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
+
+	liButtons.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
 
 	labelPlayhead = new Label("00:00:00.234", -301, -40, 11.9f);
 	labelPlayhead->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	labelPlayhead->vColor = Vecc4(0.1f, 0.7f, 0.1f, 1.0f);
 	liGUI_Elements.push_back(labelPlayhead);
 
+	ButtonImage* buttonImg;
 	buttonImg = new ButtonImage("", -80, 20, 32);
 	buttonImg->LoadImg("Icons\\Image9.bmp");
 	buttonImg->strHint = "Add video track...";
@@ -88,7 +112,6 @@ bool MediaSubWindow::AddTrackPicture()
 }
 
 
-
 void MediaSubWindow::RenderGUI()
 {
 	PositionMediator* mediator = PositionMediator::Get();
@@ -106,4 +129,36 @@ void MediaSubWindow::RenderGUI()
 	labelPlayhead->_text = buf;
 
 	OpenGLSubWindowWithGUI::RenderGUI();
+}
+
+
+bool MediaSubWindow::Push(PushButtonImage* target)
+{
+	if (target->bPushed) return true;
+	
+	for (auto* b : liButtons)
+		b->bPushed = false;
+
+	if (target->_text == "PlayLoop")
+	{
+		target->bPushed = true;
+	}
+	if (target->_text == "PlayS2E")
+	{
+		target->bPushed = true;
+	}
+	if (target->_text == "Pause")
+	{
+		target->bPushed = true;
+	}
+	if (target->_text == "PlayFcursor")
+	{
+		target->bPushed = true;
+	}
+	if (target->_text == "Stop")
+	{
+
+	}
+
+	return true;
 }

@@ -12,7 +12,6 @@
 #include "ParamsSubWindow.h"
 #include "MediaSubWindow.h"
 #include "TimelineSubWindow.h"
-
 #include "../../!!adGlobals/globalToolTip.h"
 
 

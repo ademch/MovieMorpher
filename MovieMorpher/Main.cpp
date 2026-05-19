@@ -8,7 +8,6 @@
 #include <windowsx.h>
 #include "../../!!adExtensions/extensions.h"
 #include "ImageSaveLoad.h"
-#include "VideoSaveLoad.h"
 #include "../../!!adGlobals/globalToolTip.h"
 #include "../../!!adGUI/VideoPositionMediator.h"
 
@@ -19,6 +18,9 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 {
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	GLfloat light_position[] = { 100.0, 100.0, 100.0, 0.0 };
+
+	//freopen("log.txt", "w", stdout);
+	//freopen("log.txt", "w", stderr);
 
 	//инициализация драйвера OpenGL
 	glutInit(&argc, (char**)argv);
@@ -137,11 +139,9 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	timelineWindow->OnVerticalPanChange = [](Vec3 vTranslation) {	timelineTrackParams->SetVerticalTranslation(vTranslation);  };
 
-	ShowWindow(GetConsoleWindow(), SW_HIDE);
+	//ShowWindow(GetConsoleWindow(), SW_HIDE);
 
 	PositionMediator::Get()->Init(NULL, 0.0f, 600);
-
-	VideoInit();
 
 	ToolTip::Get();
 
@@ -200,7 +200,7 @@ void globaldraw()
 		iterWindow->Render();
 	}
 
-	Sleep(20);
+	Sleep(10);
 
 	ToolTip::Get()->UpdateTimer();
 

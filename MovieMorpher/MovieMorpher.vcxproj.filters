@@ -70,6 +70,12 @@
     <Filter Include="Header Files\FBOs">
       <UniqueIdentifier>{998dc4b3-018a-4e2a-ae36-ba63505474fe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\AudioVideo">
+      <UniqueIdentifier>{1a955207-2e43-4382-a3bf-3c829918b2f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\AudioVideo">
+      <UniqueIdentifier>{decaea2a-70d9-48b9-a041-92b6f569b527}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -156,9 +162,6 @@
     <ClInclude Include="..\..\!!adGUI\gui_element.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="VideoSaveLoad.h">
-      <Filter>Header Files\Main</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\!!adGUI\SubWindowWithGUI.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -200,6 +203,18 @@
     </ClInclude>
     <ClInclude Include="..\..\!!adGUI\gui_elementResizable.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\!!adVideo\SoundAL.h">
+      <Filter>Header Files\AudioVideo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\!!adVideo\FFMS_VIdeo.h">
+      <Filter>Header Files\AudioVideo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\!!adVideo\VideoThread.h">
+      <Filter>Header Files\AudioVideo</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\!!adVideo\AudioThread.h">
+      <Filter>Header Files\AudioVideo</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -281,9 +296,6 @@
     <ClCompile Include="ImageSaveLoad.cpp">
       <Filter>Source Files\Main</Filter>
     </ClCompile>
-    <ClCompile Include="VideoSaveLoad.cpp">
-      <Filter>Source Files\Main</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\!!adGUI\SubWindowWithGUI.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
@@ -328,6 +340,18 @@
     </ClCompile>
     <ClCompile Include="..\..\!!adGUI\VideoPositionMediator.cpp">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\!!adVideo\FFMS_Video.cpp">
+      <Filter>Source Files\AudioVideo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\!!adVideo\SoundAL.cpp">
+      <Filter>Source Files\AudioVideo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\!!adVideo\VideoThread.cpp">
+      <Filter>Source Files\AudioVideo</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\!!adVideo\AudioThread.cpp">
+      <Filter>Source Files\AudioVideo</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
