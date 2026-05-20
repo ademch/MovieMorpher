@@ -6,22 +6,20 @@
 #include "../../!!adExtensions/extensions.h"
 #include "../../!!adGlobals/TextureDescriptor.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
-#include "../../!!adGlobals/wdir.h"
 
 
-extern GLSL_Pipeline glsl_pipeline;
 extern TextureBank texBank;
 extern GLFONT font;
 
 const int   _fFinalizationRadius = 9;
 const float const_fPointsDepth = 0.2;
-const float const_fPointsSize = 7;
+const float const_fPointsSize  = 7;
 const float const_fLineWidth   = 2;
 
 bool bDoubleClick = false;
 
-void DoubleClickTimer(int value) {
-
+void DoubleClickTimer(int value)
+{
 	bDoubleClick = false;
 }
 
@@ -42,6 +40,16 @@ MorphingToolSubWindow::MorphingToolSubWindow(int iParentWidth, int iParentHeight
 
 	m_bMouseDrawingInProgress = false;
 
+	ptPrevPoint = Vecc2();
+
+	PopulateGUI();
+
+	fbo = new MorphFBOprocessor(0, 0, 800, 450);
+}
+
+
+void MorphingToolSubWindow::PopulateGUI()
+{
 	buttonSource = new Button("Draw src", -230,10, 100, 6.3);
 	buttonSource->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
 	buttonSource->OnClick = [this]() { return SourcePolylineClicked(); };
@@ -78,32 +86,35 @@ MorphingToolSubWindow::MorphingToolSubWindow(int iParentWidth, int iParentHeight
 
 	comboBox->SetSelected(TEXTURE_MORPHED_IMAGE);
 
-	ptPrevPoint = Vecc2();
-
-	fbo = new MorphFBOprocessor(0, 0, 800, 450);
-
 }
 
 
-void MorphingToolSubWindow::Draw()
+void MorphingToolSubWindow::DrawFBOquad()
 {
-	OpenGLSubWindowWithGUI::Draw();
-
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	
+
 	// Show output of the shader, while invisible input texture holds original
 	TextureDescriptor* texDescr = texBank[TEXTURE_MORPHED_IMAGE];
 	if (m_ParamsSubWindow->ShowOriginal())
 		texDescr = texBank[TEXTURE_INPUT_IMAGE];
 
 	//std::string sSelected = comboBox->GetSelected();
-	RenderTexturedQuad(texDescr->m_uiTextureID,
-				  	  -texDescr->m_width/2, -texDescr->m_height/2,
-					   texDescr->m_width,    texDescr->m_height);
+	RenderTexturedQuad( texDescr->m_uiTextureID,	// texture
+					   -texDescr->m_width/2,		// bottomX
+					   -texDescr->m_height/2,		// bottomY
+						texDescr->m_width,			// width
+						texDescr->m_height);		// height
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
+
+void MorphingToolSubWindow::Draw()
+{
+	OpenGLSubWindowWithGUI::Draw();
 
 	sprintf(m_strCaption, "%s %5.0f%%", "Zoom", fUserScale*100.0f);
+
+	DrawFBOquad();
 
 	if (m_ParamsSubWindow->PointsAreVisible())
 	{
@@ -638,11 +649,11 @@ void MorphingToolSubWindow::StartNextGeneration()
 
 	unsigned char* data = (unsigned char *)malloc(iWidthSrc*iHeightSrc*nrChannels);
 
-	glBindTexture(GL_TEXTURE_2D, idSrc);
-	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glBindTexture(GL_TEXTURE_2D, idSrc);
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-	glBindTexture(GL_TEXTURE_2D, idDst);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, iWidthDst, iHeightDst, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glBindTexture(GL_TEXTURE_2D, idDst);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, iWidthDst, iHeightDst, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	free(data);
 }

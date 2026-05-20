@@ -36,6 +36,8 @@ public:
 	bool KeyboardFunc(unsigned char key, int x, int y) override;
 	void KeyboardAux(int key, int state, int x, int y) override;
 
+	void SetupGraphicsPipeline() override;
+
 	StateTransform_enum stateTransform;
 
 protected:
@@ -44,9 +46,13 @@ protected:
 	Vec2 ptTranslHandle;
 	Vec2 ptRotateHandle;
 
+	// matrix for immediate visualization
 	Matr4 matrImmediateVisualization;
+	
+	// matrix calculated how to go from fbo coordinates that are static to a new configuration
 	Matr4 matrObjectOrigin2joystickBasis;
 
+	static std::vector<WarpingToolSubWindow*> m_liSiblings;
 
 private:
 

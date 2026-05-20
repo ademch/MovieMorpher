@@ -105,13 +105,13 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	liWindows.push_back(windowMedia);
 
 
-	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.27, 0.62, 0.024);
+	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.27, 0.70, 0.024);
 	timelineSliderWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineSliderWindow);
 
 
-	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.62, 0.2);
+	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.70, 0.2);
 	timelineWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	timelineWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineWindow);
@@ -122,7 +122,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	liWindows.push_back(timelineTrackParams);
 
 
-	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.048, 0.62, 0.022);
+	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.048, 0.70, 0.022);
 	timelineScrollBarWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE );
 	timelineScrollBarWindow->scrollBar->OnChange = [](Matr4 matrUserScale)
 	{
@@ -200,7 +200,7 @@ void globaldraw()
 		iterWindow->Render();
 	}
 
-	Sleep(10);
+	Sleep(20);
 
 	ToolTip::Get()->UpdateTimer();
 

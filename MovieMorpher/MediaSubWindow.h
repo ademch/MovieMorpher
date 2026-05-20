@@ -31,6 +31,9 @@ public:
 protected:
 
 	bool AddTrackPicture();
+	bool AddTrackVideo();
+
+	void PopulateGUI() override;
 
 	TimelineSubWindow* windowTimeLine;
 	Label*             labelPlayhead;

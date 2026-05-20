@@ -12,6 +12,8 @@ const float const_fHandleRadius  = 5;
 #define TRANS_PIVOT			2
 #define TRANS_PIVOTUP		3
 
+std::vector<WarpingToolSubWindow*> WarpingToolSubWindow::m_liSiblings;
+
 WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 										   float fBottomLeftXperc, float fBottomLeftYperc,
 										   float fWidthPerc, float fHeightPerc) :
@@ -21,10 +23,12 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 {
 	stateTransform = STATE_TRANS_IDLE;
 
+	m_liSiblings.push_back(this);
+
 	m_iJoystickFrameWidth  = fbo->Width();
 	m_iJoystickFrameHeight = fbo->Height();
 
-	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0) );
+	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0));
 	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0));
 	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0));
 	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0));
@@ -32,11 +36,23 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	ptTranslHandle = Vecc2();
 	ptRotateHandle = Vecc2(m_iJoystickFrameWidth/2.0*0.618, 0);
 
-	matrImmediateVisualization = Mat4MakeIdent();
+	matrImmediateVisualization     = Mat4MakeIdent();
 	matrObjectOrigin2joystickBasis = Mat4MakeIdent();
 
 	hCurSpecial     = LoadCursorFromFileW(L"aero_moveProp.cur");
 
+}
+
+void WarpingToolSubWindow::SetupGraphicsPipeline()
+{
+	MorphingToolSubWindow::SetupGraphicsPipeline();
+
+	// the last transformation is previewed until the mouse button is released using this matrix
+	// When the button is released matrObjectOrigin2joystickBasis is recomputed and this matrix is reset to identity
+	glMultMatrixf(&matrImmediateVisualization.m[0][0]);
+
+	// basis 1,1,1 is transformed to joystick basis on every mouseup
+	glMultMatrixf(&matrObjectOrigin2joystickBasis.m[0][0]);
 }
 
 
@@ -50,11 +66,22 @@ void WarpingToolSubWindow::Draw()
 	// basis 1,1,1 is transformed to joystick basis on every mouseup
 	glMultMatrixf(&matrObjectOrigin2joystickBasis.m[0][0]);
 	
+	// draw siblings' object
+	for (auto sibling : m_liSiblings)
+	{
+		if (sibling == this) continue;
+
+		sibling->DrawFBOquad();
+	}
+
 	// draw object
 	MorphingToolSubWindow::Draw();
 
-	SetupGraphicsPipeline();
+	// here we call parents SetupGraphicsPipeline for the reason described below 
+	MorphingToolSubWindow::SetupGraphicsPipeline();
 
+		// Apply only immediate matrix and do not apply object2joysticks, because here we draw only joysticks
+		// and joysticks become physically transformed
 		glMultMatrixf(&matrImmediateVisualization.m[0][0]);
 
 		glEnable(GL_LINE_STIPPLE);
@@ -124,7 +151,7 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 	{
 		if (stateTransform == STATE_TRANS_IDLE)
 		{
-			SetupGraphicsPipeline();
+			MorphingToolSubWindow::SetupGraphicsPipeline();
 
 			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
@@ -179,7 +206,7 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
 	{
 
-		SetupGraphicsPipeline();
+		MorphingToolSubWindow::SetupGraphicsPipeline();
 
 		Vec3d v3DCoords;
 		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
@@ -269,12 +296,14 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 		stateTransform = STATE_TRANS_IDLE;
 
 		// Transform all handles
-		for (auto& element : liScalingHandles) {
-			element = Vecc2( matrImmediateVisualization*Vecc3(element) );
-		}
+		{
+			for (auto& element : liScalingHandles) {
+				element = Vecc2( matrImmediateVisualization*Vecc3(element) );
+			}
 
-		ptTranslHandle = Vecc2( matrImmediateVisualization*Vecc3(ptTranslHandle) );
-		ptRotateHandle = Vecc2( matrImmediateVisualization*Vecc3(ptRotateHandle) );
+			ptTranslHandle = Vecc2( matrImmediateVisualization*Vecc3(ptTranslHandle) );
+			ptRotateHandle = Vecc2( matrImmediateVisualization*Vecc3(ptRotateHandle) );
+		}
 
 		matrImmediateVisualization = Mat4MakeIdent();
 
@@ -301,7 +330,7 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
 		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
 	{
-		SetupGraphicsPipeline();
+		MorphingToolSubWindow::SetupGraphicsPipeline();
 
 		Vec3d v3DCoords;
 		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);

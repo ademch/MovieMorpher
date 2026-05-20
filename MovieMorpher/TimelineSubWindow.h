@@ -35,6 +35,10 @@ public:
 		matrSliderNonInverted = _matrUserScale;
 	}
 
+protected:
+
+	void PopulateGUI() override;
+
 private:
 
 	int iBorder;
@@ -57,6 +61,9 @@ public:
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) override;
 
 	HorScrollBar* scrollBar;
+
+protected:
+	void PopulateGUI() override;
 };
 
 
@@ -97,6 +104,8 @@ public:
 
 protected:
 
+	void PopulateGUI() override;
+
 	float m_fSliderPos01;
 
 	bool  bSelectionIsValid;
@@ -111,7 +120,7 @@ protected:
 
 	int iBorder;
 
-	std::vector<TrackClip*> liTracks;
+	std::vector<TrackClip*> liClips;
 
 };
 
@@ -140,6 +149,7 @@ public:
 	}
 
 protected:
+	void PopulateGUI() override;
 
 private:
 

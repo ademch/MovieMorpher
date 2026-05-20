@@ -6,11 +6,11 @@
 #include "../../!!adExtensions/extensions.h"
 
 
-const int g_iTrackHeight  = 40;
-const int g_iTrackPadding = 10;
-const int g_iClipPadding  = 10;
-const int g_iTrackCount   = 5;
-
+const int g_iTrackHeight	= 40;
+const int g_iTrackPadding	= 10;
+const int g_iClipPadding	= 10;
+const int g_iTrackCount		= 5;
+const int g_iTimelineBorder = 5;
 
 TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 									 float fBottomLeftXperc, float fBottomLeftYperc,
@@ -24,7 +24,7 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	matrSliderNonInverted = Mat4MakeIdent();
 
 	m_fSliderPos01 = 0;
-	iBorder        = 5;
+	iBorder        = g_iTimelineBorder;
 
 	OnSliderPosChange = [this](float fPos)
 	                    {  PositionMediator::Get()->SetPos(this, fPos); };
@@ -35,26 +35,34 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	PositionMediator::Get()->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iDuration)
 						{ if (origin != this) SetSliderPos0_1(fVal); });
 
+	PopulateGUI();
+
+	iVerticalPan = 0.0;
+}
+
+
+void TimelineSubWindow::PopulateGUI()
+{
 	for (int16_t iTrack = 1; iTrack <= g_iTrackCount; iTrack++)
 	{
 		TimelineTrack*  track = new TimelineTrack(iTrack,
-			                                      iBorder,
-			                                      -g_iTrackHeight*iTrack - g_iTrackPadding*iTrack,
-			                                      Width(),
-			                                      g_iTrackHeight);
+												  iBorder,
+												  -g_iTrackHeight*iTrack - g_iTrackPadding*iTrack,
+												  Width(),
+												  g_iTrackHeight);
 		track->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 		liGUI_Elements.push_back(track);
 		// shortcut
 		//liTracks.push_back(track);
 	}
-
-	iVerticalPan = 0.0;
 }
+
+
 
 void TimelineSubWindow::AddClip(TrackClip* _clip)
 {
 	int iTrack = TimelineTrack::iSelected;
-	TrackClip* clip = new TrackClip(liTracks.size(),													// id
+	TrackClip* clip = new TrackClip(liClips.size(),														// id
 		                            iBorder,															// x
 									-g_iTrackHeight*iTrack - g_iTrackPadding*iTrack + g_iClipPadding,	// y
 									Width(),															// width
@@ -65,12 +73,12 @@ void TimelineSubWindow::AddClip(TrackClip* _clip)
 
 	clip->iTrack = iTrack;
 	clip->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
-	liGUI_Elements.push_back(clip);
-	
-	TrackClip::iSelected = clip->id;
-	liTracks.push_back(clip);
-
 	clip->Reposition(-m_iWidth/2 + clip->iHPosShift, m_iHeight/2 + clip->iVPosShift);
+
+	liGUI_Elements.push_back(clip);
+	liClips.push_back(clip);
+
+	TrackClip::iSelected = clip->id;
 }
 
 
@@ -86,8 +94,8 @@ void TimelineSubWindow::Draw()
 	for (auto iterElement : liGUI_Elements)
 	{
 		// propagate common values
-		auto* track = dynamic_cast<GUI_ElementResizable*>(iterElement);
-		track->matrSliderNonInverted = Mat4MakeTrans(0, -vUserSceneTranslation.Y, 0)*matrSliderNonInverted; // minus to get nonInverted vUserSceneTranslation
+		auto* element = dynamic_cast<GUI_ElementResizable*>(iterElement);
+		element->matrSliderNonInverted = Mat4MakeTrans(0, -vUserSceneTranslation.Y, 0)*matrSliderNonInverted; // minus to get nonInverted vUserSceneTranslation
 
 		iterElement->Draw();
 	}
@@ -254,13 +262,18 @@ TimelineSliderSubWindow::TimelineSliderSubWindow(int iParentWidth, int iParentHe
 {
 	matrSliderNonInverted = Mat4MakeIdent();
 
-	iBorder = 5;
+	iBorder = g_iTimelineBorder;
 
-	static float f = 1000;
+	PopulateGUI();
+}
+
+
+void TimelineSliderSubWindow::PopulateGUI()
+{
 	videoSlider = new VideoSlider(iBorder,0, 20);
 	videoSlider->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
 	videoSlider->OnChange = [this](float fVal)
-							{ PositionMediator::Get()->SetPos(videoSlider, fVal); };
+	{ PositionMediator::Get()->SetPos(videoSlider, fVal); };
 	PositionMediator::Get()->subscribeForPos([this](void* origin, float fVal)
 	{
 		if (origin != videoSlider) videoSlider->SetPos0_1(fVal);
@@ -270,7 +283,6 @@ TimelineSliderSubWindow::TimelineSliderSubWindow(int iParentWidth, int iParentHe
 		if (origin != videoSlider) videoSlider->SetPosInit(fVal, _iEndSec);
 	});
 	liGUI_Elements.push_back(videoSlider);
-
 }
 
 
@@ -303,10 +315,14 @@ TimelineScrollBarSubWindow::TimelineScrollBarSubWindow(int iParentWidth, int iPa
 						    OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 												   fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
+	PopulateGUI();
+}
+
+void TimelineScrollBarSubWindow::PopulateGUI()
+{
 	scrollBar = new HorScrollBar("", 1,1);
 	scrollBar->SetAlignment(HALIGN_LEFT, VALIGN_BOTTOM);
 	liGUI_Elements.push_back(scrollBar);
-
 }
 
 
@@ -336,6 +352,11 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 	//	if (origin != videoSlider) SetPosInit(fVal, _iStartSec, _iEndSec);
 	//});
 
+	PopulateGUI();
+}
+
+void TrackParamsSubWindow::PopulateGUI()
+{
 	for (int16_t iTrack = 1; iTrack <= g_iTrackCount; iTrack++)
 	{
 		ButtonImage* buttonImg = new ButtonImage("", -60, -g_iTrackHeight*iTrack - g_iTrackPadding*iTrack + 4, 32);
@@ -356,7 +377,6 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 		buttonImg->bDrawFrame = false;
 		liGUI_Elements.push_back(buttonImg);
 	}
-
 }
 
 

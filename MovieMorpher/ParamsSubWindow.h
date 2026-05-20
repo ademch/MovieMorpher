@@ -75,6 +75,8 @@ protected:
 	bool StartNextGeneration();
 	bool CompileShaders(bool);
 
+	void PopulateGUI() override;
+
 private:
 	Slider<SL_INT>   *SliderMorphRatio;
 	Slider<SL_INT>   *SliderMorphRadius;

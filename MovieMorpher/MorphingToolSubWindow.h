@@ -30,6 +30,7 @@ public:
 	}
 
 	void Draw() override;
+	void DrawFBOquad();
 
 	bool PassiveMotionFunc(int x, int y) override;
 	bool MouseFunc(int button, int state, int x, int y) override;
@@ -49,6 +50,9 @@ public:
 	}
 
 protected:
+
+	void PopulateGUI() override;
+
 	void UploadMorphingLines();
 
 	ComboBox* comboBox;
@@ -74,6 +78,7 @@ private:
 	StateInput_enum stateCurrent;
 
 	bool m_bMouseDrawingInProgress;
+	Vec2* m_ptrDraggedPoint;
 
 	bool bSrcCurveIsDone;
 	bool bDstCurveIsDone;
@@ -82,8 +87,6 @@ private:
 	bool DestinationPolylineClicked();
 
 	void StartNextGeneration();
-
-	Vec2* m_ptrDraggedPoint;
 };
 
 #endif
