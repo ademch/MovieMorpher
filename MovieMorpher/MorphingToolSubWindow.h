@@ -5,7 +5,6 @@
 #include "ParamsSubWindow.h"
 #include "MorphFBOprocessor.h"
 #include "../../!!adGUI/gui_element.h"
-#include "../../!!adGUI/ComboBox.h"
 #include "../../!!adGUI/button.h"
 #include "../../!!adGUI/arrow.h"
 #include <vector>
@@ -30,7 +29,7 @@ public:
 	}
 
 	void Draw() override;
-	void DrawFBOquad();
+	virtual void DrawFBOquad();
 
 	bool PassiveMotionFunc(int x, int y) override;
 	bool MouseFunc(int button, int state, int x, int y) override;
@@ -48,10 +47,8 @@ public:
 	{
 		m_ParamsSubWindow = m_Wnd;
 	}
-	ParamsSubWindow* GetParamsSubWindow()
-	{
-		return m_ParamsSubWindow;
-	}
+	ParamsSubWindow* GetParamsSubWindow() { return m_ParamsSubWindow; }
+	MorphFBOprocessor* GetFBO()           { return fbo; }
 
 protected:
 
@@ -59,7 +56,6 @@ protected:
 
 	void UploadMorphingLines();
 
-	ComboBox* comboBox;
 	Arrow*  arrow;
 	Button* buttonResetView;
 	Button* buttonSource;

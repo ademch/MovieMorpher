@@ -3,7 +3,9 @@
 
 namespace ImageSaveLoadHelper
 {
-	unsigned char* LoadImageFromDisk(unsigned int &width, unsigned int &height);
+	void _FlipImage(unsigned char* image, unsigned int width, unsigned int height);
+
+	unsigned char* LoadImageFromDisk(unsigned int &width, unsigned int &height, char* outFileName = NULL);
 	bool           SaveImageToDisk();
 
 }

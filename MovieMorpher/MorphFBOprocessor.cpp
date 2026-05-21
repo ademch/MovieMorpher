@@ -7,7 +7,7 @@
 
 
 extern GLSL_Pipeline glsl_pipeline;
-extern TextureBank texBank;
+
 
 MorphFBOprocessor::MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) :
 	               OpenGLSubWindow(iBottomLeftX, iBottomLeftY, iWidth, iHeight)
@@ -68,7 +68,7 @@ void MorphFBOprocessor::Render()
 
 		if (bShowWireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		//glLineWidth(1);
+		glLineWidth(1);
 
 		glUseProgramObjectARB(glsl_pipeline.GPUPrograms["morph"]->programObj);
 
@@ -95,6 +95,7 @@ void MorphFBOprocessor::Render()
 	fbo->Deactivate();
 }
 
+
 TextureDescriptor* MorphFBOprocessor::AllocFrameTexture(int iWidth, int iHeight, int nrChannels)
 {
 	unsigned int iTexture;
@@ -110,11 +111,12 @@ TextureDescriptor* MorphFBOprocessor::AllocFrameTexture(int iWidth, int iHeight,
 	// NPOT Texture!!! (supported since GL v2.0)
 	unsigned char* data = NULL;
 	data = (unsigned char *)malloc(iWidth*iHeight*nrChannels);
-	//ZeroMemory(data, width*height*nrChannels);
-	memset(data, 120, iWidth*iHeight*nrChannels);
 
-	//           targ         mml  int frmt              brdr inc frmt   inc data type   inc data
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, iWidth, iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		//ZeroMemory(data, width*height*nrChannels);
+		memset(data, 120, iWidth*iHeight*nrChannels);
+
+		//           targ         mml  int frmt              brdr inc frmt   inc data type   inc data
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, iWidth, iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	free(data);
 
@@ -189,19 +191,6 @@ void MorphFBOprocessor::_TextureUpdate_Test(int iWidth, int iHeight, int nrChann
 }
 
 
-bool MorphFBOprocessor::KeyboardFunc(unsigned char key, int x, int y)
-{
-	bool res = false;
 
-	if (OpenGLSubWindow::KeyboardFunc(key, x, y)) return true;
-
-	//switch (key)
-	//{
-	//	default:
-	//	break;
-	//}
-
-	return res;
-}
 
 

@@ -1,6 +1,5 @@
 // .cpp : Defines the entry point for the console application.
 //
-
 #include "stdafx.h"
 #include "Main.h"
 #include "../../!!adGlobals/wdir.h"
@@ -10,8 +9,7 @@
 #include "ImageSaveLoad.h"
 #include "../../!!adGlobals/globalToolTip.h"
 #include "../../!!adGUI/VideoPositionMediator.h"
-
-TextureBank  texBank;
+#include "../../!!adGlobals/JPG/JPEG_library.h"
 
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
@@ -89,7 +87,22 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		}
 	printf("done\n");
 
-	ConstructToolAndParamsSubWindows();
+	ConstructToolAndParamsSubWindows("");
+	// load default welcome image into the first window
+	{
+		unsigned int width, height;
+		unsigned char* image = NULL;
+		read_JPEG_file("E:\\Or\\MovieMorpher\\Debug\\welcome.jpg", &image, width, height);
+		if (image)
+		{
+			ImageSaveLoadHelper::_FlipImage(image, width, height);
+
+			windowToolEditor->GetFBO()->Reshape(0, 0, width, height);
+			windowToolEditor->GetFBO()->TextureUpdate(width, height, image);
+
+			free(image);
+		}
+	}
 
 	windowGlobalParams = new GlobalParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.35, 0.27,0.2);
 	windowGlobalParams->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
@@ -148,7 +161,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 }
 
 
-OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows()
+OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows(char *title)
 {
 	if (windowToolEditor)
 		windowToolEditor->bActive = false;
@@ -165,6 +178,7 @@ OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows()
 
 	new_windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.57, 0.27,0.41);
 	new_windowParams->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
+	sprintf(new_windowParams->m_strCaption, "%s", title);
 	liWindows.push_back(new_windowParams);
 
 	// register mutual pointers
@@ -208,13 +222,12 @@ void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd)
 		new_windowParams     = windowToolEditor->GetParamsSubWindow();
 
 		// Copy user view from previous to a new window
+		// NB: Seems to be redundant here as params are copied on Draw
 		new_windowToolEditor->CopyView(windowToolEditor);
 
 		// activate new windows
 		new_windowToolEditor->bActive = true;
 		new_windowParams->bActive     = true;
-
-		sprintf(new_windowParams->m_strCaption, "%p", (void*)new_windowParams);
 
 		// These become pointers to active window pair
 		windowToolEditor = new_windowToolEditor;
@@ -271,6 +284,9 @@ void globaldraw()
 
 	for (auto iterWindow : liWindows)
 	{
+		if (auto wnd = dynamic_cast<WarpingToolSubWindow*>(iterWindow)) {
+			wnd->CopyView(windowToolEditor);
+		}
 		if (!iterWindow->bActive) continue;
 
 		iterWindow->Render();

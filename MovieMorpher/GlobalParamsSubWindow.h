@@ -15,7 +15,7 @@ public:
 						  float fWidthPerc, float fHeightPerc);
 	~GlobalParamsSubWindow() {}
 
-	bool IsShowingOriginal();
+	bool ShouldShowOriginal();
 
 	float fMorphPower;
 	float fMorphRadius;

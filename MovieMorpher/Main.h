@@ -21,7 +21,7 @@ GLFONT font;
 int iAppWndWidth = 1200;
 int iAppWndHeight = 860;
 
-OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows();
+OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows(char *title);
 void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd);
 
 void ReshapeWindow(OpenGLSubWindowWithGUI* wind);

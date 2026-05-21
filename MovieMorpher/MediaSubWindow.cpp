@@ -3,11 +3,11 @@
 #include "../../!!adGUI/TrackClip.h"
 #include "../../!!adVideo/FFMS_Video.h"
 #include "../../!!adGUI/VideoPositionMediator.h"
+#include "../../!!adGlobals/wdir.h"
+#include "WarpingToolSubWindow.h"
 
 #include "ImageSaveLoad.h"
 
-
-extern TextureBank texBank;
 
 MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 							   float fBottomLeftXperc, float fBottomLeftYperc, float fWidthPerc, float fHeightPerc) :
@@ -108,18 +108,31 @@ void MediaSubWindow::PopulateGUI()
 }
 
 
-
 bool MediaSubWindow::AddTrackPicture()
 {
 	unsigned int width, height;
 	unsigned char* image;
 	
-	image = ImageSaveLoadHelper::LoadImageFromDisk(width, height);
+	char filePath[512];
+	image = ImageSaveLoadHelper::LoadImageFromDisk(width, height, filePath);
+
+	if (!image) return false;
+
+	char* fileName = GetFileName(filePath);
 
 	OpenGLSubWindowWithGUI* newToolWindow;
-	newToolWindow = OnNewMedia();
+	newToolWindow = OnNewMedia(fileName);
 
-	TrackClip* clip = windowTimeLine->AddClip();
+	WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(newToolWindow);
+	// load image into the tool textBank
+	{
+		wndWarpingTool->GetFBO()->Reshape(0, 0, width, height);
+		wndWarpingTool->GetFBO()->TextureUpdate(width, height, image);
+
+		free(image);
+	}
+
+	TrackClip* clip = windowTimeLine->AddClip();//TODO pass something as param. eg windowTool
 	clip->windowTool = newToolWindow;
 
 	return true;
@@ -131,7 +144,11 @@ bool MediaSubWindow::AddTrackVideo()
 	video = new FFMS_Video();
 	video->LoadMPEG("E:\\Or\\MovieMorpher\\Debug\\output00.mp4");
 
-	windowTimeLine->AddClip();
+	OpenGLSubWindowWithGUI* newToolWindow;
+	newToolWindow = OnNewMedia("");
+
+	TrackClip* clip = windowTimeLine->AddClip();
+	clip->windowTool = newToolWindow;
 
 	return true;
 }

@@ -2,7 +2,7 @@
 #include "MorphFBOprocessor.h"
 #include "GLSL_Pipeline.h"
 
-extern TextureBank  texBank;
+
 
 void MorphFBOprocessor::GenMeshToListEmu(float fX_bottom, float fY_bottom, float fWidth, float fHeight, float fZ, int iHorSlices, int iVertSlices)
 {

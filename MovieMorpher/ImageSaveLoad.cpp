@@ -6,8 +6,6 @@
 #include "../../!!adGlobals/JPG/JPEG_library.h"
 #include "../../PS_SDK/libwebp-1.2.2/src/webp/webp_loader.h"
 
-extern TextureBank  texBank;
-
 namespace ImageSaveLoadHelper
 {
 	void _FlipImage(unsigned char* image, unsigned int width, unsigned int height)
@@ -25,7 +23,7 @@ namespace ImageSaveLoadHelper
 		}
 	}
 
-	unsigned char* LoadImageFromDisk(unsigned int &width, unsigned int &height)
+	unsigned char* LoadImageFromDisk(unsigned int &width, unsigned int &height, char* outFileName)
 	{
 		HWND hWnd = WindowFromDC(wglGetCurrentDC());
 
@@ -49,6 +47,9 @@ namespace ImageSaveLoadHelper
 		{
 			// use ofn.lpstrFile here
 			TCHAR* strExt = GetFileExtension(ofn.lpstrFile);
+
+			if (outFileName)
+				strcpy(outFileName, ofn.lpstrFile);
 
 			printf("Loading file...");
 
@@ -113,22 +114,22 @@ namespace ImageSaveLoadHelper
 
 				if (strcmp(strExt, ".png") == 0)
 				{
-					int iWidth  = texBank[TEXTURE_MORPHED_IMAGE]->m_width;
-					int iHeight = texBank[TEXTURE_MORPHED_IMAGE]->m_height;
-					int nrChannels = 4;
-					unsigned char* image = (unsigned char *)malloc(iWidth*iHeight*nrChannels);
+					//int iWidth  = texBank[TEXTURE_MORPHED_IMAGE]->m_width;
+					//int iHeight = texBank[TEXTURE_MORPHED_IMAGE]->m_height;
+					//int nrChannels = 4;
+					//unsigned char* image = (unsigned char *)malloc(iWidth*iHeight*nrChannels);
 
-					glBindTexture(GL_TEXTURE_2D, texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID);
-					glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+					//glBindTexture(GL_TEXTURE_2D, texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID);
+					//glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 
-					// libraries load bottom rows top, swapping is required
-					_FlipImage(image, iWidth, iHeight);
+					//// libraries load bottom rows top, swapping is required
+					//_FlipImage(image, iWidth, iHeight);
 
-					unsigned int error;
-					error = lodepng_encode32_file(ofn.lpstrFile, image, iWidth, iHeight);
-					if (error) printf("error %u: %s\n", error, lodepng_error_text(error));
+					//unsigned int error;
+					//error = lodepng_encode32_file(ofn.lpstrFile, image, iWidth, iHeight);
+					//if (error) printf("error %u: %s\n", error, lodepng_error_text(error));
 
-					free(image);
+					//free(image);
 				}
 				else
 				{

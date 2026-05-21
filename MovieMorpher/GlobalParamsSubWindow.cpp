@@ -56,7 +56,7 @@ void GlobalParamsSubWindow::PopulateGUI()
 
 
 
-bool GlobalParamsSubWindow::IsShowingOriginal()
+bool GlobalParamsSubWindow::ShouldShowOriginal()
 {
 	return onoffpushbuttonOriginal->bON;
 }

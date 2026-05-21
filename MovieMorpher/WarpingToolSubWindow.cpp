@@ -45,6 +45,7 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 
 void WarpingToolSubWindow::SetupGraphicsPipeline()
 {
+	// Call SetupGraphicsPipeline of a parent to observe basic user pan/zoom
 	MorphingToolSubWindow::SetupGraphicsPipeline();
 
 	// the last transformation is previewed until the mouse button is released using this matrix
@@ -56,22 +57,25 @@ void WarpingToolSubWindow::SetupGraphicsPipeline()
 }
 
 
+void WarpingToolSubWindow::DrawFBOquad()
+{
+	// As soon as siblings are drawn from single place, each quad has to have full transformation stack prepared
+	// We call here SetupGraphicsPipeline of WarpingToolSubWindow to apply warping transformations also
+	SetupGraphicsPipeline();
+
+	MorphingToolSubWindow::DrawFBOquad();
+
+}
+
 void WarpingToolSubWindow::Draw()
 {
 	
-	// the last transformation is previewed until the mouse button is released using this matrix
-	// When the button is released matrObjectOrigin2joystickBasis is recomputed and this matrix is reset to identity
-	glMultMatrixf(&matrImmediateVisualization.m[0][0]);
-
-	// basis 1,1,1 is transformed to joystick basis on every mouseup
-	glMultMatrixf(&matrObjectOrigin2joystickBasis.m[0][0]);
-	
-	// draw siblings' object
-	for (auto sibling : m_liSiblings)
+	// draw sibling fbos (do not draw the first window at as that is welcome screen window)
+	for (unsigned int i=1; i < m_liSiblings.size(); i++ )
 	{
-		if (sibling == this) continue;
+		if (m_liSiblings[i] == this) continue;
 
-		sibling->DrawFBOquad();
+		m_liSiblings[i]->DrawFBOquad();
 	}
 
 	// draw object
@@ -86,7 +90,7 @@ void WarpingToolSubWindow::Draw()
 
 		glEnable(GL_LINE_STIPPLE);
 		glLineStipple(2, 0xAAAA);
-			glLineWidth(3);
+			glLineWidth(2);
 			glColor3f(0, 0.69, 0);
 
 			glBegin(GL_LINE_LOOP);
@@ -424,11 +428,6 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 	}
 }
 
-
-bool WarpingToolSubWindow::KeyboardFunc(unsigned char key, int x, int y)
-{
-	return false;
-}
 
 void WarpingToolSubWindow::KeyboardAux(int key, int state, int x, int y)
 {

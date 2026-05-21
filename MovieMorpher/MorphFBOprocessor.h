@@ -23,14 +23,14 @@ public:
 	void TextureUpdate(int iWidth, int iHeight, unsigned char* image);
 	void _TextureUpdate_Test(int iWidth, int iHeight, int nrChannels);
 
-	virtual bool KeyboardFunc(unsigned char key, int x, int y);
-
 	float fMorphRadius;
 	float fMorphPower;
 	float fMorphRatio;
 	bool  bShowWireframe;
 
 	bool bOutdated;
+
+	TextureBank  texBank;
 
 protected:
 

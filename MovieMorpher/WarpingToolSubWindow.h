@@ -33,10 +33,10 @@ public:
 	bool PassiveMotionFunc(int x, int y) override;
 	bool MouseFunc(int button, int state, int x, int y) override;
 	void MotionFunc(int x, int y) override;
-	bool KeyboardFunc(unsigned char key, int x, int y) override;
 	void KeyboardAux(int key, int state, int x, int y) override;
 
 	void SetupGraphicsPipeline() override;
+	void DrawFBOquad() override;
 
 	StateTransform_enum stateTransform;
 

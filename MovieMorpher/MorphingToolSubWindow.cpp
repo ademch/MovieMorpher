@@ -7,12 +7,11 @@
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 
 
-extern TextureBank texBank;
-
 const int  _fFinalizationRadius = 9;
 const float const_fPointsDepth	= 0.2;
 const float const_fPointsSize	= 7;
 const float const_fLineWidth	= 2;
+
 
 bool bDoubleClick = false;
 
@@ -67,22 +66,10 @@ void MorphingToolSubWindow::PopulateGUI()
 	buttonMorphNow->OnClick = [this]() { return MorphNow(); };
 	liGUI_Elements.push_back(buttonMorphNow);
 
-	comboBox = new ComboBox("Default", -180,10, 170, 6.3);
-	comboBox->SetAlignment(HALIGN_RIGHT, VALIGN_BOTTOM);
-	comboBox->bVisible = true;
-	comboBox->bEnabled = true;
-	liGUI_Elements.push_back(comboBox);
-
 	buttonResetView = new Button("Reset view", -180,-30, 100, 6); 
 	buttonResetView->SetAlignment(HALIGN_RIGHT, VALIGN_TOP);
 	buttonResetView->OnClick = [this]() { return ResetView(); };
 	liGUI_Elements.push_back(buttonResetView);
-
-	typeTexBankIter iter;
-	for (iter = texBank.bank.begin(); iter != texBank.bank.end(); ++iter)
-		comboBox->items.push_back( iter->first.c_str() );
-
-	comboBox->SetSelected(TEXTURE_MORPHED_IMAGE);
 
 }
 
@@ -91,10 +78,12 @@ void MorphingToolSubWindow::DrawFBOquad()
 {
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+	TextureDescriptor* texDescr;
 	// Show output of the shader, while invisible input texture holds original
-	TextureDescriptor* texDescr = texBank[TEXTURE_MORPHED_IMAGE];
-	if (GlobalParamsSubWindow::Get()->IsShowingOriginal())
-		texDescr = texBank[TEXTURE_INPUT_IMAGE];
+	if (GlobalParamsSubWindow::Get()->ShouldShowOriginal())
+		texDescr = fbo->texBank[TEXTURE_INPUT_IMAGE];
+	else
+		texDescr = fbo->texBank[TEXTURE_MORPHED_IMAGE];
 
 	//std::string sSelected = comboBox->GetSelected();
 	RenderTexturedQuad( texDescr->m_uiTextureID,	// texture
@@ -112,6 +101,7 @@ void MorphingToolSubWindow::Draw()
 
 	sprintf(m_strCaption, "%s %5.0f%%", "Zoom", fUserScale*100.0f);
 
+	// Either parent's Draw prepares modelview matrix or childs DrawFBOquad overriden implementation
 	DrawFBOquad();
 
 	if (GlobalParamsSubWindow::Get()->PointsAreVisible())
@@ -209,9 +199,9 @@ void MorphingToolSubWindow::UploadMorphingLines()
 
 	glActiveTextureARB(GL_TEXTURE1);
 
-		glBindTexture(GL_TEXTURE_2D, texBank[TEXTURE_FLOAT_BUFFER]->m_uiTextureID);
-		texBank[TEXTURE_FLOAT_BUFFER]->m_width  = listOutSrc.size();
-		texBank[TEXTURE_FLOAT_BUFFER]->m_height = 2;
+		glBindTexture(GL_TEXTURE_2D, fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_uiTextureID);
+		fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_width  = listOutSrc.size();
+		fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_height = 2;
 
 		//           targ         mml  int frmt  w                  h brdr inc: frmt    type    data
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, listOutSrc.size(), 2,   0,    GL_RG, GL_FLOAT, NULL);
@@ -633,13 +623,13 @@ void MorphingToolSubWindow::StartNextGeneration()
 	// Apply current morph
 	MorphNow();
 
-	unsigned int idSrc = texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID;
-	unsigned int iWidthSrc  = texBank[TEXTURE_MORPHED_IMAGE]->m_width;
-	unsigned int iHeightSrc = texBank[TEXTURE_MORPHED_IMAGE]->m_height;
+	unsigned int idSrc =	  fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID;
+	unsigned int iWidthSrc  = fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_width;
+	unsigned int iHeightSrc = fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_height;
 
-	unsigned int idDst = texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID;
-	unsigned int iWidthDst  = texBank[TEXTURE_INPUT_IMAGE]->m_width;
-	unsigned int iHeightDst = texBank[TEXTURE_INPUT_IMAGE]->m_height;
+	unsigned int idDst =	  fbo->texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID;
+	unsigned int iWidthDst  = fbo->texBank[TEXTURE_INPUT_IMAGE]->m_width;
+	unsigned int iHeightDst = fbo->texBank[TEXTURE_INPUT_IMAGE]->m_height;
 	unsigned int nrChannels = 4;
 
 	assert(iWidthSrc == iWidthDst);

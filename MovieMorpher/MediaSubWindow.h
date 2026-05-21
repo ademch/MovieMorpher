@@ -28,7 +28,7 @@ public:
 
 	void RenderGUI() override;
 
-	std::function<OpenGLSubWindowWithGUI*()> OnNewMedia;
+	std::function<OpenGLSubWindowWithGUI*(char*)> OnNewMedia;
 
 protected:
 
