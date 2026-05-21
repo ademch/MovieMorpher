@@ -1,20 +1,18 @@
 #include "stdafx.h"
 #include "MorphingToolSubWindow.h"
+#include "GlobalParamsSubWindow.h"
 #include "GLSL_Pipeline.h"
-#include "../../!!adGUI/glfont.h"
 #include "../../!!adGlobals/glut/glut.h"
 #include "../../!!adExtensions/extensions.h"
-#include "../../!!adGlobals/TextureDescriptor.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 
 
 extern TextureBank texBank;
-extern GLFONT font;
 
-const int   _fFinalizationRadius = 9;
-const float const_fPointsDepth = 0.2;
-const float const_fPointsSize  = 7;
-const float const_fLineWidth   = 2;
+const int  _fFinalizationRadius = 9;
+const float const_fPointsDepth	= 0.2;
+const float const_fPointsSize	= 7;
+const float const_fLineWidth	= 2;
 
 bool bDoubleClick = false;
 
@@ -95,7 +93,7 @@ void MorphingToolSubWindow::DrawFBOquad()
 
 	// Show output of the shader, while invisible input texture holds original
 	TextureDescriptor* texDescr = texBank[TEXTURE_MORPHED_IMAGE];
-	if (m_ParamsSubWindow->ShowOriginal())
+	if (GlobalParamsSubWindow::Get()->IsShowingOriginal())
 		texDescr = texBank[TEXTURE_INPUT_IMAGE];
 
 	//std::string sSelected = comboBox->GetSelected();
@@ -116,7 +114,7 @@ void MorphingToolSubWindow::Draw()
 
 	DrawFBOquad();
 
-	if (m_ParamsSubWindow->PointsAreVisible())
+	if (GlobalParamsSubWindow::Get()->PointsAreVisible())
 	{
 		// SOURCE
 		{
@@ -567,7 +565,7 @@ void MorphingToolSubWindow::ReDrawFBO()
 	fbo->fMorphRadius   = m_ParamsSubWindow->fMorphRadius;
 	fbo->fMorphPower    = m_ParamsSubWindow->fMorphPower;
 	fbo->fMorphRatio    = m_ParamsSubWindow->fMorphRatio;
-	fbo->bShowWireframe = m_ParamsSubWindow->IsWireframeShown();
+	fbo->bShowWireframe = GlobalParamsSubWindow::Get()->IsWireframeShown();
 
 	fbo->Render();
 }
@@ -589,7 +587,7 @@ bool MorphingToolSubWindow::SourcePolylineClicked()
 		buttonSource->_text = "Drawing";
 
 		// nice touch
-		m_ParamsSubWindow->MakePointsVisible();
+		GlobalParamsSubWindow::Get()->MakePointsVisible();
 	}
 
 	return true;
@@ -612,7 +610,7 @@ bool MorphingToolSubWindow::DestinationPolylineClicked()
 		glutSetCursor(GLUT_CURSOR_TOP_SIDE);
 
 		// nice touch
-		m_ParamsSubWindow->MakePointsVisible();
+		GlobalParamsSubWindow::Get()->MakePointsVisible();
 	}
 
 	return true;

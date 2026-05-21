@@ -48,6 +48,10 @@ public:
 	{
 		m_ParamsSubWindow = m_Wnd;
 	}
+	ParamsSubWindow* GetParamsSubWindow()
+	{
+		return m_ParamsSubWindow;
+	}
 
 protected:
 

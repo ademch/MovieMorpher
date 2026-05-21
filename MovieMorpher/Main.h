@@ -10,6 +10,7 @@
 
 #include "WarpingToolSubWindow.h"
 #include "ParamsSubWindow.h"
+#include "GlobalParamsSubWindow.h"
 #include "MediaSubWindow.h"
 #include "TimelineSubWindow.h"
 #include "../../!!adGlobals/globalToolTip.h"
@@ -19,6 +20,11 @@ GLFONT font;
 
 int iAppWndWidth = 1200;
 int iAppWndHeight = 860;
+
+OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows();
+void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd);
+
+void ReshapeWindow(OpenGLSubWindowWithGUI* wind);
 
 
 // объявления прототипов
@@ -42,8 +48,10 @@ std::vector<OpenGLSubWindowWithGUI*> liWindows;
 
 GLSL_Pipeline glsl_pipeline;
 
-WarpingToolSubWindow*       windowToolEditor;
-ParamsSubWindow*            windowParams;
+WarpingToolSubWindow*       windowToolEditor = NULL;
+ParamsSubWindow*            windowParams	 = NULL;
+
+GlobalParamsSubWindow*      windowGlobalParams;
 MediaSubWindow*             windowMedia;
 
 TimelineSliderSubWindow*    timelineSliderWindow;

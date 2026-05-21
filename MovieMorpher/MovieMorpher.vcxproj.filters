@@ -216,6 +216,9 @@
     <ClInclude Include="..\..\!!adVideo\AudioThread.h">
       <Filter>Header Files\AudioVideo</Filter>
     </ClInclude>
+    <ClInclude Include="GlobalParamsSubWindow.h">
+      <Filter>Header Files\SubWindows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -352,6 +355,9 @@
     </ClCompile>
     <ClCompile Include="..\..\!!adVideo\AudioThread.cpp">
       <Filter>Source Files\AudioVideo</Filter>
+    </ClCompile>
+    <ClCompile Include="GlobalParamsSubWindow.cpp">
+      <Filter>Source Files\SubWindows</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

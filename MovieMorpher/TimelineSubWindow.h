@@ -100,7 +100,12 @@ public:
 		matrSliderNonInverted = _matrUserScale;
 	}
 
-	void AddClip(TrackClip* _clip);
+	TrackClip* AddClip();
+
+	void SetSwitchToolWindowCallback(std::function<void(OpenGLSubWindowWithGUI*)> callback)
+	{
+		m_setWindowCallback = callback;
+	}
 
 protected:
 
@@ -121,6 +126,10 @@ protected:
 	int iBorder;
 
 	std::vector<TrackClip*> liClips;
+
+private:
+
+	std::function<void(OpenGLSubWindowWithGUI*)> m_setWindowCallback;
 
 };
 

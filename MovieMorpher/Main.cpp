@@ -89,19 +89,15 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		}
 	printf("done\n");
 
-	windowToolEditor = new WarpingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.35, 0.70,0.63);
-	sprintf(windowToolEditor->m_strCaption, "%s", "Zoom");
-	windowToolEditor->bSceneRotationAllowed = false;
-	liWindows.push_back(windowToolEditor);
+	ConstructToolAndParamsSubWindows();
 
-	windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.35, 0.27,0.63);
-	sprintf(windowParams->m_strCaption, "%s", "Params");
-	windowParams->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
-	liWindows.push_back(windowParams);
+	windowGlobalParams = new GlobalParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.35, 0.27,0.2);
+	windowGlobalParams->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
+	liWindows.push_back(windowGlobalParams);
 
 	windowMedia = new MediaSubWindow(iAppWndWidth, iAppWndHeight, 0.01, 0.02, 0.98, 0.31);
-	//sprintf(windowMedia->m_strCaption, "%s", "Timeline");
 	windowMedia->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
+	windowMedia->OnNewMedia = ConstructToolAndParamsSubWindows;
 	liWindows.push_back(windowMedia);
 
 
@@ -114,6 +110,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.70, 0.2);
 	timelineWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	timelineWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
+	timelineWindow->SetSwitchToolWindowCallback(OnToolWindowSwitch);
 	liWindows.push_back(timelineWindow);
 
 	timelineTrackParams = new TrackParamsSubWindow(iAppWndWidth, iAppWndHeight, 0.02, 0.07, 0.06, 0.2);
@@ -134,7 +131,6 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 
 	// register mutual pointers
-	windowToolEditor->SetParamsSubWindow(windowParams);
 	windowMedia->SetTimelineSubWindow(timelineWindow);
 
 	timelineWindow->OnVerticalPanChange = [](Vec3 vTranslation) {	timelineTrackParams->SetVerticalTranslation(vTranslation);  };
@@ -151,6 +147,91 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	return 0;
 }
 
+
+OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows()
+{
+	if (windowToolEditor)
+		windowToolEditor->bActive = false;
+	if (windowParams)
+		windowParams->bActive = false;
+
+	WarpingToolSubWindow* new_windowToolEditor;
+	ParamsSubWindow*      new_windowParams;
+
+	new_windowToolEditor = new WarpingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.35, 0.70,0.63);
+	sprintf(new_windowToolEditor->m_strCaption, "%s", "Zoom");
+	new_windowToolEditor->bSceneRotationAllowed = false;
+	liWindows.push_back(new_windowToolEditor);
+
+	new_windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.57, 0.27,0.41);
+	new_windowParams->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
+	liWindows.push_back(new_windowParams);
+
+	// register mutual pointers
+	new_windowToolEditor->SetParamsSubWindow(new_windowParams);
+
+	// Reshape exactly these windows
+	ReshapeWindow(new_windowToolEditor);
+	ReshapeWindow(new_windowParams);
+
+	// Copy user view from previous to a new window
+	if (windowToolEditor)
+		new_windowToolEditor->CopyView(windowToolEditor);
+
+	// These become pointers to active window pair
+	windowToolEditor = new_windowToolEditor;
+	windowParams     = new_windowParams;
+
+	// windowParams can always be deducted from tool
+	return windowToolEditor;
+}
+
+
+void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd)
+{
+	std::cout << "Switching window request...";
+
+	if (switchedWnd != windowToolEditor)
+	{
+		std::cout << "Done\n";
+
+		assert(dynamic_cast<WarpingToolSubWindow*>(switchedWnd));
+
+		// deactivate current windows
+		windowToolEditor->bActive = false;
+		windowParams->bActive     = false;
+
+		WarpingToolSubWindow* new_windowToolEditor;
+		ParamsSubWindow*      new_windowParams;
+
+		new_windowToolEditor = dynamic_cast<WarpingToolSubWindow*>(switchedWnd);
+		new_windowParams     = windowToolEditor->GetParamsSubWindow();
+
+		// Copy user view from previous to a new window
+		new_windowToolEditor->CopyView(windowToolEditor);
+
+		// activate new windows
+		new_windowToolEditor->bActive = true;
+		new_windowParams->bActive     = true;
+
+		sprintf(new_windowParams->m_strCaption, "%p", (void*)new_windowParams);
+
+		// These become pointers to active window pair
+		windowToolEditor = new_windowToolEditor;
+		windowParams     = new_windowParams;
+	}
+	else
+		std::cout << "The same\n";
+}
+
+
+void ReshapeWindow(OpenGLSubWindowWithGUI* wind)
+{
+	wind->Reshape(iAppWndWidth  * wind->fBottomLeftXperc,
+				  iAppWndHeight * wind->fBottomLeftYperc,
+				  iAppWndWidth  * wind->fWidthPerc,
+				  iAppWndHeight * wind->fHeightPerc);
+}
 
 
 void ReshapeFunc(GLsizei w, GLsizei h)
@@ -175,11 +256,9 @@ void ReshapeFunc(GLsizei w, GLsizei h)
 	//выбор стека матриц модельно-видовых преобразований
 	glMatrixMode(GL_MODELVIEW);
 
-	for (auto iterWindow : liWindows)
-		iterWindow->Reshape(iAppWndWidth*iterWindow->fBottomLeftXperc,
-							iAppWndHeight*iterWindow->fBottomLeftYperc,
-			                iAppWndWidth*iterWindow->fWidthPerc,
-							iAppWndHeight*iterWindow->fHeightPerc);
+	for (auto iterWindow : liWindows) {
+		ReshapeWindow(iterWindow);
+	}
 }
 
 void globaldraw()
@@ -192,10 +271,7 @@ void globaldraw()
 
 	for (auto iterWindow : liWindows)
 	{
-		if (auto wnd = dynamic_cast<WarpingToolSubWindow*>(iterWindow))
-		{
-			wnd->CopyView(wnd);
-		}
+		if (!iterWindow->bActive) continue;
 
 		iterWindow->Render();
 	}
@@ -215,7 +291,10 @@ void keyboard(unsigned char key, int x, int y)
 {
 	bool res = false;
 	
-	for (auto iterWindow : liWindows) {
+	for (auto iterWindow : liWindows)
+	{
+		if (!iterWindow->bActive) continue;
+
 		res = iterWindow->KeyboardFunc(key, x, iAppWndHeight - y);
 		if (res) break;
 	}
@@ -298,14 +377,22 @@ void keyboardSpecial(int key, int x, int y)
 void keyboardAux(int key, int state, int x, int y)
 {
 	for (auto iterWindow : liWindows)
+	{
+		if (!iterWindow->bActive) continue;
+		
 		iterWindow->KeyboardAux(key, state, x, iAppWndHeight - y);
+	}
 }
 
 // (in) x,y - window coords from (0,0) to (w,h)
 void MotionFunc(int x, int y)
 {
 	for (auto iterWindow : liWindows)
+	{
+		if (!iterWindow->bActive) continue;
+		
 		iterWindow->MotionFunc(x, iAppWndHeight - y);
+	}
 }
 
 
@@ -316,7 +403,11 @@ void PassiveMotionFunc(int x, int y)
 	bool bResult = false;
 
 	for (auto iterWindow : liWindows)
+	{
+		if (!iterWindow->bActive) continue;
+		
 		bResult |= iterWindow->PassiveMotionFunc(x, iAppWndHeight - y);
+	}
 
 	if (!bResult)
 	{
@@ -332,6 +423,8 @@ void MouseFunc(int button, int state, int x, int y)
 
 	for (auto iterWindow : liWindows)
 	{
+		if (!iterWindow->bActive) continue;
+
 		bResult = iterWindow->MouseFunc(button, state, x, iAppWndHeight - y);
 		if (bResult) break;
 	}
@@ -347,7 +440,11 @@ void MouseWheelFunc(int state, int delta, int x, int y)
 	y = y - posY;
 	
 	for (auto iterWindow : liWindows)
+	{
+		if (!iterWindow->bActive) continue;
+		
 		iterWindow->MouseWheelFunc(state, delta, x, iAppWndHeight - y);
+	}
 }
 
 void MouseHWheelFunc(int state, int delta, int x, int y)
@@ -360,7 +457,11 @@ void MouseHWheelFunc(int state, int delta, int x, int y)
 	y = y - posY;
 
 	for (auto iterWindow : liWindows)
+	{
+		if (!iterWindow->bActive) continue;
+
 		iterWindow->MouseHWheelFunc(state, delta, x, iAppWndHeight - y);
+	}
 }
 
 

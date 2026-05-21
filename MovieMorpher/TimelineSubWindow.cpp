@@ -3,7 +3,6 @@
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 #include "../../!!adGUI/button.h"
 #include "../../!!adGlobals/glut/glut.h"
-#include "../../!!adExtensions/extensions.h"
 
 
 const int g_iTrackHeight	= 40;
@@ -59,7 +58,7 @@ void TimelineSubWindow::PopulateGUI()
 
 
 
-void TimelineSubWindow::AddClip(TrackClip* _clip)
+TrackClip* TimelineSubWindow::AddClip()
 {
 	int iTrack = TimelineTrack::iSelected;
 	TrackClip* clip = new TrackClip(liClips.size(),														// id
@@ -79,6 +78,11 @@ void TimelineSubWindow::AddClip(TrackClip* _clip)
 	liClips.push_back(clip);
 
 	TrackClip::iSelected = clip->id;
+
+	// Pass callback deeper
+	clip->OnClipChange = m_setWindowCallback;
+
+	return clip;
 }
 
 

@@ -3,10 +3,8 @@
 
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include "../../!!adGUI/Slider.h"
-#include "../../!!adGUI/OnOffFlipSwitch.h"
 #include "../../!!adGUI/button.h"
-#include "../../!!adGUI/ListBox.h"
-#include <vector>
+
 
 class SliderG : public Slider<SL_INT>
 {
@@ -58,37 +56,23 @@ public:
 					float fWidthPerc, float fHeightPerc);
 	~ParamsSubWindow() {}
 
-	bool ShowOriginal();
-
 	float fMorphPower;
 	float fMorphRadius;
 	float fMorphRatio;
 
-	bool PointsAreVisible();
-	bool IsWireframeShown();
-	void MakePointsVisible();
-
 protected:
-
-	bool LoadImageFromDisk();
-	bool SaveFrame();
-	bool StartNextGeneration();
-	bool CompileShaders(bool);
 
 	void PopulateGUI() override;
 
+	bool StartNextGeneration();
+
 private:
-	Slider<SL_INT>   *SliderMorphRatio;
-	Slider<SL_INT>   *SliderMorphRadius;
-	SliderCenterLine *SliderMorphSmoothness;
+
+	Slider<SL_INT>*   SliderMorphRatio;
+	Slider<SL_INT>*   SliderMorphRadius;
+	SliderCenterLine* SliderMorphSmoothness;
 	
-	OnOffFlipSwitch* onoffswitchConnect;
-	OnOffFlipSwitch* onoffswitchWireframe;
-	OnOffFlipSwitch* onoffswitchShowPoints;
-	OnOffFlipSwitch* onoffpushbuttonOriginal;
-	Button* buttonLoadImage;
-	Button* buttonSaveFrame;
-	Button* buttonMorphNext;
+	Button*			  buttonMorphNext;
 
 };
 

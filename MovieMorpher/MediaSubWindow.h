@@ -28,6 +28,8 @@ public:
 
 	void RenderGUI() override;
 
+	std::function<OpenGLSubWindowWithGUI*()> OnNewMedia;
+
 protected:
 
 	bool AddTrackPicture();

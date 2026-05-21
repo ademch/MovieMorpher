@@ -4,6 +4,8 @@
 #include "../../!!adVideo/FFMS_Video.h"
 #include "../../!!adGUI/VideoPositionMediator.h"
 
+#include "ImageSaveLoad.h"
+
 
 extern TextureBank texBank;
 
@@ -90,14 +92,14 @@ void MediaSubWindow::PopulateGUI()
 	liGUI_Elements.push_back(labelPlayhead);
 
 	ButtonImage* buttonImg;
-	buttonImg = new ButtonImage("", -200, 60, 32);
+	buttonImg = new ButtonImage("", -210, 60, 32);
 	buttonImg->LoadImg("Icons\\Image9.bmp");
 	buttonImg->strHint = "Add video track...";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	buttonImg->OnClick = [this]() {	return this->AddTrackVideo(); };
 	liGUI_Elements.push_back(buttonImg);
 
-	buttonImg = new ButtonImage("", -166, 60, 32);
+	buttonImg = new ButtonImage("", -176, 60, 32);
 	buttonImg->LoadImg("Icons\\Image10.bmp");
 	buttonImg->strHint = "Add image...";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
@@ -109,17 +111,27 @@ void MediaSubWindow::PopulateGUI()
 
 bool MediaSubWindow::AddTrackPicture()
 {
-	windowTimeLine->AddClip(NULL);
+	unsigned int width, height;
+	unsigned char* image;
+	
+	image = ImageSaveLoadHelper::LoadImageFromDisk(width, height);
+
+	OpenGLSubWindowWithGUI* newToolWindow;
+	newToolWindow = OnNewMedia();
+
+	TrackClip* clip = windowTimeLine->AddClip();
+	clip->windowTool = newToolWindow;
 
 	return true;
 }
+
 
 bool MediaSubWindow::AddTrackVideo()
 {
 	video = new FFMS_Video();
 	video->LoadMPEG("E:\\Or\\MovieMorpher\\Debug\\output00.mp4");
 
-	windowTimeLine->AddClip(NULL);
+	windowTimeLine->AddClip();
 
 	return true;
 }
@@ -180,3 +192,5 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 
 	return true;
 }
+
+

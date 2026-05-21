@@ -19,8 +19,8 @@ namespace ImageSaveLoadHelper
 			{
 				// save bottom value
 				unsigned char tmp = image[(height - j - 1)*width * 4 + i];
-				image[(height - j - 1)*width * 4 + i] = image[j*width * 4 + i];
-				image[j*width * 4 + i] = tmp;
+									image[(height - j - 1)*width * 4 + i] = image[j*width * 4 + i];
+																			image[j*width * 4 + i] = tmp;
 			}
 		}
 	}
