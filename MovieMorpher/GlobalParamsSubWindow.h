@@ -17,10 +17,6 @@ public:
 
 	bool ShouldShowOriginal();
 
-	float fMorphPower;
-	float fMorphRadius;
-	float fMorphRatio;
-
 	bool PointsAreVisible();
 	bool IsWireframeShown();
 	void MakePointsVisible();
@@ -37,7 +33,6 @@ private:
 
 	static GlobalParamsSubWindow* _this;
 
-	OnOffFlipSwitch* onoffswitchConnect;
 	OnOffFlipSwitch* onoffswitchWireframe;
 	OnOffFlipSwitch* onoffswitchShowPoints;
 	OnOffFlipSwitch* onoffpushbuttonOriginal;

@@ -219,7 +219,7 @@ void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd)
 		ParamsSubWindow*      new_windowParams;
 
 		new_windowToolEditor = dynamic_cast<WarpingToolSubWindow*>(switchedWnd);
-		new_windowParams     = windowToolEditor->GetParamsSubWindow();
+		new_windowParams     = new_windowToolEditor->GetParamsSubWindow();
 
 		// Copy user view from previous to a new window
 		// NB: Seems to be redundant here as params are copied on Draw

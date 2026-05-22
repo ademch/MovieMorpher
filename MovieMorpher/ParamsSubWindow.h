@@ -10,7 +10,7 @@ class SliderG : public Slider<SL_INT>
 {
 public:
 	SliderG(std::string strCaption, int x, int y, float _v_min, float _v_max, float* _v_cur, float scale) :
-		     Slider(strCaption, x, y, _v_min, _v_max, _v_cur, scale) {};
+	Slider(strCaption, x, y, _v_min, _v_max, _v_cur, scale) {};
 	
 	void Draw()
 	{
@@ -34,7 +34,7 @@ class SliderCenterLine : public Slider<SL_FLOAT>
 {
 public:
 	SliderCenterLine(std::string strCaption, int x, int y, float _v_min, float _v_max, float* _v_cur, float scale) :
-		      Slider(strCaption, x,y, _v_min,_v_max, _v_cur, scale) {};
+	Slider(strCaption, x,y, _v_min,_v_max, _v_cur, scale) {};
 
 	void Draw()
 	{
