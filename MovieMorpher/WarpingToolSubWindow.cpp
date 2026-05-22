@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "WarpingToolSubWindow.h"
+#include "GlobalParamsSubWindow.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 #include <vector>
 #include <functional>
@@ -88,59 +89,64 @@ void WarpingToolSubWindow::Draw()
 		// and joysticks become physically transformed
 		glMultMatrixf(&matrImmediateVisualization.m[0][0]);
 
-		glEnable(GL_LINE_STIPPLE);
-		glLineStipple(2, 0xAAAA);
-			glLineWidth(2);
-			glColor3f(0, 0.69, 0);
+		if (GlobalParamsSubWindow::Get()->PointsAreVisible())
+		{
+			glEnable(GL_LINE_STIPPLE);
+			glLineStipple(2, 0xAAAA);
+				glLineWidth(2);
+				glColor3f(0, 0.69, 0);
 
-			glBegin(GL_LINE_LOOP);
-			for (auto& element : liScalingHandles) {
-				glVertex3f(element.X, element.Y, 2);
-			}
-			glEnd();
-
-			// Line from the center to rotation handle
-			glBegin(GL_LINES);
-				glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
-				glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
-			glEnd();
-
-			if (stateTransform == STATE_TRANS_SCALE_PROPORTIONAL)
-			{
-				glLineWidth(1);
-
-				Vec2 vDirLine = VecNormalize( m_ptHandleClicked - m_ptHandlePivot );
-				Vec2 ptOnLine = m_ptHandlePivot + 10000.0*vDirLine;
-				glBegin(GL_LINES);
-					glVertex3f(m_ptHandlePivot.X,   m_ptHandlePivot.Y,   const_fPointsDepth);
-					glVertex3f(ptOnLine.X,          ptOnLine.Y,          const_fPointsDepth);
+				// frame
+				glBegin(GL_LINE_LOOP);
+				for (auto& element : liScalingHandles) {
+					glVertex3f(element.X, element.Y, 2);
+				}
 				glEnd();
-			}
-		glDisable(GL_LINE_STIPPLE);
 
-		// Draw handles of a rectangle
-		glPointSize(const_fPointsSize);
-		glColor3f(0.93, 0.8, 0);
-		glBegin(GL_POINTS);
-			for (auto& element : liScalingHandles) {
-				glVertex3f(element.X, element.Y, const_fPointsDepth);
-			}
-		glEnd();
+				// Line from the center to rotation handle
+				glBegin(GL_LINES);
+					glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
+					glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
+				glEnd();
 
-		glLineWidth(1);
-		DrawCircle(Vecc3(ptTranslHandle, 3), 50, 40);
-		glEnable(GL_POINT_SMOOTH);
+				if (stateTransform == STATE_TRANS_SCALE_PROPORTIONAL)
+				{
+					glLineWidth(1);
+
+					Vec2 vDirLine = VecNormalize( m_ptHandleClicked - m_ptHandlePivot );
+					Vec2 ptOnLine = m_ptHandlePivot + 10000.0*vDirLine;
+					glBegin(GL_LINES);
+						glVertex3f(m_ptHandlePivot.X,   m_ptHandlePivot.Y,   const_fPointsDepth);
+						glVertex3f(ptOnLine.X,          ptOnLine.Y,          const_fPointsDepth);
+					glEnd();
+				}
+			glDisable(GL_LINE_STIPPLE);
+
+			// Draw handles of a rectangle
 			glPointSize(const_fPointsSize);
+			glColor3f(0.93, 0.8, 0);
 			glBegin(GL_POINTS);
-				glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
+				for (auto& element : liScalingHandles) {
+					glVertex3f(element.X, element.Y, const_fPointsDepth);
+				}
 			glEnd();
 
-			glPointSize(const_fPointsSize);
-			glBegin(GL_POINTS);
-				glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
-			glEnd();
+			// Translation na drotation handles
+			glLineWidth(1);
+			DrawCircle(Vecc3(ptTranslHandle, 3), 50, 40);
+			glEnable(GL_POINT_SMOOTH);
+				glPointSize(const_fPointsSize);
+				glBegin(GL_POINTS);
+					glVertex3f(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
+				glEnd();
 
-		glDisable(GL_POINT_SMOOTH);
+				glPointSize(const_fPointsSize);
+				glBegin(GL_POINTS);
+					glVertex3f(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
+				glEnd();
+
+			glDisable(GL_POINT_SMOOTH);
+		}
 
 }
 

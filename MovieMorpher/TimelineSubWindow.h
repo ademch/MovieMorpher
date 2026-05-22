@@ -100,7 +100,7 @@ public:
 		matrSliderNonInverted = _matrUserScale;
 	}
 
-	TrackClip* AddClip();
+	TrackClip* AddClip(OpenGLSubWindowWithGUI* wndTool);
 
 	void SetSwitchToolWindowCallback(std::function<void(OpenGLSubWindowWithGUI*)> callback)
 	{

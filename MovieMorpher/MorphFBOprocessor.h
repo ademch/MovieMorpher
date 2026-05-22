@@ -12,8 +12,6 @@ class MorphFBOprocessor : public OpenGLSubWindow
 public:
 	FrameBufferObject* fbo;
 
-	std::list<Vec2> mesh_listEmu;
-
 	MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
 	~MorphFBOprocessor();
 
@@ -33,6 +31,8 @@ public:
 	TextureBank  texBank;
 
 protected:
+
+	std::list<Vec2> mesh_listEmu;
 
 private:
 	TextureDescriptor* AllocFrameTexture(int iWidth, int iHeight, int nrChannels);

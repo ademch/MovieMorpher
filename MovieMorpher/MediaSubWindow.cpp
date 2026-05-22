@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "MediaSubWindow.h"
+#include "GLSL_Pipeline.h"
 #include "../../!!adGUI/TrackClip.h"
 #include "../../!!adVideo/FFMS_Video.h"
 #include "../../!!adGUI/VideoPositionMediator.h"
@@ -132,8 +133,8 @@ bool MediaSubWindow::AddTrackPicture()
 		free(image);
 	}
 
-	TrackClip* clip = windowTimeLine->AddClip();//TODO pass something as param. eg windowTool
-	clip->windowTool = newToolWindow;
+	TrackClip* clip = windowTimeLine->AddClip(newToolWindow);
+	clip->extern_textureIcon = wndWarpingTool->GetFBO()->texBank.bank[TEXTURE_INPUT_IMAGE];
 
 	return true;
 }
@@ -147,8 +148,7 @@ bool MediaSubWindow::AddTrackVideo()
 	OpenGLSubWindowWithGUI* newToolWindow;
 	newToolWindow = OnNewMedia("");
 
-	TrackClip* clip = windowTimeLine->AddClip();
-	clip->windowTool = newToolWindow;
+	TrackClip* clip = windowTimeLine->AddClip(newToolWindow);
 
 	return true;
 }

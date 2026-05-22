@@ -7,7 +7,7 @@
 
 const int g_iTrackHeight	= 40;
 const int g_iTrackPadding	= 10;
-const int g_iClipPadding	= 10;
+const int g_iClipPadding	= 7;
 const int g_iTrackCount		= 5;
 const int g_iTimelineBorder = 5;
 
@@ -58,14 +58,14 @@ void TimelineSubWindow::PopulateGUI()
 
 
 
-TrackClip* TimelineSubWindow::AddClip()
+TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool)
 {
 	int iTrack = TimelineTrack::iSelected;
 	TrackClip* clip = new TrackClip(liClips.size(),														// id
 		                            iBorder,															// x
 									-g_iTrackHeight*iTrack - g_iTrackPadding*iTrack + g_iClipPadding,	// y
 									Width(),															// width
-		                            20);																// height
+		                            26);																// height
 	
 	//float iDuration = mediator->Duration();
 	clip->SetAttr(0, 100.0);
@@ -81,6 +81,8 @@ TrackClip* TimelineSubWindow::AddClip()
 
 	// Pass callback deeper
 	clip->OnClipChange = m_setWindowCallback;
+	clip->windowTool   = wndTool;
+	clip->windowTool->zOrder = iTrack;
 
 	return clip;
 }

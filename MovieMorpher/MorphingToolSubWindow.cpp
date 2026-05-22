@@ -85,12 +85,19 @@ void MorphingToolSubWindow::DrawFBOquad()
 	else
 		texDescr = fbo->texBank[TEXTURE_MORPHED_IMAGE];
 
+	float zValue = 0.0;
+	if (!bActive)	// active window ignore zOrder, nonActive become z sorter
+	{
+		zValue -= 100.0*zOrder;
+	}
+
 	//std::string sSelected = comboBox->GetSelected();
 	RenderTexturedQuad( texDescr->m_uiTextureID,	// texture
 					   -texDescr->m_width/2,		// bottomX
 					   -texDescr->m_height/2,		// bottomY
 						texDescr->m_width,			// width
-						texDescr->m_height);		// height
+						texDescr->m_height,			// z
+						zValue);
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
