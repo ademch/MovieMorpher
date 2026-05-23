@@ -154,6 +154,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\!!adExtensions\debugger.h" />
     <ClInclude Include="..\..\!!adExtensions\extensions.h" />
     <ClInclude Include="..\..\!!adExtensions\read_shader_file.h" />
     <ClInclude Include="..\..\!!adExtensions\Shaders.h" />
@@ -202,6 +203,7 @@
     <ClInclude Include="WarpingToolSubWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\!!adExtensions\debugger.cpp" />
     <ClCompile Include="..\..\!!adExtensions\extensions.cpp" />
     <ClCompile Include="..\..\!!adExtensions\read_shader_file.cpp" />
     <ClCompile Include="..\..\!!adExtensions\Shaders.cpp" />

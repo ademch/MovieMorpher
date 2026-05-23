@@ -185,13 +185,20 @@ void MorphingToolSubWindow::Draw()
 		buttonDestination->bEnabled = true;
 	}
 
+	bool bParamsInSync = (fbo->fMorphRadius   == m_ParamsSubWindow->fMorphRadius) &&
+						 (fbo->fMorphPower    == m_ParamsSubWindow->fMorphPower) &&
+						 (fbo->fMorphRatio    == m_ParamsSubWindow->fMorphRatio) &&
+						 (fbo->bShowWireframe == GlobalParamsSubWindow::Get()->IsWireframeShown());
 
-	if (fbo->bOutdated)
+	if (fbo->bOutdated || !bParamsInSync)
 		ReDrawFBO();
 }
 
 
-
+// Texture layout       ____________________ 
+//           SRC float | st st st st .. st  |
+//           DST float | st st st st .. st  |
+//                     ----------------------
 void MorphingToolSubWindow::UploadMorphingLines()
 {
 	assert(liSource.size() == liDestination.size());
@@ -207,14 +214,28 @@ void MorphingToolSubWindow::UploadMorphingLines()
 	glActiveTextureARB(GL_TEXTURE1);
 
 		glBindTexture(GL_TEXTURE_2D, fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_uiTextureID);
-		fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_width  = listOutSrc.size();
-		fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_height = 2;
 
-		//           targ         mml  int frmt  w                  h brdr inc: frmt    type    data
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, listOutSrc.size(), 2,   0,    GL_RG, GL_FLOAT, NULL);
+		if (liSource.size() > 0)
+		{
+			fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_width  = listOutSrc.size();
+			fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_height = 2;
 
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, listOutSrc.size(), 1, GL_RG, GL_FLOAT, listOutSrc.data());
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0,1, listOutDst.size(), 1, GL_RG, GL_FLOAT, listOutDst.data());
+			//           targ         mml  int frmt  w                  h brdr inc: frmt    type    data
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, listOutSrc.size(), 2,   0,    GL_RG, GL_FLOAT, NULL);
+
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0,0, listOutSrc.size(), 1, GL_RG, GL_FLOAT, listOutSrc.data());
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0,1, listOutDst.size(), 1, GL_RG, GL_FLOAT, listOutDst.data());
+		}
+		else
+		{
+			// empty texture 1x1
+			fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_width  = 1;
+			fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_height = 1;
+
+			//           targ         mml  int frmt  w  h brdr inc: frmt    type    data
+			Vec2 data = Vecc2();
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, 1, 1,   0,    GL_RG, GL_FLOAT, &data);
+		}
 
 	glActiveTextureARB(GL_TEXTURE0);
 
@@ -522,6 +543,7 @@ void MorphingToolSubWindow::ClearDestinationLine() {
 	buttonDestination->_text = "Draw dst";
 }
 
+
 bool MorphingToolSubWindow::ResetView()
 {
 	OpenGLSubWindow::ResetView();
@@ -627,14 +649,14 @@ void MorphingToolSubWindow::StartNextGeneration()
 	ClearSourceLine();
 	ClearDestinationLine();
 
-	// Apply current morph
-	MorphNow();
+	// load empty lines
+	UploadMorphingLines();
 
-	unsigned int idSrc =	  fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID;
+	unsigned int idSrc      = fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID;
 	unsigned int iWidthSrc  = fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_width;
 	unsigned int iHeightSrc = fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_height;
 
-	unsigned int idDst =	  fbo->texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID;
+	unsigned int idDst      = fbo->texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID;
 	unsigned int iWidthDst  = fbo->texBank[TEXTURE_INPUT_IMAGE]->m_width;
 	unsigned int iHeightDst = fbo->texBank[TEXTURE_INPUT_IMAGE]->m_height;
 	unsigned int nrChannels = 4;

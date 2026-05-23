@@ -5,11 +5,12 @@
 #include "../../!!adGlobals/wdir.h"
 #include "MorphFBOprocessor.h"
 #include <windowsx.h>
-#include "../../!!adExtensions/extensions.h"
 #include "ImageSaveLoad.h"
-#include "../../!!adGlobals/globalToolTip.h"
+#include "../../!!adExtensions/extensions.h"
 #include "../../!!adGUI/VideoPositionMediator.h"
 #include "../../!!adGlobals/JPG/JPEG_library.h"
+#include "../../!!adExtensions/debugger.h"
+
 
 
 int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
@@ -76,6 +77,15 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	if (!CheckExtensions()) return 1;
 	linkExtensions();
+
+	{
+		glDebugMessageCallback(GLDebugCallback, nullptr);
+
+		glEnable(GL_DEBUG_OUTPUT);
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+
+		glDebugMessageControlDisableDeprecatedMessages();
+	}
 
 	printf("Loading font...");
 		unsigned int iTextureFont;

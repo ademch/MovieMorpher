@@ -3,7 +3,6 @@
 //#include "resource.h"
 #include "../../!!adGlobals/glut/glut.h"
 #include "../../!!adGUI/glfont.h"
-#include "../../!!adGUI/SubWindowWithGUI.h"
 #include <vector>
 #include "GLSL_Pipeline.h"
 #include <chrono>
@@ -13,6 +12,7 @@
 #include "GlobalParamsSubWindow.h"
 #include "MediaSubWindow.h"
 #include "TimelineSubWindow.h"
+
 #include "../../!!adGlobals/globalToolTip.h"
 
 

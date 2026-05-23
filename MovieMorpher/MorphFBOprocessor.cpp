@@ -93,6 +93,8 @@ void MorphFBOprocessor::Render()
 		glUseProgramObjectARB(FFP);
 
 	fbo->Deactivate();
+
+	bOutdated = false;
 }
 
 
@@ -140,15 +142,15 @@ TextureDescriptor* MorphFBOprocessor::AllocFloatBufferTexture(int iWidth, int iH
 	ZeroMemory(data, iWidth*iHeight*sizeof(float)*nrChannels);
 	//memset(data, 120, iWidth*iHeight*nrChannels);
 
-	data[0] = 0.5f;  data[1] = 1.0f;
-	data[2] = 0.7f;  data[3] = 0.2f;
+		data[0] = 0.5f;  data[1] = 1.0f;
+		data[2] = 0.7f;  data[3] = 0.2f;
 
-	data[4] = 0.35f; data[5] = 0.1f;
-	data[6] = 0.17f; data[7] = 0.28f;
+		data[4] = 0.35f; data[5] = 0.1f;
+		data[6] = 0.17f; data[7] = 0.28f;
 
-	//           targ         mml  int frmt                brdr inc frmt inc data type   inc data
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, iWidth, iHeight, 0, GL_RG, GL_FLOAT, data);
-	glError();
+		//           targ         mml  int frmt                brdr inc frmt inc data type   inc data
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, iWidth, iHeight, 0, GL_RG, GL_FLOAT, data);
+		glError();
 
 	free(data);
 

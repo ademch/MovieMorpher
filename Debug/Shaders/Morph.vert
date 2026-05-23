@@ -16,6 +16,13 @@ void main(void)
 	gl_FrontColor  = vec4(gl_Color.rgb, 1.0);
 	gl_TexCoord[0] = gl_MultiTexCoord0;
 
+	if (textureSize(tex1, 0).t == 1)
+	{
+		// empty texture marker received
+		gl_Position = gl_ModelViewProjectionMatrix*vPosition;
+		return;
+	}
+
 	int iMorphPointsCount = textureSize(tex1, 0).s;
 
 	// 1. At the first step we decide the translation direction vector (a radius-vector of unity length).
