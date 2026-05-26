@@ -42,7 +42,7 @@ void MorphFBOprocessor::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 	texBank[TEXTURE_INPUT_IMAGE]->m_width  = m_iWidth;
 	texBank[TEXTURE_INPUT_IMAGE]->m_height = m_iHeight;
 
-	// FBO
+	// FBO (texture is not tied to TMU being render target)
 	glBindTexture(GL_TEXTURE_2D, texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iWidth, m_iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 	texBank[TEXTURE_MORPHED_IMAGE]->m_width  = m_iWidth;
@@ -70,6 +70,12 @@ void MorphFBOprocessor::Render()
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glLineWidth(1);
 
+		glActiveTextureARB(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, texBank[TEXTURE_FLOAT_BUFFER]->m_uiTextureID);
+
+		glActiveTextureARB(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID);
+
 		glUseProgramObjectARB(glsl_pipeline.GPUPrograms["morph"]->programObj);
 
 			glUniform1iARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("tex0"), 0);	// image
@@ -78,8 +84,8 @@ void MorphFBOprocessor::Render()
 			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphPower"),  fMorphPower);
 			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRatio"),  fMorphRatio);
 
-				RenderTexturedQuadMesh(texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID,
-									   -m_iWidth/2.0f, -m_iHeight/2.0f, m_iWidth, m_iHeight, 0.0f, 110*float(m_iWidth)/float(m_iHeight), 110 );
+					RenderTexturedQuadMesh(texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID,
+										   -m_iWidth/2.0f, -m_iHeight/2.0f, m_iWidth, m_iHeight, 0.0f, 110*float(m_iWidth)/float(m_iHeight), 110 );
 
 			// if (bCPUShaderDebugging) {
 			//	   GenMeshToList(-m_iWidth / 2.0f, -m_iHeight / 2.0f, m_iWidth, m_iHeight, 0.0, 30, 30);

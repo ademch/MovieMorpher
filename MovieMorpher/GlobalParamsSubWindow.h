@@ -23,6 +23,9 @@ public:
 
 	static GlobalParamsSubWindow* Get();
 
+	bool KeyboardFunc(unsigned char key, int x, int y) override;
+	void KeyboardAux(int key, int state, int x, int y) override;
+
 protected:
 
 	bool CompileShaders(bool);

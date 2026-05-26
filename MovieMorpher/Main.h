@@ -23,6 +23,7 @@ int iAppWndHeight = 860;
 
 OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows(char *title);
 void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd);
+void OnPlayback(bool bStarted);
 
 void ReshapeWindow(OpenGLSubWindowWithGUI* wind);
 

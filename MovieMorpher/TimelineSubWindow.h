@@ -125,7 +125,7 @@ protected:
 
 	int iBorder;
 
-	std::vector<TrackClip*> liClips;
+	int FindLastClipOnTrack_TailFrame(int iTrackNumber);
 
 private:
 

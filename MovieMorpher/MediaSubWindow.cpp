@@ -22,6 +22,9 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 
 	FFMS_Video::Initialize();
 
+	stateMediaPlayer = STATE_MEDIAPLAYER_IDLE;
+	QueryPerformanceFrequency(&ticksPerSecond);
+
 	PopulateGUI();
 }
 
@@ -135,6 +138,7 @@ bool MediaSubWindow::AddTrackPicture()
 
 	TrackClip* clip = windowTimeLine->AddClip(newToolWindow);
 	clip->extern_textureIcon = wndWarpingTool->GetFBO()->texBank.bank[TEXTURE_INPUT_IMAGE];
+	clip->mediaType = CLIP_IMAGE;
 
 	return true;
 }
@@ -146,11 +150,38 @@ bool MediaSubWindow::AddTrackVideo()
 	video->LoadMPEG("E:\\Or\\MovieMorpher\\Debug\\output00.mp4");
 
 	OpenGLSubWindowWithGUI* newToolWindow;
-	newToolWindow = OnNewMedia("");
+	newToolWindow = OnNewMedia("video");
+
+	WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(newToolWindow);
+	// load image into the tool textBank
+	{
+		FrameItem* frame= video->videoCacheThread->GetFrame(0);
+		wndWarpingTool->GetFBO()->Reshape(0, 0, frame->width, frame->height);
+		wndWarpingTool->GetFBO()->TextureUpdate(frame->width, frame->height, frame->data);
+		
+	}
 
 	TrackClip* clip = windowTimeLine->AddClip(newToolWindow);
+	clip->extern_textureIcon = wndWarpingTool->GetFBO()->texBank.bank[TEXTURE_INPUT_IMAGE];
+	clip->mediaType = CLIP_VIDEO;
 
 	return true;
+}
+
+
+void MediaSubWindow::Draw()
+{
+	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
+	{
+		for (auto iter : TrackClip::liClips)
+		{
+			if ((elapsed_sec > iter->m_iStartPosFrame) && (elapsed_sec < iter->m_iStartPosFrame + iter->m_iLengthFrames))
+			{
+				WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iter->windowTool);
+				wndWarpingTool->DrawFBOquad();
+			}
+		}
+	}
 }
 
 
@@ -158,17 +189,25 @@ bool MediaSubWindow::AddTrackVideo()
 void MediaSubWindow::RenderGUI()
 {
 	PositionMediator* mediator = PositionMediator::Get();
-	int iDuration = mediator->Duration();
+	int iDuration = mediator->DurationFrames();
+
+	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
+	{
+		LARGE_INTEGER T1;
+		QueryPerformanceCounter(&T1);
+		elapsed_sec = float(T1.QuadPart - T0.QuadPart) / float(ticksPerSecond.QuadPart);
+		mediator->SetPos0_1(NULL, elapsed_sec/iDuration);
+	}
 
 //	float fSecondPassed = video->audioThread->GetCurrentSecond();
-//	mediator->SetPos(NULL, fSecondPassed/iDuration);
+//	mediator->SetPos0_1(NULL, fSecondPassed/iDuration);
 
-	int hours   = int(mediator->Pos01()*mediator->Duration())/3600;
-	int minutes = int(mediator->Pos01()*mediator->Duration())/60;
-	int seconds = int(mediator->Pos01()*mediator->Duration())%60;
+	int hours   = int(mediator->Pos01()*mediator->DurationFrames())/3600;
+	int minutes = int(mediator->Pos01()*mediator->DurationFrames())/60;
+	int seconds = int(mediator->Pos01()*mediator->DurationFrames())%60;
 	
 	double intpart;
-	int milliseconds = int(modf(mediator->Pos01()*mediator->Duration(), &intpart)*1000);
+	int milliseconds = int(modf(mediator->Pos01()*mediator->DurationFrames(), &intpart)*1000);
 
 	static char buf[256];
 	snprintf(buf, sizeof(buf), "%02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
@@ -193,6 +232,12 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 	if (target->_text == "PlayS2E")
 	{
 		target->bPushed = true;
+
+		QueryPerformanceCounter(&T0);
+		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING;
+
+		if (OnPlaybackStarted)
+			OnPlaybackStarted(true);
 	}
 	if (target->_text == "Pause")
 	{
@@ -204,6 +249,9 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 	}
 	if (target->_text == "Stop")
 	{
+		stateMediaPlayer = STATE_MEDIAPLAYER_IDLE;
+		if (OnPlaybackStarted)
+			OnPlaybackStarted(false);
 
 	}
 

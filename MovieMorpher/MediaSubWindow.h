@@ -8,6 +8,11 @@
 #include "../../!!adVideo/FFMS_Video.h"
 #include "../../!!adVideo/SoundAL.h"
 
+enum StateMediaPlayer_enum {
+	STATE_MEDIAPLAYER_IDLE,
+	STATE_MEDIAPLAYER_PLAYING
+};
+
 
 class MediaSubWindow : public OpenGLSubWindowWithGUI
 {
@@ -27,8 +32,10 @@ public:
 	}
 
 	void RenderGUI() override;
+	void Draw() override;
 
 	std::function<OpenGLSubWindowWithGUI*(char*)> OnNewMedia;
+	std::function<void(bool)> OnPlaybackStarted;
 
 protected:
 
@@ -46,6 +53,12 @@ private:
 	bool Push(PushButtonImage* target);
 
 	FFMS_Video* video;
+
+	LARGE_INTEGER ticksPerSecond;
+	LARGE_INTEGER T0;
+
+	StateMediaPlayer_enum stateMediaPlayer;
+	float elapsed_sec;
 
 };
 

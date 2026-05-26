@@ -121,6 +121,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	windowMedia = new MediaSubWindow(iAppWndWidth, iAppWndHeight, 0.01, 0.02, 0.98, 0.31);
 	windowMedia->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	windowMedia->OnNewMedia = ConstructToolAndParamsSubWindows;
+	windowMedia->OnPlaybackStarted = OnPlayback;
 	liWindows.push_back(windowMedia);
 
 
@@ -211,9 +212,24 @@ OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows(char *title)
 }
 
 
+void OnPlayback(bool bStarted)
+{
+	// activate/deactivate current windows
+	windowToolEditor->bActive = !bStarted;
+	windowParams->bActive     = !bStarted;
+}
+
+
+
 void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd)
 {
 	std::cout << "Switching window request...";
+
+	if (!windowToolEditor->bActive)
+	{
+		std::cout << "Blocked during playback";
+		return;
+	}
 
 	if (switchedWnd != windowToolEditor)
 	{
@@ -513,33 +529,29 @@ static LRESULT CALLBACK winProcUser(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 		break;
 	
 	case WM_KEYDOWN:
-		if (wParam == VK_SHIFT)
-		{
-			POINT p;
+	{
+		POINT p;
 
-			GetCursorPos(&p);
-			ScreenToClient(hwnd, &p);
+		GetCursorPos(&p);
+		ScreenToClient(hwnd, &p);
 
-			if ((p.x >= 0) && (p.y >= 0) && (p.x < iAppWndWidth) && (p.y < iAppWndHeight))
-				keyboardAux(GLUT_ACTIVE_SHIFT, GLUT_DOWN, p.x, p.y);
-		}
+		keyboardAux(wParam, GLUT_DOWN, p.x, p.y);
+
 		return CallWindowProc(currentWndProc, handle, Msg, wParam, lParam);
 		break;
-	
+	}
 	case WM_KEYUP:
-		if (wParam == VK_SHIFT)
-		{
-			POINT p;
+	{
+		POINT p;
 
-			GetCursorPos(&p);
-			ScreenToClient(hwnd, &p);
+		GetCursorPos(&p);
+		ScreenToClient(hwnd, &p);
 
-			if ((p.x >= 0) && (p.y >= 0) && (p.x < iAppWndWidth) && (p.y < iAppWndHeight))
-				keyboardAux(GLUT_ACTIVE_SHIFT, GLUT_UP, p.x, p.y);
-		}
+		keyboardAux(wParam, GLUT_UP, p.x, p.y);
+
 		return CallWindowProc(currentWndProc, handle, Msg, wParam, lParam);
 		break;
-	
+	}
 	default:
 		//printf("%d\n", Msg);
 

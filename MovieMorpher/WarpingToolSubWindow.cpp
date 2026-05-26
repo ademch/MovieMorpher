@@ -6,7 +6,7 @@
 #include <functional>
 
 const float const_fPointsDepth   = 3;
-const float const_fPointsSize    = 12;
+const float const_fPointsSize    = 10;
 const float const_fHandleRadius  = 5;
 
 #define TRANS_PIVOTRIGHT	1
@@ -124,14 +124,14 @@ void WarpingToolSubWindow::Draw()
 
 			// Draw handles of a rectangle
 			glPointSize(const_fPointsSize);
-			glColor3f(0.93, 0.8, 0);
+			glColor3f(0.9, 0.0, 0.0);
 			glBegin(GL_POINTS);
 				for (auto& element : liScalingHandles) {
 					glVertex3f(element.X, element.Y, const_fPointsDepth);
 				}
 			glEnd();
 
-			// Translation na drotation handles
+			// Translation and rotation handles
 			glLineWidth(1);
 			DrawCircle(Vecc3(ptTranslHandle, 3), 50, 40);
 			glEnable(GL_POINT_SMOOTH);
@@ -210,8 +210,6 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 
 bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 {
-	if (MorphingToolSubWindow::MouseFunc(button, state, x, y)) return true;
-
 	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
 		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
 	{
@@ -329,7 +327,7 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 																	  Vecc3(m_ptHandlePivotUp    - m_ptHandlePivot));
 	}
 
-	return false;
+	return MorphingToolSubWindow::MouseFunc(button, state, x, y);
 }
 
 
@@ -437,7 +435,7 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 
 void WarpingToolSubWindow::KeyboardAux(int key, int state, int x, int y)
 {
-	if (key == GLUT_ACTIVE_SHIFT)
+	if (key == VK_SHIFT)
 	{
 		PassiveMotionFunc(x, y);
 	}

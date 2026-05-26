@@ -71,6 +71,11 @@ void MorphingToolSubWindow::PopulateGUI()
 	buttonResetView->OnClick = [this]() { return ResetView(); };
 	liGUI_Elements.push_back(buttonResetView);
 
+	buttonClear = new Button("Clear", 190,10, 100, 6.3);
+	buttonClear->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
+	buttonClear->OnClick = [this]() { return ClearMorph(); };
+	liGUI_Elements.push_back(buttonClear);
+
 }
 
 
@@ -86,7 +91,7 @@ void MorphingToolSubWindow::DrawFBOquad()
 		texDescr = fbo->texBank[TEXTURE_MORPHED_IMAGE];
 
 	float zValue = 0.0;
-	if (!bActive)	// active window ignore zOrder, nonActive become z sorter
+	if (!bActive)	// active window ignore zOrder, nonActive become z sorted
 	{
 		zValue -= 100.0*zOrder;
 	}
@@ -185,20 +190,20 @@ void MorphingToolSubWindow::Draw()
 		buttonDestination->bEnabled = true;
 	}
 
-	bool bParamsInSync = (fbo->fMorphRadius   == m_ParamsSubWindow->fMorphRadius) &&
-						 (fbo->fMorphPower    == m_ParamsSubWindow->fMorphPower) &&
-						 (fbo->fMorphRatio    == m_ParamsSubWindow->fMorphRatio) &&
-						 (fbo->bShowWireframe == GlobalParamsSubWindow::Get()->IsWireframeShown());
+	bool bFBOparamsInSync = (fbo->fMorphRadius   == m_ParamsSubWindow->fMorphRadius) &&
+						    (fbo->fMorphPower    == m_ParamsSubWindow->fMorphPower) &&
+						    (fbo->fMorphRatio    == m_ParamsSubWindow->fMorphRatio) &&
+						    (fbo->bShowWireframe == GlobalParamsSubWindow::Get()->IsWireframeShown());
 
-	if (fbo->bOutdated || !bParamsInSync)
+	if (fbo->bOutdated || !bFBOparamsInSync)
 		ReDrawFBO();
 }
 
 
 // Texture layout       ____________________ 
-//           SRC float | st st st st .. st  |
-//           DST float | st st st st .. st  |
-//                     ----------------------
+//           SRC float | st st st st ... st |
+//           DST float | st st st st ... st |
+//                     ---------------------
 void MorphingToolSubWindow::UploadMorphingLines()
 {
 	assert(liSource.size() == liDestination.size());
@@ -551,6 +556,15 @@ bool MorphingToolSubWindow::ResetView()
 	return true;
 }
 
+bool MorphingToolSubWindow::ClearMorph()
+{
+	ClearSourceLine();
+	ClearDestinationLine();
+	UploadMorphingLines();
+
+	return true;
+}
+
 
 bool MorphingToolSubWindow::KeyboardFunc(unsigned char key, int x, int y)
 {
@@ -562,9 +576,7 @@ bool MorphingToolSubWindow::KeyboardFunc(unsigned char key, int x, int y)
 	{
 	case '2':
 	{
-		ClearSourceLine();
-		ClearDestinationLine();
-		UploadMorphingLines();
+		ClearMorph();
 		break;
 	}
 	case '4':

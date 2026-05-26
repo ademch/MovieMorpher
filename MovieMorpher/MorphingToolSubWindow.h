@@ -61,8 +61,10 @@ protected:
 	Button* buttonSource;
 	Button* buttonDestination;
 	Button* buttonMorphNow;
+	Button* buttonClear;
 
 	bool ResetView();
+	bool ClearMorph();
 
 	std::vector<Vec2> liSource;
 	std::vector<Vec2> liDestination;
