@@ -26,8 +26,8 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 
 	m_liSiblings.push_back(this);
 
-	m_iJoystickFrameWidth  = fbo->Width();
-	m_iJoystickFrameHeight = fbo->Height();
+	m_iJoystickFrameWidth  = morphFBOprocessor->Width();
+	m_iJoystickFrameHeight = morphFBOprocessor->Height();
 
 	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0));
 	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0));
@@ -40,7 +40,8 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	matrImmediateVisualization     = Mat4MakeIdent();
 	matrObjectOrigin2joystickBasis = Mat4MakeIdent();
 
-	hCurSpecial     = LoadCursorFromFileW(L"aero_moveProp.cur");
+	hCursorScaleProport = LoadCursorFromFileW(L"aero_moveProp.cur");
+	hCursorRotateAngle  = LoadCursorFromFileW(L"aero_rotateAngle.cur");
 
 }
 
@@ -67,6 +68,7 @@ void WarpingToolSubWindow::DrawFBOquad()
 	MorphingToolSubWindow::DrawFBOquad();
 
 }
+
 
 void WarpingToolSubWindow::Draw()
 {
@@ -175,7 +177,7 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 					else
 					{
 						glutSetCursor(GLUT_CURSOR_NONE);
-						SetCursor(hCurSpecial);
+						SetCursor(hCursorScaleProport);
 					}
 					
 					return true;
@@ -197,7 +199,15 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotate.X, ptRotate.Y, const_fPointsDepth);
 				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
-					glutSetCursor(GLUT_CURSOR_INFO);
+					if (GetKeyState(VK_SHIFT) & 0x8000)
+					{
+						glutSetCursor(GLUT_CURSOR_NONE);
+						SetCursor(hCursorRotateAngle);
+					}
+					else
+					{
+						glutSetCursor(GLUT_CURSOR_INFO);
+					}
 					return true;
 				}
 			}
@@ -240,7 +250,7 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 						stateTransform = STATE_TRANS_SCALE_PROPORTIONAL;
 
 						glutSetCursor(GLUT_CURSOR_NONE);
-						SetCursor(hCurSpecial);
+						SetCursor(hCursorScaleProport);
 					}
 
 					m_ptHandleClicked = point;
@@ -285,9 +295,23 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 			dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotate.X, ptRotate.Y, const_fPointsDepth);
 			if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 			{
-				stateTransform = STATE_TRANS_ROTATE;
+				//stateTransform = STATE_TRANS_ROTATE;
 
-				glutSetCursor(GLUT_CURSOR_INFO);
+				//glutSetCursor(GLUT_CURSOR_INFO);
+
+				if (GetKeyState(VK_SHIFT) & 0x8000)
+				{
+					stateTransform = STATE_TRANS_ROTATE_W_STEPS;
+
+					glutSetCursor(GLUT_CURSOR_NONE);
+					SetCursor(hCursorRotateAngle);
+				}
+				else
+				{
+					stateTransform = STATE_TRANS_ROTATE;
+
+					glutSetCursor(GLUT_CURSOR_INFO);
+				}
 
 				m_ptHandleClicked = ptRotate;
 				m_ptHandlePivot   = ptTranslHandle;
@@ -412,13 +436,16 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 			}
 		}
 
-		if (stateTransform == STATE_TRANS_ROTATE)
+		if ((stateTransform == STATE_TRANS_ROTATE) || (stateTransform == STATE_TRANS_ROTATE_W_STEPS))
 		{
 			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
 			{
 				Vec2 vec1 = m_ptHandleClicked - m_ptHandlePivot;
 				Vec2 vec2 = Vecc2(v3DCoords)  - m_ptHandlePivot;
 				float angle = AngleBetweenVectorsCCW(vec1, vec2)*RADIANS_TO_DEGREES;
+
+				if (stateTransform == STATE_TRANS_ROTATE_W_STEPS)
+					angle = floorf((angle + 7.5f) / 15.0f) * 15.0f;
 
 				Matr4 matrRot = Mat4MakeTrans(-m_ptHandlePivot.X, -m_ptHandlePivot.Y, 0.0);
 

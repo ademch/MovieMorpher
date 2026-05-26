@@ -15,6 +15,7 @@ enum StateTransform_enum {
 	STATE_TRANS_SCALE_PROPORTIONAL,
 	STATE_TRANS_SCALE_NONPROPORTIONAL,
 	STATE_TRANS_ROTATE,
+	STATE_TRANS_ROTATE_W_STEPS,
 	STATE_TRANS_TRANSLATE
 };
 
@@ -24,9 +25,7 @@ public:
 	WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 						 float fBottomLeftXperc, float fBottomLeftYperc,
 						 float fWidthPerc, float fHeightPerc);
-	~WarpingToolSubWindow()
-	{
-	}
+	~WarpingToolSubWindow() {}
 
 	void Draw() override;
 
@@ -37,8 +36,6 @@ public:
 
 	void SetupGraphicsPipeline() override;
 	void DrawFBOquad() override;
-
-	StateTransform_enum stateTransform;
 
 protected:
 
@@ -52,6 +49,8 @@ protected:
 	// matrix calculated how to go from fbo coordinates that are static to a new configuration
 	Matr4 matrObjectOrigin2joystickBasis;
 
+	StateTransform_enum stateTransform;
+
 	static std::vector<WarpingToolSubWindow*> m_liSiblings;
 
 private:
@@ -64,7 +63,8 @@ private:
 
 	Vec2 ptPrevPoint;
 
-	HCURSOR hCurSpecial;
+	HCURSOR hCursorScaleProport;
+	HCURSOR hCursorRotateAngle;
 
 	// shortcut for fbo width and height
 	int m_iJoystickFrameWidth;

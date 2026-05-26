@@ -127,18 +127,16 @@ bool MediaSubWindow::AddTrackPicture()
 	OpenGLSubWindowWithGUI* newToolWindow;
 	newToolWindow = OnNewMedia(fileName);
 
+	// load image into the tool input fbo
 	WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(newToolWindow);
-	// load image into the tool textBank
-	{
-		wndWarpingTool->GetFBO()->Reshape(0, 0, width, height);
-		wndWarpingTool->GetFBO()->TextureUpdate(width, height, image);
-
-		free(image);
-	}
+		wndWarpingTool->ReshapeFBOprocessors(0, 0, width, height);
+		wndWarpingTool->TextureUpdateInputFBOprocessor(width, height, image);
 
 	TrackClip* clip = windowTimeLine->AddClip(newToolWindow);
-	clip->extern_textureIcon = wndWarpingTool->GetFBO()->texBank.bank[TEXTURE_INPUT_IMAGE];
-	clip->mediaType = CLIP_IMAGE;
+		clip->textureIcon = LoadTexture(width, height, image);
+		clip->mediaType = CLIP_IMAGE;
+
+	free(image);
 
 	return true;
 }
@@ -146,24 +144,26 @@ bool MediaSubWindow::AddTrackPicture()
 
 bool MediaSubWindow::AddTrackVideo()
 {
-	video = new FFMS_Video();
+	FFMS_Video* video = new FFMS_Video();
 	video->LoadMPEG("E:\\Or\\MovieMorpher\\Debug\\output00.mp4");
 
-	OpenGLSubWindowWithGUI* newToolWindow;
-	newToolWindow = OnNewMedia("video");
+	OpenGLSubWindowWithGUI* newToolWindow = OnNewMedia("video");
 
 	WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(newToolWindow);
-	// load image into the tool textBank
-	{
-		FrameItem* frame= video->videoCacheThread->GetFrame(0);
-		wndWarpingTool->GetFBO()->Reshape(0, 0, frame->width, frame->height);
-		wndWarpingTool->GetFBO()->TextureUpdate(frame->width, frame->height, frame->data);
-		
-	}
+
+	// load image into the tool input fbo
+	FrameItem* frame = video->videoCacheThread->GetFrame(0);
+		wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
+		wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
 
 	TrackClip* clip = windowTimeLine->AddClip(newToolWindow);
-	clip->extern_textureIcon = wndWarpingTool->GetFBO()->texBank.bank[TEXTURE_INPUT_IMAGE];
-	clip->mediaType = CLIP_VIDEO;
+
+		ImageSaveLoadHelper::_FlipImage(frame->data, frame->width, frame->height);
+			clip->textureIcon = LoadTexture(frame->width, frame->height, frame->data);
+		ImageSaveLoadHelper::_FlipImage(frame->data, frame->width, frame->height);
+
+		clip->mediaType = CLIP_VIDEO;
+		clip->video     = video;
 
 	return true;
 }
@@ -173,12 +173,28 @@ void MediaSubWindow::Draw()
 {
 	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 	{
+		static int iFFF = 0;
+
 		for (auto iter : TrackClip::liClips)
 		{
 			if ((elapsed_sec > iter->m_iStartPosFrame) && (elapsed_sec < iter->m_iStartPosFrame + iter->m_iLengthFrames))
 			{
 				WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iter->windowTool);
-				wndWarpingTool->DrawFBOquad();
+				if (iter->mediaType == CLIP_IMAGE)
+					wndWarpingTool->DrawFBOquad();
+				else
+				{
+					FrameItem* frame = iter->video->videoCacheThread->GetFrame(iFFF++);
+					//FFMS_Track* videoTrack = FFMS_GetTrackFromVideo(iter->video->videoSource);
+					//const FFMS_FrameInfo* info = FFMS_GetFrameInfo(videoTrack, 0);
+
+					//int64_t pts = info->PTS;
+
+					//wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
+					wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
+					wndWarpingTool->ReDrawFBOprocessors();
+					wndWarpingTool->DrawFBOquad();
+				}
 			}
 		}
 	}
@@ -236,8 +252,7 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 		QueryPerformanceCounter(&T0);
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING;
 
-		if (OnPlaybackStarted)
-			OnPlaybackStarted(true);
+		if (OnPlaybackStarted)	OnPlaybackStarted(true);
 	}
 	if (target->_text == "Pause")
 	{

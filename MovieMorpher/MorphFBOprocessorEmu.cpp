@@ -73,7 +73,7 @@ void MorphFBOprocessor::ShaderEmulate()
 	for (auto &vPosition : mesh_listEmu)
 	{
 		int iMorphPointsCount = texBank[TEXTURE_FLOAT_BUFFER]->m_width;
-		const float fMorphParameterA = 0.01;
+		const float fMorphParameterA = 0.01f;
 		const float fMorphParameterB = 2.0f;
 
 		float fTotalWeight = 0.0f;
@@ -82,7 +82,7 @@ void MorphFBOprocessor::ShaderEmulate()
 		{
 			Vec2 ptSrc  = dataSrc[i];
 			Vec2 ptDst  = dataDst[i];
-			Vec2 ptLerp = VecMix(ptSrc, ptDst, fMorphRatio / 100.0);
+			Vec2 ptLerp = VecMix(ptSrc, ptDst, fMorphRatio / 100.0f);
 
 			float dist = PointDist(ptSrc, vPosition);
 			float weight = 0;
@@ -91,7 +91,7 @@ void MorphFBOprocessor::ShaderEmulate()
 			fTotalWeight += weight;
 			vShift = vShift + weight * (ptLerp - ptSrc);
 		}
-		if (fTotalWeight > 0.001) {
+		if (fTotalWeight > 0.001f) {
 			vShift = (1.0 / fTotalWeight)*vShift;
 		}
 
@@ -108,7 +108,7 @@ void MorphFBOprocessor::ShaderEmulate()
 
 		if (distMin < fMorphRadius)
 		{
-			float weight = pow(cos(distMin / fMorphRadius * PI)*0.5 + 0.5, 1.0);
+			float weight = pow(cos(distMin / fMorphRadius * PI)*0.5f + 0.5f, 1.0f);
 			vShift = weight * vShift;
 		}
 		else

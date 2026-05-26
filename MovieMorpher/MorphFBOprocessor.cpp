@@ -4,13 +4,14 @@
 #include "../../!!adExtensions/extensions.h"
 #include "../../!!adGlobals/TextureDescriptor.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
+#include <GL/glu.h>
 
 
 extern GLSL_Pipeline glsl_pipeline;
 
 
-MorphFBOprocessor::MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) :
-	               OpenGLSubWindow(iBottomLeftX, iBottomLeftY, iWidth, iHeight)
+MorphFBOprocessor::MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight, TextureBank& _texBank) :
+	               OpenGLSubWindow(iBottomLeftX, iBottomLeftY, iWidth, iHeight), texBank(_texBank)
 {
 	bRenderGUIdecoration  = false;
 	bSceneRotationAllowed = false;
@@ -33,6 +34,12 @@ MorphFBOprocessor::MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWi
 	bOutdated = true;
 }
 
+MorphFBOprocessor::~MorphFBOprocessor()
+{
+	delete fbo;
+}
+
+
 void MorphFBOprocessor::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight)
 {
 	OpenGLSubWindow::Reshape(iBottomLeftX,iBottomLeftY, iWidth,iHeight);
@@ -49,11 +56,6 @@ void MorphFBOprocessor::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 	texBank[TEXTURE_MORPHED_IMAGE]->m_height = m_iHeight;
 }
 
-MorphFBOprocessor::~MorphFBOprocessor()
-{
-	delete fbo;
-}
-
 
 void MorphFBOprocessor::Render()
 {
@@ -61,13 +63,14 @@ void MorphFBOprocessor::Render()
 
 	if (!glsl_pipeline.bUseShaderPipeline) return;
 	
-	// Start rendering to frame buffer object
+	// Start rendering to Frame Buffer Object
 	fbo->Activate();
 
 		OpenGLSubWindow::Render();
 
 		if (bShowWireframe)
 			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 		glLineWidth(1);
 
 		glActiveTextureARB(GL_TEXTURE1);

@@ -4,11 +4,11 @@
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include "ParamsSubWindow.h"
 #include "MorphFBOprocessor.h"
-#include "../../!!adGUI/gui_element.h"
 #include "../../!!adGUI/button.h"
 #include "../../!!adGUI/arrow.h"
 #include <vector>
 #include <functional>
+
 
 enum StateInput_enum {
 	STATE_IDLE,
@@ -17,16 +17,14 @@ enum StateInput_enum {
 	STATE_POINT_DRAG
 };
 
+
 class MorphingToolSubWindow : public OpenGLSubWindowWithGUI
 {
 public:
 	MorphingToolSubWindow(int iParentWidth, int iParentHeight,
 						  float fBottomLeftXperc, float fBottomLeftYperc,
 						  float fWidthPerc, float fHeightPerc);
-	~MorphingToolSubWindow()
-	{
-		delete fbo;
-	}
+	~MorphingToolSubWindow();
 
 	void Draw() override;
 	virtual void DrawFBOquad();
@@ -48,7 +46,11 @@ public:
 		m_ParamsSubWindow = m_Wnd;
 	}
 	ParamsSubWindow* GetParamsSubWindow() { return m_ParamsSubWindow; }
-	MorphFBOprocessor* GetFBO()           { return fbo; }
+
+	void ReshapeFBOprocessors(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
+	void TextureUpdateInputFBOprocessor(int iWidth, int iHeight, unsigned char* image);
+
+	void ReDrawFBOprocessors();
 
 protected:
 
@@ -70,11 +72,11 @@ protected:
 	std::vector<Vec2> liDestination;
 	Vec2 ptPrevPoint;
 
-	MorphFBOprocessor* fbo;
-
-	void ReDrawFBO();
+	MorphFBOprocessor* morphFBOprocessor;
 
 	ParamsSubWindow* m_ParamsSubWindow;
+
+	TextureBank  texBank;
 
 private:
 	StateInput_enum stateCurrent;

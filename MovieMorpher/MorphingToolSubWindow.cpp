@@ -41,7 +41,12 @@ MorphingToolSubWindow::MorphingToolSubWindow(int iParentWidth, int iParentHeight
 
 	PopulateGUI();
 
-	fbo = new MorphFBOprocessor(0, 0, 800, 450);
+	morphFBOprocessor = new MorphFBOprocessor(0, 0, 800, 450, texBank);
+}
+
+MorphingToolSubWindow::~MorphingToolSubWindow()
+{
+	delete morphFBOprocessor;
 }
 
 
@@ -86,9 +91,9 @@ void MorphingToolSubWindow::DrawFBOquad()
 	TextureDescriptor* texDescr;
 	// Show output of the shader, while invisible input texture holds original
 	if (GlobalParamsSubWindow::Get()->ShouldShowOriginal())
-		texDescr = fbo->texBank[TEXTURE_INPUT_IMAGE];
+		texDescr = texBank[TEXTURE_INPUT_IMAGE];
 	else
-		texDescr = fbo->texBank[TEXTURE_MORPHED_IMAGE];
+		texDescr = texBank[TEXTURE_MORPHED_IMAGE];
 
 	float zValue = 0.0;
 	if (!bActive)	// active window ignore zOrder, nonActive become z sorted
@@ -106,6 +111,18 @@ void MorphingToolSubWindow::DrawFBOquad()
 
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
+
+
+void MorphingToolSubWindow::ReshapeFBOprocessors(int _iBottomLeftX, int _iBottomLeftY, int _iWidth, int _iHeight)
+{
+	morphFBOprocessor->Reshape(_iBottomLeftX, _iBottomLeftY, _iWidth, _iHeight);
+}
+
+void MorphingToolSubWindow::TextureUpdateInputFBOprocessor(int _iWidth, int _iHeight, unsigned char* image)
+{
+	morphFBOprocessor->TextureUpdate(_iWidth, _iHeight, image);
+}
+
 
 void MorphingToolSubWindow::Draw()
 {
@@ -190,13 +207,13 @@ void MorphingToolSubWindow::Draw()
 		buttonDestination->bEnabled = true;
 	}
 
-	bool bFBOparamsInSync = (fbo->fMorphRadius   == m_ParamsSubWindow->fMorphRadius) &&
-						    (fbo->fMorphPower    == m_ParamsSubWindow->fMorphPower) &&
-						    (fbo->fMorphRatio    == m_ParamsSubWindow->fMorphRatio) &&
-						    (fbo->bShowWireframe == GlobalParamsSubWindow::Get()->IsWireframeShown());
+	bool bFBOparamsInSync = (morphFBOprocessor->fMorphRadius   == m_ParamsSubWindow->fMorphRadius) &&
+						    (morphFBOprocessor->fMorphPower    == m_ParamsSubWindow->fMorphPower) &&
+						    (morphFBOprocessor->fMorphRatio    == m_ParamsSubWindow->fMorphRatio) &&
+						    (morphFBOprocessor->bShowWireframe == GlobalParamsSubWindow::Get()->IsWireframeShown());
 
-	if (fbo->bOutdated || !bFBOparamsInSync)
-		ReDrawFBO();
+	if (morphFBOprocessor->bOutdated || !bFBOparamsInSync)
+		ReDrawFBOprocessors();
 }
 
 
@@ -218,12 +235,12 @@ void MorphingToolSubWindow::UploadMorphingLines()
 
 	glActiveTextureARB(GL_TEXTURE1);
 
-		glBindTexture(GL_TEXTURE_2D, fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_uiTextureID);
+		glBindTexture(GL_TEXTURE_2D, texBank[TEXTURE_FLOAT_BUFFER]->m_uiTextureID);
 
 		if (liSource.size() > 0)
 		{
-			fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_width  = listOutSrc.size();
-			fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_height = 2;
+			texBank[TEXTURE_FLOAT_BUFFER]->m_width  = listOutSrc.size();
+			texBank[TEXTURE_FLOAT_BUFFER]->m_height = 2;
 
 			//           targ         mml  int frmt  w                  h brdr inc: frmt    type    data
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, listOutSrc.size(), 2,   0,    GL_RG, GL_FLOAT, NULL);
@@ -234,8 +251,8 @@ void MorphingToolSubWindow::UploadMorphingLines()
 		else
 		{
 			// empty texture 1x1
-			fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_width  = 1;
-			fbo->texBank[TEXTURE_FLOAT_BUFFER]->m_height = 1;
+			texBank[TEXTURE_FLOAT_BUFFER]->m_width  = 1;
+			texBank[TEXTURE_FLOAT_BUFFER]->m_height = 1;
 
 			//           targ         mml  int frmt  w  h brdr inc: frmt    type    data
 			Vec2 data = Vecc2();
@@ -244,7 +261,7 @@ void MorphingToolSubWindow::UploadMorphingLines()
 
 	glActiveTextureARB(GL_TEXTURE0);
 
-	fbo->bOutdated = true;
+	morphFBOprocessor->bOutdated = true;
 }
 
 
@@ -307,9 +324,9 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 			 (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 		{
 			if (stateCurrent == STATE_SOURCE_DRAWING_INPUT)
-				liSource.push_back(Vecc2(v3DCoords.X, v3DCoords.Y));
+				liSource.push_back( Vecc2(v3DCoords) );
 			else if (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)
-				liDestination.push_back(Vecc2(v3DCoords.X, v3DCoords.Y));
+				liDestination.push_back( Vecc2(v3DCoords) );
 
 			ptPrevPoint = Vecc2(x, y);
 
@@ -376,9 +393,9 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 			else
 			{
 				if (stateCurrent == STATE_SOURCE_POINT_INPUT)
-					liSource.push_back(Vecc2(v3DCoords.X, v3DCoords.Y));
+					liSource.push_back( Vecc2(v3DCoords) );
 				else if (stateCurrent == STATE_DESTINATION_POINT_INPUT)
-					liDestination.push_back(Vecc2(v3DCoords.X, v3DCoords.Y));
+					liDestination.push_back( Vecc2(v3DCoords) );
 
 				ptPrevPoint = Vecc2(x, y);
 
@@ -507,7 +524,7 @@ void MorphingToolSubWindow::MotionFunc(int x, int y)
 		SetupGraphicsPipeline();
 
 		Vec3d v3DCoords;
-		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
+		gluUnProjectFriendlyZ(x, y, 0.5f, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
 		if (((stateCurrent == STATE_SOURCE_DRAWING_INPUT) || (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)) && m_bMouseDrawingInProgress)
 		{
@@ -515,9 +532,9 @@ void MorphingToolSubWindow::MotionFunc(int x, int y)
 			if (VecLength(Vecc2(x, y) - ptPrevPoint) > fRadius)
 			{
 				if (stateCurrent == STATE_SOURCE_DRAWING_INPUT)
-					liSource.push_back(Vecc2(v3DCoords.X, v3DCoords.Y));
+					liSource.push_back( Vecc2(v3DCoords) );
 				else if (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)
-					liDestination.push_back(Vecc2(v3DCoords.X, v3DCoords.Y));
+					liDestination.push_back( Vecc2(v3DCoords) );
 
 				ptPrevPoint = Vecc2(x, y);
 			}
@@ -533,6 +550,7 @@ void MorphingToolSubWindow::MotionFunc(int x, int y)
 		}
 	}
 }
+
 
 void MorphingToolSubWindow::ClearSourceLine() {
 	liSource.clear();
@@ -591,14 +609,14 @@ bool MorphingToolSubWindow::KeyboardFunc(unsigned char key, int x, int y)
 }
 
 
-void MorphingToolSubWindow::ReDrawFBO()
+void MorphingToolSubWindow::ReDrawFBOprocessors()
 {
-	fbo->fMorphRadius   = m_ParamsSubWindow->fMorphRadius;
-	fbo->fMorphPower    = m_ParamsSubWindow->fMorphPower;
-	fbo->fMorphRatio    = m_ParamsSubWindow->fMorphRatio;
-	fbo->bShowWireframe = GlobalParamsSubWindow::Get()->IsWireframeShown();
+	morphFBOprocessor->fMorphRadius   = m_ParamsSubWindow->fMorphRadius;
+	morphFBOprocessor->fMorphPower    = m_ParamsSubWindow->fMorphPower;
+	morphFBOprocessor->fMorphRatio    = m_ParamsSubWindow->fMorphRatio;
+	morphFBOprocessor->bShowWireframe = GlobalParamsSubWindow::Get()->IsWireframeShown();
 
-	fbo->Render();
+	morphFBOprocessor->Render();
 }
 
 bool MorphingToolSubWindow::SourcePolylineClicked()
@@ -660,17 +678,17 @@ void MorphingToolSubWindow::StartNextGeneration()
 {
 	ClearSourceLine();
 	ClearDestinationLine();
-
+	     
 	// load empty lines
 	UploadMorphingLines();
 
-	unsigned int idSrc      = fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID;
-	unsigned int iWidthSrc  = fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_width;
-	unsigned int iHeightSrc = fbo->texBank[TEXTURE_MORPHED_IMAGE]->m_height;
+	unsigned int idSrc      = texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID;
+	unsigned int iWidthSrc  = texBank[TEXTURE_MORPHED_IMAGE]->m_width;
+	unsigned int iHeightSrc = texBank[TEXTURE_MORPHED_IMAGE]->m_height;
 
-	unsigned int idDst      = fbo->texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID;
-	unsigned int iWidthDst  = fbo->texBank[TEXTURE_INPUT_IMAGE]->m_width;
-	unsigned int iHeightDst = fbo->texBank[TEXTURE_INPUT_IMAGE]->m_height;
+	unsigned int idDst      = texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID;
+	unsigned int iWidthDst  = texBank[TEXTURE_INPUT_IMAGE]->m_width;
+	unsigned int iHeightDst = texBank[TEXTURE_INPUT_IMAGE]->m_height;
 	unsigned int nrChannels = 4;
 
 	assert(iWidthSrc == iWidthDst);

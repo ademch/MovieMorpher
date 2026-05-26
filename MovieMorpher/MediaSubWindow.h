@@ -5,7 +5,6 @@
 #include "TimelineSubWindow.h"
 #include "../../!!adGUI/label.h"
 #include "../../!!adGUI/button.h"
-#include "../../!!adVideo/FFMS_Video.h"
 #include "../../!!adVideo/SoundAL.h"
 
 enum StateMediaPlayer_enum {
@@ -22,7 +21,6 @@ public:
 				   float fWidthPerc, float fHeightPerc);
 	~MediaSubWindow()
 	{
-		delete video;
 		SoundAL::DestroyOpenAL();
 	}
 
@@ -51,8 +49,6 @@ private:
 	std::vector<PushButtonImage*> liButtons;
 
 	bool Push(PushButtonImage* target);
-
-	FFMS_Video* video;
 
 	LARGE_INTEGER ticksPerSecond;
 	LARGE_INTEGER T0;

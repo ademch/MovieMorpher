@@ -4,7 +4,6 @@
 #include "../../!!adGUI/SubWindow.h"
 #include "../../!!adExtensions/Shaders.h"
 #include <list>
-#include "ParamsSubWindow.h"
 
 
 class MorphFBOprocessor : public OpenGLSubWindow
@@ -12,7 +11,7 @@ class MorphFBOprocessor : public OpenGLSubWindow
 public:
 	FrameBufferObject* fbo;
 
-	MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
+	MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight, TextureBank& _texBank);
 	~MorphFBOprocessor();
 
 	virtual	void Render();
@@ -28,8 +27,6 @@ public:
 
 	bool bOutdated;
 
-	TextureBank  texBank;
-
 protected:
 
 	std::list<Vec2> mesh_listEmu;
@@ -41,6 +38,8 @@ private:
 	void GenMeshToListEmu(float fX_bottom, float fY_bottom, float fWidth, float fHeight, float fZ, int iHorSlices, int iVertSlices);
 	void RenderFromMeshListEmu(unsigned int tex, float fX_bottom, float fY_bottom, float fWidth, float fHeight, float fZ, int iHorSlices, int iVertSlices);
 	void ShaderEmulate();
+
+	TextureBank&  texBank;
 
 };
 
