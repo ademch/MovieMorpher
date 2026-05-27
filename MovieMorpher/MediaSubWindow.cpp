@@ -173,8 +173,6 @@ void MediaSubWindow::Draw()
 {
 	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 	{
-		static int iFFF = 0;
-
 		for (auto iter : TrackClip::liClips)
 		{
 			if ((elapsed_sec > iter->m_iStartPosFrame) && (elapsed_sec < iter->m_iStartPosFrame + iter->m_iLengthFrames))
@@ -184,16 +182,14 @@ void MediaSubWindow::Draw()
 					wndWarpingTool->DrawFBOquad();
 				else
 				{
-					FrameItem* frame = iter->video->videoCacheThread->GetFrame(iFFF++);
-					//FFMS_Track* videoTrack = FFMS_GetTrackFromVideo(iter->video->videoSource);
-					//const FFMS_FrameInfo* info = FFMS_GetFrameInfo(videoTrack, 0);
-
-					//int64_t pts = info->PTS;
+					FrameItem* frame = iter->video->videoCacheThread->GetFrame(iter->video->iCurrentFrame++);
 
 					//wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
 					wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
 					wndWarpingTool->ReDrawFBOprocessors();
 					wndWarpingTool->DrawFBOquad();
+
+					printf("Frame Second is: %f\n", frame->seconds);
 				}
 			}
 		}

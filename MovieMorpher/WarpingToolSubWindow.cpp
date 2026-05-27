@@ -8,6 +8,7 @@
 const float const_fPointsDepth   = 3;
 const float const_fPointsSize    = 10;
 const float const_fHandleRadius  = 5;
+const float const_fHandleJitter  = 3;
 
 #define TRANS_PIVOTRIGHT	1
 #define TRANS_PIVOT			2
@@ -369,7 +370,7 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 
 		if (stateTransform == STATE_TRANS_SCALE_PROPORTIONAL)
 		{
-			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
+			if (PointDist(Vecc2(x, y), ptPrevPoint) > const_fHandleJitter)
 			{
 				Matr4 matrTrans = Mat4MakeTrans(-m_ptHandlePivot.X, -m_ptHandlePivot.Y, 0.0);
 
@@ -401,7 +402,7 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 		else
 		if (stateTransform == STATE_TRANS_SCALE_NONPROPORTIONAL)
 		{
-			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
+			if (PointDist(Vecc2(x, y), ptPrevPoint) > const_fHandleJitter)
 			{
 				Matr4 matrTrans = Mat4MakeTrans(-m_ptHandlePivot.X, -m_ptHandlePivot.Y, 0.0);
 
@@ -410,7 +411,7 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 				Vec3 vPivotRight = Vecc3(m_ptHandlePivotRight - m_ptHandlePivot);
 
 				// Project v3DCoords on rays starting at m_ptHandlePivot
-				Vec3 xProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotRight)    );
+				Vec3 xProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotRight) );
 				Vec3 yProj = PointLineProject(Vecc3(v3DCoords), Vecc3(m_ptHandlePivot), VecNormalize(vPivotUp) );
 
 				// Calulcate matrix that transforms existing local coordinate system into new coordinate system
@@ -426,7 +427,7 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 
 		if (stateTransform == STATE_TRANS_TRANSLATE)
 		{
-			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3) // todo 3 userscale
+			if (PointDist(Vecc2(x, y), ptPrevPoint) > const_fHandleJitter)
 			{
 				Matr4 matrTrans = Mat4MakeTrans( v3DCoords.X - m_ptHandleClicked.X, 
 												 v3DCoords.Y - m_ptHandleClicked.Y,
@@ -438,7 +439,7 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 
 		if ((stateTransform == STATE_TRANS_ROTATE) || (stateTransform == STATE_TRANS_ROTATE_W_STEPS))
 		{
-			if (PointDist(Vecc2(x, y), ptPrevPoint) > 3)
+			if (PointDist(Vecc2(x, y), ptPrevPoint) > const_fHandleJitter)
 			{
 				Vec2 vec1 = m_ptHandleClicked - m_ptHandlePivot;
 				Vec2 vec2 = Vecc2(v3DCoords)  - m_ptHandlePivot;

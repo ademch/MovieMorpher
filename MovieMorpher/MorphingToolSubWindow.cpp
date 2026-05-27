@@ -436,7 +436,7 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 							if (bDoubleClick)
 							{
 								// insert before second point
-								liDestination.insert(liDestination.begin() + i + 1, Vecc2(v3DCoords.X, v3DCoords.Y));
+								liDestination.insert(liDestination.begin() + i + 1, Vecc2(v3DCoords));
 
 								if (liSource.size() + 1 == liDestination.size())
 								{
