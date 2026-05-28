@@ -143,4 +143,32 @@ namespace ImageSaveLoadHelper
 		return true;
 	}
 
+	bool SelectVideoFromDisk(char* outFileName)
+	{
+		HWND hWnd = WindowFromDC(wglGetCurrentDC());
+
+		// common dialog box structure, setting all fields to 0 is important
+		OPENFILENAME ofn  = { 0 };
+		TCHAR szFile[260] = { 0 };
+
+		// Initialize the fields of OPENFILENAME structure
+		ofn.lStructSize     = sizeof(ofn);
+		ofn.hwndOwner       = hWnd;
+		ofn.lpstrFile       = szFile;
+		ofn.nMaxFile        = sizeof(szFile);
+		ofn.lpstrFilter     = _T("All(*.*)\0*.*\0Video(*.mp4;*.avi;*.webm;*.wmv;*.rm)\0*.mp4;*.avi;*.webm;*.wmv;*.rm\0\0");
+		ofn.nFilterIndex    = 2;
+		ofn.lpstrFileTitle  = NULL;
+		ofn.nMaxFileTitle   = 0;
+		ofn.lpstrInitialDir = NULL;
+		ofn.Flags           = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+		if (GetOpenFileName(&ofn) == TRUE)
+		{
+			strcpy(outFileName, ofn.lpstrFile);
+			return true;
+		}
+
+		return false;
+	}
 }

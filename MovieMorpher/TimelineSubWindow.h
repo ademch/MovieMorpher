@@ -54,8 +54,8 @@ class TimelineScrollBarSubWindow : public OpenGLSubWindowWithGUI
 
 public:
 	TimelineScrollBarSubWindow(int iParentWidth, int iParentHeight,
-							float fBottomLeftXperc, float fBottomLeftYperc,
-							float fWidthPerc, float fHeightPerc);
+							   float fBottomLeftXperc, float fBottomLeftYperc,
+							   float fWidthPerc, float fHeightPerc);
 	~TimelineScrollBarSubWindow() {}
 
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) override;
@@ -78,9 +78,9 @@ public:
 
 	int Width()  { return m_iWidth - iBorder*2;  }	// HIDES parent implementation
 
-	std::function<void(float)>        OnSliderPosChange;
-	std::function<void(float, float)> OnSelectionChange;
-	std::function<void(Vec3)>         OnVerticalPanChange;
+	std::function<void(double)>         OnSliderPosChange;
+	std::function<void(double, double)> OnSelectionChange;
+	std::function<void(Vec3)>           OnVerticalPanChange;
 
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) override;
 
@@ -92,7 +92,7 @@ public:
 	bool MouseFunc(int button, int state, int x, int y) override;
 	void MotionFunc(int x, int y) override;
 
-	void SetSliderPos0_1(float _val);
+	void SetSliderPos0_1(double _val);
 
 	void SetZoom(Matr4 _matrUserScale)
 	{
@@ -100,7 +100,7 @@ public:
 		matrSliderNonInverted = _matrUserScale;
 	}
 
-	TrackClip* AddClip(OpenGLSubWindowWithGUI* wndTool);
+	TrackClip* AddClip(OpenGLSubWindowWithGUI* wndTool, int iFramesCount);
 
 	void SetSwitchToolWindowCallback(std::function<void(OpenGLSubWindowWithGUI*)> callback)
 	{
@@ -111,11 +111,11 @@ protected:
 
 	void PopulateGUI() override;
 
-	float m_fSliderPos01;
+	double m_fSliderPos01;
 
 	bool  bSelectionIsValid;
-	float m_fSelectionStartX0_1;
-	float m_fSelectionEndX0_1;
+	double m_fSelectionStartX0_1;
+	double m_fSelectionEndX0_1;
 
 	int iVerticalPan;
 	Matr4 matrSliderNonInverted;

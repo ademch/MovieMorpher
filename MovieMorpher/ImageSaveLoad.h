@@ -8,6 +8,8 @@ namespace ImageSaveLoadHelper
 	unsigned char* LoadImageFromDisk(unsigned int &width, unsigned int &height, char* outFileName = NULL);
 	bool           SaveImageToDisk();
 
+	bool		   SelectVideoFromDisk(char* outFileName);
+
 }
 
 #endif

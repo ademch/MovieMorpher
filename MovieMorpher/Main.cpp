@@ -161,7 +161,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	//ShowWindow(GetConsoleWindow(), SW_HIDE);
 
-	PositionMediator::Get()->Init(NULL, 0.0f, 600);
+	PositionMediator::Get()->Init(NULL, 0.0f, 10*60*100);	// 10 [min] x 60 [s] x 100 [10ms]
 
 	ToolTip::Get();
 

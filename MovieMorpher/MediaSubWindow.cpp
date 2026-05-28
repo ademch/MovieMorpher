@@ -6,7 +6,6 @@
 #include "../../!!adGUI/VideoPositionMediator.h"
 #include "../../!!adGlobals/wdir.h"
 #include "WarpingToolSubWindow.h"
-
 #include "ImageSaveLoad.h"
 
 
@@ -24,6 +23,13 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 
 	stateMediaPlayer = STATE_MEDIAPLAYER_IDLE;
 	QueryPerformanceFrequency(&ticksPerSecond);
+
+	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
+	{
+		if (origin != this) UpdateVideoTrackPosition(fVal);
+	});
+
+	fElapsedS = 0.0;
 
 	PopulateGUI();
 }
@@ -132,7 +138,7 @@ bool MediaSubWindow::AddTrackPicture()
 		wndWarpingTool->ReshapeFBOprocessors(0, 0, width, height);
 		wndWarpingTool->TextureUpdateInputFBOprocessor(width, height, image);
 
-	TrackClip* clip = windowTimeLine->AddClip(newToolWindow);
+	TrackClip* clip = windowTimeLine->AddClip(newToolWindow, 60*100);
 		clip->textureIcon = LoadTexture(width, height, image);
 		clip->mediaType = CLIP_IMAGE;
 
@@ -144,10 +150,23 @@ bool MediaSubWindow::AddTrackPicture()
 
 bool MediaSubWindow::AddTrackVideo()
 {
-	FFMS_Video* video = new FFMS_Video();
-	video->LoadMPEG("E:\\Or\\MovieMorpher\\Debug\\output00.mp4");
+	// SELECT VIDEO FILE
+	char filePath[512];
+	if (!ImageSaveLoadHelper::SelectVideoFromDisk(filePath)) return false;
 
-	OpenGLSubWindowWithGUI* newToolWindow = OnNewMedia("video");
+	// LOAD VIDEO FILE
+	FFMS_Video* video = new FFMS_Video();
+	video->LoadMPEG(filePath);
+
+	// WIDEN TIMELINE IF NEEDED
+	if (PositionMediator::Get()->DurationIn10msTicks() < video->iTotalFrames)
+	{
+		PositionMediator::Get()->Init(NULL, 0.0f, 2*video->liIndex[video->iTotalFrames-1]*100.0);
+	}
+
+	// CREATE TOOL AND PARAMS WINDOWS
+	char* fileName = GetFileName(filePath);
+	OpenGLSubWindowWithGUI* newToolWindow = OnNewMedia(fileName);
 
 	WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(newToolWindow);
 
@@ -156,7 +175,7 @@ bool MediaSubWindow::AddTrackVideo()
 		wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
 		wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
 
-	TrackClip* clip = windowTimeLine->AddClip(newToolWindow);
+	TrackClip* clip = windowTimeLine->AddClip(newToolWindow, video->liIndex[video->iTotalFrames-1]*100.0);
 
 		ImageSaveLoadHelper::_FlipImage(frame->data, frame->width, frame->height);
 			clip->textureIcon = LoadTexture(frame->width, frame->height, frame->data);
@@ -173,23 +192,50 @@ void MediaSubWindow::Draw()
 {
 	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 	{
-		for (auto iter : TrackClip::liClips)
+		int iPlayhead10msTicks = PositionMediator::Get()->Pos10ms();
+
+		for (auto iterClip : TrackClip::liClips)
 		{
-			if ((elapsed_sec > iter->m_iStartPosFrame) && (elapsed_sec < iter->m_iStartPosFrame + iter->m_iLengthFrames))
+			if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msTicks) &&
+				 (iPlayhead10msTicks < (iterClip->m_iStartPos10msTicks + iterClip->m_iLength10msTicks)) )
 			{
-				WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iter->windowTool);
-				if (iter->mediaType == CLIP_IMAGE)
+				WarpingToolSubWindow* wndWarpingTool;
+				wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
+
+				if (wndWarpingTool->bActive) continue;
+
+				if (iterClip->mediaType == CLIP_IMAGE)
+				{
+					//wndWarpingTool->ReDrawFBOprocessors();
 					wndWarpingTool->DrawFBOquad();
+				}
 				else
 				{
-					FrameItem* frame = iter->video->videoCacheThread->GetFrame(iter->video->iCurrentFrame++);
+					// SHORTCUT
+					FFMS_Video* vid = iterClip->video;
 
-					//wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
-					wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
-					wndWarpingTool->ReDrawFBOprocessors();
+					// REMEMBER PREVIOUS FRAME FOR STATISTICS
+					int iFramePrev = vid->iCurrentFrame;
+
+					// CALC LOCAL TIME OF TRACK, TIME IS A RULE TO FOLLOW
+					float _fClipLocalTimeS = (iPlayhead10msTicks - iterClip->m_iStartPos10msTicks)/100.0;
+
+					// USE PREVIOUS FRAME AS A SEED, AND LEAVE IT AS IS OR MOVE TOWARDS PRESENTATION TIME INSIDE CACHE
+					FrameItem* frame = vid->videoCacheThread->GetFrameByTime(_fClipLocalTimeS, vid->iCurrentFrame);
+
+					// UPDATE IF NEW FRAME HAS BECOME AVAILABLE
+					if (iFramePrev != iterClip->video->iCurrentFrame)
+					{
+						//wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
+						wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
+						wndWarpingTool->ReDrawFBOprocessors();
+
+						printf("Frame second is: %f\n", frame->fS);
+					}
+					else
+						printf("Duplicate frame time!!!!!!!!!!!!!!!!!!! good\n");
+
 					wndWarpingTool->DrawFBOquad();
-
-					printf("Frame Second is: %f\n", frame->seconds);
 				}
 			}
 		}
@@ -201,25 +247,23 @@ void MediaSubWindow::Draw()
 void MediaSubWindow::RenderGUI()
 {
 	PositionMediator* mediator = PositionMediator::Get();
-	int iDuration = mediator->DurationFrames();
+	int iTotal10msTicks = mediator->DurationIn10msTicks();
 
 	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 	{
 		LARGE_INTEGER T1;
 		QueryPerformanceCounter(&T1);
-		elapsed_sec = float(T1.QuadPart - T0.QuadPart) / float(ticksPerSecond.QuadPart);
-		mediator->SetPos0_1(NULL, elapsed_sec/iDuration);
+		fElapsedS = double(T1.QuadPart - T0.QuadPart) / double(ticksPerSecond.QuadPart);
+		mediator->SetPos0_1(this, (fElapsedS*100.0)/iTotal10msTicks);
 	}
 
 //	float fSecondPassed = video->audioThread->GetCurrentSecond();
 //	mediator->SetPos0_1(NULL, fSecondPassed/iDuration);
 
-	int hours   = int(mediator->Pos01()*mediator->DurationFrames())/3600;
-	int minutes = int(mediator->Pos01()*mediator->DurationFrames())/60;
-	int seconds = int(mediator->Pos01()*mediator->DurationFrames())%60;
-	
-	double intpart;
-	int milliseconds = int(modf(mediator->Pos01()*mediator->DurationFrames(), &intpart)*1000);
+	int hours        =  int(fElapsedS)/3600;
+	int minutes      = (int(fElapsedS)/60)%60;
+	int seconds      = (int(fElapsedS))%60;
+	int milliseconds =  int((fElapsedS - (int)fElapsedS)*1000.0);
 
 	static char buf[256];
 	snprintf(buf, sizeof(buf), "%02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
@@ -230,10 +274,61 @@ void MediaSubWindow::RenderGUI()
 }
 
 
+void MediaSubWindow::UpdateVideoTrackPosition(double fVal)
+{
+	int iPlayhead10msTicks = PositionMediator::Get()->Pos10ms();
+
+	printf("Callback on frame: %d\n", iPlayhead10msTicks);
+
+	for (auto iterClip : TrackClip::liClips)
+	{
+		if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msTicks) &&
+			 (iPlayhead10msTicks < (iterClip->m_iStartPos10msTicks + iterClip->m_iLength10msTicks)) )
+		{
+			WarpingToolSubWindow* wndWarpingTool;
+			wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
+
+			//if (wndWarpingTool->bActive) continue;
+
+			FFMS_Video* vid = iterClip->video;
+
+			int iFramePrev = vid->iCurrentFrame;
+
+			// PRESENTATION TIME IS A RULE TO FOLLOW
+			float _fClipLocalTimeSec = (iPlayhead10msTicks - iterClip->m_iStartPos10msTicks)/100.0;
+			
+			// DURING SEEK GET INDEX FROM PRESENTATION TIME
+			vid->iCurrentFrame = vid->NextIndexAfter(_fClipLocalTimeSec);
+
+			// ACQUIRE NEEDED FRAME, LIKELY IT IS NOT IN CACHE, REVISIT SOON AFTER
+			FrameItem* frame = NULL;
+			while ((frame = vid->videoCacheThread->GetFrameByTime(_fClipLocalTimeSec, vid->iCurrentFrame)) == NULL)
+			{
+				Sleep(50);
+			}
+
+			if (iFramePrev != vid->iCurrentFrame)
+			{
+				//wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
+				wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
+				wndWarpingTool->ReDrawFBOprocessors();
+
+				printf("Frame Second is: %f\n", frame->fS);
+			}
+			else
+				printf("Duplicate frame time!!!!!!!!!!!!!!!!!!! good\n");
+
+			wndWarpingTool->DrawFBOquad();
+		}
+	}
+
+}
+
+
 bool MediaSubWindow::Push(PushButtonImage* target)
 {
 	if (target->bPushed) return true;
-	
+
 	for (auto* b : liButtons)
 		b->bPushed = false;
 
@@ -263,10 +358,7 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 		stateMediaPlayer = STATE_MEDIAPLAYER_IDLE;
 		if (OnPlaybackStarted)
 			OnPlaybackStarted(false);
-
 	}
 
 	return true;
 }
-
-

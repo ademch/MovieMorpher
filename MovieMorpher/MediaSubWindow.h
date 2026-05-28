@@ -7,6 +7,7 @@
 #include "../../!!adGUI/button.h"
 #include "../../!!adVideo/SoundAL.h"
 
+
 enum StateMediaPlayer_enum {
 	STATE_MEDIAPLAYER_IDLE,
 	STATE_MEDIAPLAYER_PLAYING
@@ -54,7 +55,9 @@ private:
 	LARGE_INTEGER T0;
 
 	StateMediaPlayer_enum stateMediaPlayer;
-	float elapsed_sec;
+	double fElapsedS;
+
+	void UpdateVideoTrackPosition(double fVal);
 
 };
 

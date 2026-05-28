@@ -25,13 +25,13 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	m_fSliderPos01 = 0;
 	iBorder        = g_iTimelineBorder;
 
-	OnSliderPosChange = [this](float fPos)
+	OnSliderPosChange = [this](double fPos)
 	                    {  PositionMediator::Get()->SetPos0_1(this, fPos); };
-	OnSelectionChange = [this](float fSelectionStart, float fSelectionEnd)
+	OnSelectionChange = [this](double fSelectionStart, double fSelectionEnd)
 	                    { PositionMediator::Get()->SetSelection(this, fSelectionStart, fSelectionEnd); };
-	PositionMediator::Get()->subscribeForPos([this](void* origin, float fVal)
+	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
 						{ if (origin != this) SetSliderPos0_1(fVal); });
-	PositionMediator::Get()->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iDuration)
+	PositionMediator::Get()->subscribeForPosInit([this](void* origin, double fVal, int _iDuration10msTicks)
 						{ if (origin != this) SetSliderPos0_1(fVal); });
 
 	PopulateGUI();
@@ -63,7 +63,7 @@ int TimelineSubWindow::FindLastClipOnTrack_TailFrame(int iTrackNumber)
 	{
 		if (iterEl->iTrack != iTrackNumber) continue;
 
-		iMax = max(iMax, iterEl->m_iStartPosFrame + iterEl->m_iLengthFrames);
+		iMax = max(iMax, iterEl->m_iStartPos10msTicks + iterEl->m_iLength10msTicks);
 	}
 
 	return iMax;
@@ -71,7 +71,7 @@ int TimelineSubWindow::FindLastClipOnTrack_TailFrame(int iTrackNumber)
 
 
 
-TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool)
+TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool, int i10msCount)
 {
 	int iActiveTrack = TimelineTrack::iSelected;
 
@@ -82,7 +82,7 @@ TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool)
 		                            26);																			// height
 	
 	int iTailFrame = FindLastClipOnTrack_TailFrame(iActiveTrack);
-	clip->SetAttr(iTailFrame, 100.0);
+	clip->SetAttr(iTailFrame, i10msCount);
 
 	clip->iTrack = iActiveTrack;
 	clip->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
@@ -104,7 +104,7 @@ TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool)
 
 
 // Called from outside
-void TimelineSubWindow::SetSliderPos0_1(float _val)
+void TimelineSubWindow::SetSliderPos0_1(double _val)
 {
 	m_fSliderPos01 = _val;
 }
@@ -293,15 +293,17 @@ void TimelineSliderSubWindow::PopulateGUI()
 {
 	videoSlider = new VideoSlider(iBorder,0, 20);
 	videoSlider->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
-	videoSlider->OnChange = [this](float fVal)
-	{ PositionMediator::Get()->SetPos0_1(videoSlider, fVal); };
-	PositionMediator::Get()->subscribeForPos([this](void* origin, float fVal)
+	videoSlider->OnChange = [this](double fVal)
+	{
+		PositionMediator::Get()->SetPos0_1(videoSlider, fVal);
+	};
+	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
 	{
 		if (origin != videoSlider) videoSlider->SetPos0_1(fVal);
 	});
-	PositionMediator::Get()->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iEndSec)
+	PositionMediator::Get()->subscribeForPosInit([this](void* origin, double fVal, int _iDuration10msTicks)
 	{
-		if (origin != videoSlider) videoSlider->SetPosInit(fVal, _iEndSec);
+		if (origin != videoSlider) videoSlider->SetPosInit(fVal, _iDuration10msTicks);
 	});
 	liGUI_Elements.push_back(videoSlider);
 }
@@ -368,9 +370,9 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 	//{
 	//	mediator->SetSliderPos0_1(this, fVal);
 	//};
-	//mediator->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iStartSec, unsigned int _iEndSec)
+	//mediator->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iStartSec, int _iDuration10msTicks)
 	//{
-	//	if (origin != videoSlider) SetPosInit(fVal, _iStartSec, _iEndSec);
+	//	if (origin != videoSlider) SetPosInit(fVal, _iStartSec, _iDuration10msTicks);
 	//});
 
 	PopulateGUI();

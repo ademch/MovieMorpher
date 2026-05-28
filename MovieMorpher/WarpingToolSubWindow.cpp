@@ -4,6 +4,8 @@
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 #include <vector>
 #include <functional>
+#include "../../!!adGUI/VideoPositionMediator.h"
+#include "../../!!adGUI/TrackClip.h"
 
 const float const_fPointsDepth   = 3;
 const float const_fPointsSize    = 10;
@@ -73,13 +75,19 @@ void WarpingToolSubWindow::DrawFBOquad()
 
 void WarpingToolSubWindow::Draw()
 {
-	
-	// draw sibling fbos (do not draw the first window at as that is welcome screen window)
+	int iPlayheadFr = PositionMediator::Get()->Pos10ms();
+
+	// draw sibling fbos (do not draw the first window as that is welcome screen window)
 	for (unsigned int i=1; i < m_liSiblings.size(); i++ )
 	{
 		if (m_liSiblings[i] == this) continue;
 
-		m_liSiblings[i]->DrawFBOquad();
+		TrackClip* clip = TrackClip::GetClip(m_liSiblings[i]);
+		if ( (iPlayheadFr >= clip->m_iStartPos10msTicks) &&
+			 (iPlayheadFr <  clip->m_iStartPos10msTicks + clip->m_iLength10msTicks) )
+		{
+			m_liSiblings[i]->DrawFBOquad();
+		}
 	}
 
 	// draw object
