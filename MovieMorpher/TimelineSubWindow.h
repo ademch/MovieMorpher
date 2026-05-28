@@ -125,7 +125,7 @@ protected:
 
 	int iBorder;
 
-	int FindLastClipOnTrack_TailFrame(int iTrackNumber);
+	int FindLastClipOnTrack_Tail10msTick(int iTrackNumber);
 
 private:
 

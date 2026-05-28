@@ -56,7 +56,7 @@ void TimelineSubWindow::PopulateGUI()
 	}
 }
 
-int TimelineSubWindow::FindLastClipOnTrack_TailFrame(int iTrackNumber)
+int TimelineSubWindow::FindLastClipOnTrack_Tail10msTick(int iTrackNumber)
 {
 	int iMax = 0;
 	for (auto iterEl : TrackClip::liClips)
@@ -81,7 +81,7 @@ TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool, int i10ms
 									Width(),																		// width
 		                            26);																			// height
 	
-	int iTailFrame = FindLastClipOnTrack_TailFrame(iActiveTrack);
+	int iTailFrame = FindLastClipOnTrack_Tail10msTick(iActiveTrack);
 	clip->SetAttr(iTailFrame, i10msCount);
 
 	clip->iTrack = iActiveTrack;
