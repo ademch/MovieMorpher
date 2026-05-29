@@ -75,7 +75,7 @@ void WarpingToolSubWindow::DrawFBOquad()
 
 void WarpingToolSubWindow::Draw()
 {
-	int iPlayhead10msTicks = PositionMediator::Get()->Pos10ms();
+	int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
 
 	// draw sibling fbos (do not draw the first window as that is welcome screen window)
 	for (unsigned int i=1; i < m_liSiblings.size(); i++ )
@@ -83,8 +83,8 @@ void WarpingToolSubWindow::Draw()
 		if (m_liSiblings[i] == this) continue;
 
 		TrackClip* clip = TrackClip::GetClip(m_liSiblings[i]);
-		if ( (iPlayhead10msTicks >= clip->m_iStartPos10msTicks) &&
-			 (iPlayhead10msTicks <  clip->m_iStartPos10msTicks + clip->m_iLength10msTicks) )
+		if ( (iPlayhead10msTicks >= clip->m_iStartPos10msUnits) &&
+			 (iPlayhead10msTicks <  clip->m_iStartPos10msUnits + clip->m_iLength10msUnits) )
 		{
 			m_liSiblings[i]->DrawFBOquad();
 		}

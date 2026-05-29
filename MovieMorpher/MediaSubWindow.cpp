@@ -29,7 +29,8 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 		if (origin != this) UpdateVideoTrackPosition(fVal);
 	});
 
-	fElapsedS = 0.0;
+	fElapsedTimerS = 0.0;
+	fSlider10msUnitsAtStart = 0.0;
 
 	PopulateGUI();
 }
@@ -78,7 +79,7 @@ void MediaSubWindow::PopulateGUI()
 	liButtons.push_back(pushButtonImg);
 	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
 
-	pushButtonImg = new PushButtonImage("PlayFcursor", -98, 10, 30);
+	pushButtonImg = new PushButtonImage("PlayFromCursor", -98, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image5.bmp");
 	pushButtonImg->strHint = "Play from cursor";
 	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
@@ -159,7 +160,7 @@ bool MediaSubWindow::AddTrackVideo()
 	video->LoadMPEG(filePath);
 
 	// WIDEN TIMELINE IF NEEDED
-	if (PositionMediator::Get()->DurationIn10msTicks() < video->iTotalFrames)
+	if (PositionMediator::Get()->Duration10msUnits() < video->iTotalFrames)
 	{
 		PositionMediator::Get()->Init(NULL, 0.0f, 2*video->liIndex[video->iTotalFrames-1]*100.0);
 	}
@@ -172,6 +173,7 @@ bool MediaSubWindow::AddTrackVideo()
 
 	// load image into the tool input fbo
 	FrameItem* frame = video->videoCacheThread->GetFrame(0);
+		assert(frame);
 		wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
 		wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
 
@@ -192,12 +194,12 @@ void MediaSubWindow::Draw()
 {
 	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 	{
-		int iPlayhead10msTicks = PositionMediator::Get()->Pos10ms();
+		int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
 
 		for (auto iterClip : TrackClip::liClips)
 		{
-			if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msTicks) &&
-				 (iPlayhead10msTicks < (iterClip->m_iStartPos10msTicks + iterClip->m_iLength10msTicks)) )
+			if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msUnits) &&
+				 (iPlayhead10msTicks < (iterClip->m_iStartPos10msUnits + iterClip->m_iLength10msUnits)) )
 			{
 				WarpingToolSubWindow* wndWarpingTool;
 				wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
@@ -218,7 +220,7 @@ void MediaSubWindow::Draw()
 					int iFramePrev = vid->iCurrentFrame;
 
 					// CALC LOCAL TIME OF TRACK, TIME IS A RULE TO FOLLOW
-					float _fClipLocalTimeS = (iPlayhead10msTicks - iterClip->m_iStartPos10msTicks)/100.0;
+					float _fClipLocalTimeS = (iPlayhead10msTicks - iterClip->m_iStartPos10msUnits)/100.0;
 
 					// USE PREVIOUS FRAME AS A SEED, AND LEAVE IT AS IS OR MOVE TOWARDS PRESENTATION TIME INSIDE CACHE
 					FrameItem* frame = vid->videoCacheThread->GetFrameByTime(_fClipLocalTimeS, vid->iCurrentFrame);
@@ -247,23 +249,25 @@ void MediaSubWindow::Draw()
 void MediaSubWindow::RenderGUI()
 {
 	PositionMediator* mediator = PositionMediator::Get();
-	int iTotal10msTicks = mediator->DurationIn10msTicks();
+	int iTotal10msUnits = mediator->Duration10msUnits();
 
 	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 	{
 		LARGE_INTEGER T1;
 		QueryPerformanceCounter(&T1);
-		fElapsedS = double(T1.QuadPart - T0.QuadPart) / double(ticksPerSecond.QuadPart);
-		mediator->SetPos0_1(this, (fElapsedS*100.0)/iTotal10msTicks);
+		fElapsedTimerS = double(T1.QuadPart - T0.QuadPart) / double(ticksPerSecond.QuadPart);
+		mediator->SetPos0_1(this, (fElapsedTimerS*100.0 + fSlider10msUnitsAtStart)/iTotal10msUnits);
 	}
 
 //	float fSecondPassed = video->audioThread->GetCurrentSecond();
 //	mediator->SetPos0_1(NULL, fSecondPassed/iDuration);
 
-	int hours        =  int(fElapsedS)/3600;
-	int minutes      = (int(fElapsedS)/60)%60;
-	int seconds      = (int(fElapsedS))%60;
-	int milliseconds =  int((fElapsedS - (int)fElapsedS)*1000.0);
+	float fS = mediator->Pos10msUnits()/100.0;
+
+	int hours        =  int(fS)/3600;
+	int minutes      = (int(fS)/60)%60;
+	int seconds      = (int(fS))%60;
+	int milliseconds =  int((fS - (int)fS)*1000.0);
 
 	static char buf[256];
 	snprintf(buf, sizeof(buf), "%02d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
@@ -276,14 +280,14 @@ void MediaSubWindow::RenderGUI()
 
 void MediaSubWindow::UpdateVideoTrackPosition(double fVal)
 {
-	int iPlayhead10msTicks = PositionMediator::Get()->Pos10ms();
+	int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
 
-	printf("Callback on frame: %d\n", iPlayhead10msTicks);
+	//printf("Callback on frame: %d\n", iPlayhead10msTicks);
 
 	for (auto iterClip : TrackClip::liClips)
 	{
-		if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msTicks) &&
-			 (iPlayhead10msTicks < (iterClip->m_iStartPos10msTicks + iterClip->m_iLength10msTicks)) )
+		if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msUnits) &&
+			 (iPlayhead10msTicks < (iterClip->m_iStartPos10msUnits + iterClip->m_iLength10msUnits)) )
 		{
 			WarpingToolSubWindow* wndWarpingTool;
 			wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
@@ -295,7 +299,7 @@ void MediaSubWindow::UpdateVideoTrackPosition(double fVal)
 			int iFramePrev = vid->iCurrentFrame;
 
 			// PRESENTATION TIME IS A RULE TO FOLLOW
-			float _fClipLocalTimeSec = (iPlayhead10msTicks - iterClip->m_iStartPos10msTicks)/100.0;
+			float _fClipLocalTimeSec = (iPlayhead10msTicks - iterClip->m_iStartPos10msUnits)/100.0;
 			
 			// DURING SEEK GET INDEX FROM PRESENTATION TIME
 			vid->iCurrentFrame = vid->NextIndexAfter(_fClipLocalTimeSec);
@@ -340,7 +344,18 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 	{
 		target->bPushed = true;
 
+		for (auto iterClip : TrackClip::liClips)
+		{
+			WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
+
+			if (iterClip->mediaType != CLIP_VIDEO) continue;
+
+			iterClip->video->iCurrentFrame = 0;
+		}
+
 		QueryPerformanceCounter(&T0);
+		fSlider10msUnitsAtStart = 0.0;
+
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING;
 
 		if (OnPlaybackStarted)	OnPlaybackStarted(true);
@@ -349,16 +364,26 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 	{
 		target->bPushed = true;
 	}
-	if (target->_text == "PlayFcursor")
+	if (target->_text == "PlayFromCursor")
 	{
 		target->bPushed = true;
+
+		QueryPerformanceCounter(&T0);
+		fSlider10msUnitsAtStart = PositionMediator::Get()->Pos10msUnits();
+
+		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING;
+
+		if (OnPlaybackStarted)	OnPlaybackStarted(true);
+
 	}
 	if (target->_text == "Stop")
 	{
 		stateMediaPlayer = STATE_MEDIAPLAYER_IDLE;
 		if (OnPlaybackStarted)
 			OnPlaybackStarted(false);
+
 	}
 
 	return true;
 }
+

@@ -92,7 +92,7 @@ void MorphFBOprocessor::ShaderEmulate()
 			vShift = vShift + weight * (ptLerp - ptSrc);
 		}
 		if (fTotalWeight > 0.001f) {
-			vShift = (1.0 / fTotalWeight)*vShift;
+			vShift = (1.0f / fTotalWeight)*vShift;
 		}
 
 		// 2. During the second step it is decided the fullness of travel to the voted location

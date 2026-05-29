@@ -55,7 +55,8 @@ private:
 	LARGE_INTEGER T0;
 
 	StateMediaPlayer_enum stateMediaPlayer;
-	double fElapsedS;
+	double fElapsedTimerS;
+	double fSlider10msUnitsAtStart;
 
 	void UpdateVideoTrackPosition(double fVal);
 
