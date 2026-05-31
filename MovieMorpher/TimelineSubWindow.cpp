@@ -131,7 +131,8 @@ void TimelineSubWindow::Draw()
 
 	// draw position line
 	{
-		float m_fSliderX = (m_fSliderPos01 - 0.5)*Width();
+		//                 float                    int
+		float m_fSliderX = m_fSliderPos01*Width() - Width()/2;
 
 		glColor3f(1,0,0);
 

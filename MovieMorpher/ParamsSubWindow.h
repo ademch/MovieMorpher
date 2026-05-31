@@ -17,8 +17,8 @@ public:
 		Slider::Draw();
 
 		glFontBegin(&font);
-			glFontTextOut("analog", posx + 20, posy +13, 5, 5);
-			glFontTextOut("digital", posx + m_iBox_width/2.0f + 20, posy +13, 5, 5);
+			glFontTextOut("analog",  posx + 20, posy +13, 5, 5);
+			glFontTextOut("digital", posx + m_iBox_width/2 + 20, posy +13, 5, 5);
 		glFontEnd();
 		glDisable(GL_TEXTURE_2D);
 

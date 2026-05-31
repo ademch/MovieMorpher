@@ -294,6 +294,8 @@ void MediaSubWindow::UpdateVideoTrackPosition(double fVal)
 
 			//if (wndWarpingTool->bActive) continue;
 
+			if (iterClip->mediaType == CLIP_IMAGE) continue;
+
 			FFMS_Video* vid = iterClip->video;
 
 			int iFramePrev = vid->iCurrentFrame;

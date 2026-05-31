@@ -88,13 +88,13 @@ void MorphFBOprocessor::Render()
 			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRatio"),  fMorphRatio);
 
 					RenderTexturedQuadMesh(texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID,
-										   -m_iWidth/2.0f, -m_iHeight/2.0f, m_iWidth, m_iHeight, 0.0f, 110*float(m_iWidth)/float(m_iHeight), 110 );
+										   -m_iWidth/2, -m_iHeight/2, m_iWidth, m_iHeight, 0.0f, 110*float(m_iWidth)/float(m_iHeight), 110 );
 
 			// if (bCPUShaderDebugging) {
 			//	   GenMeshToList(-m_iWidth / 2.0f, -m_iHeight / 2.0f, m_iWidth, m_iHeight, 0.0, 30, 30);
 			//     ShaderEmulate();
 			//     RenderFromMeshList(texBank[TEXTURE_FLOAT_BUFFER]->m_uiTextureID,
-			//                        -m_iWidth/2.0f, -m_iHeight/2.0f, m_iWidth, m_iHeight, 0.0, 30, 30);
+			//                        -m_iWidth/2, -m_iHeight/2, m_iWidth, m_iHeight, 0.0, 30, 30);
 			// }
 
 			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
