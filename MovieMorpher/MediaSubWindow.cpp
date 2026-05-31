@@ -160,7 +160,7 @@ bool MediaSubWindow::AddTrackVideo()
 	video->LoadMPEG(filePath);
 
 	// WIDEN TIMELINE IF NEEDED
-	if (PositionMediator::Get()->Duration10msUnits() < video->iTotalFrames)
+	if (PositionMediator::Get()->Duration10msUnits() < video->liIndex[video->iTotalFrames-1]*100.0)
 	{
 		PositionMediator::Get()->Init(NULL, 0.0f, 2*video->liIndex[video->iTotalFrames-1]*100.0);
 	}
@@ -256,7 +256,7 @@ void MediaSubWindow::RenderGUI()
 		LARGE_INTEGER T1;
 		QueryPerformanceCounter(&T1);
 		fElapsedTimerS = double(T1.QuadPart - T0.QuadPart) / double(ticksPerSecond.QuadPart);
-		mediator->SetPos0_1(this, (fElapsedTimerS*100.0 + fSlider10msUnitsAtStart)/iTotal10msUnits);
+		mediator->SetPos0_1(this, (fElapsedTimerS*100.0 + fSlider10msUnitsAtStart)/iTotal10msUnits, true);
 	}
 
 //	float fSecondPassed = video->audioThread->GetCurrentSecond();

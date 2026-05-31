@@ -157,7 +157,10 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	// register mutual pointers
 	windowMedia->SetTimelineSubWindow(timelineWindow);
 
-	timelineWindow->OnVerticalPanChange = [](Vec3 vTranslation) {	timelineTrackParams->SetVerticalTranslation(vTranslation);  };
+	timelineWindow->OnVerticalPanChange = [](Vec3 vTranslation)
+	{
+		timelineTrackParams->SetVerticalTranslation(vTranslation); 
+	};
 
 	//ShowWindow(GetConsoleWindow(), SW_HIDE);
 

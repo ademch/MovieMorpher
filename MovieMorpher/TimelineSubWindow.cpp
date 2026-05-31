@@ -10,6 +10,7 @@ const int g_iTrackPadding	= 10;
 const int g_iClipPadding	= 7;
 const int g_iTrackCount		= 5;
 const int g_iTimelineBorder = 5;
+const int g_iHorrScrollBarBorder = 1;
 
 TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 									 float fBottomLeftXperc, float fBottomLeftYperc,
@@ -343,8 +344,13 @@ TimelineScrollBarSubWindow::TimelineScrollBarSubWindow(int iParentWidth, int iPa
 
 void TimelineScrollBarSubWindow::PopulateGUI()
 {
-	scrollBar = new HorScrollBar("", 1,1);
+	scrollBar = new HorScrollBar("", g_iHorrScrollBarBorder,1);
 	scrollBar->SetAlignment(HALIGN_LEFT, VALIGN_BOTTOM);
+	PositionMediator::Get()->subscribeForPosUpdateFromTimer([this](void* origin, double fVal)
+	{
+		scrollBar->ScrollToMakePlayheadVisible(fVal);
+	});
+	scrollBar->iBorder = g_iTimelineBorder-g_iHorrScrollBarBorder;
 	liGUI_Elements.push_back(scrollBar);
 }
 
@@ -353,7 +359,7 @@ void TimelineScrollBarSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int
 {
 	OpenGLSubWindowWithGUI::Reshape(iBottomLeftX, iBottomLeftY, iWidth, iHeight);
 
-	scrollBar->Resize(iWidth-2, iHeight);
+	scrollBar->Resize(iWidth-2*g_iHorrScrollBarBorder, iHeight);
 }
 
 
