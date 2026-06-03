@@ -6,7 +6,6 @@
 #include "MorphFBOprocessor.h"
 #include "../../!!adGUI/button.h"
 #include "../../!!adGUI/arrow.h"
-#include <vector>
 #include <functional>
 
 
@@ -27,7 +26,6 @@ public:
 	~MorphingToolSubWindow();
 
 	void Draw() override;
-	virtual void DrawFBOquad();
 
 	bool PassiveMotionFunc(int x, int y) override;
 	bool MouseFunc(int button, int state, int x, int y) override;

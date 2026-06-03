@@ -135,9 +135,6 @@
     <ClInclude Include="..\..\!!adGUI\ComboBox.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\!!adGlobals\bmpHandler.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="Main.h">
       <Filter>Header Files\Main</Filter>
     </ClInclude>
@@ -222,6 +219,9 @@
     <ClInclude Include="..\..\!!adExtensions\debugger.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\!!adGUI\TrackClipMenu.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -274,9 +274,6 @@
     </ClCompile>
     <ClCompile Include="..\..\!!adGUI\ComboBox.cpp">
       <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\!!adGlobals\bmpHandler.cpp">
-      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="..\..\!!adGlobals\PNG\lodepng.cpp">
       <Filter>Source Files\Utilities\PNG</Filter>

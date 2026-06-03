@@ -159,7 +159,6 @@
     <ClInclude Include="..\..\!!adExtensions\read_shader_file.h" />
     <ClInclude Include="..\..\!!adExtensions\Shaders.h" />
     <ClInclude Include="..\..\!!adGlobals\adOpenGLUtilities.h" />
-    <ClInclude Include="..\..\!!adGlobals\bmpHandler.h" />
     <ClInclude Include="..\..\!!adGlobals\globalToolTip.h" />
     <ClInclude Include="..\..\!!adGlobals\JPG\JPEG_library.h" />
     <ClInclude Include="..\..\!!adGlobals\PNG\lodepng.h" />
@@ -181,6 +180,7 @@
     <ClInclude Include="..\..\!!adGUI\SubWindowWithGUI.h" />
     <ClInclude Include="..\..\!!adGUI\TimelineTrack.h" />
     <ClInclude Include="..\..\!!adGUI\TrackClip.h" />
+    <ClInclude Include="..\..\!!adGUI\TrackClipMenu.h" />
     <ClInclude Include="..\..\!!adGUI\VideoPositionMediator.h" />
     <ClInclude Include="..\..\!!adGUI\VideoSlider.h" />
     <ClInclude Include="..\..\!!adVideo\AudioThread.h" />
@@ -208,7 +208,6 @@
     <ClCompile Include="..\..\!!adExtensions\read_shader_file.cpp" />
     <ClCompile Include="..\..\!!adExtensions\Shaders.cpp" />
     <ClCompile Include="..\..\!!adGlobals\adOpenGLUtilities.cpp" />
-    <ClCompile Include="..\..\!!adGlobals\bmpHandler.cpp" />
     <ClCompile Include="..\..\!!adGlobals\globalToolTip.cpp" />
     <ClCompile Include="..\..\!!adGlobals\JPG\jpeg-9e\jdatadst.cpp" />
     <ClCompile Include="..\..\!!adGlobals\JPG\jpeg-9e\jdatasrc.cpp" />

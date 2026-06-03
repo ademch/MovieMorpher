@@ -7,6 +7,7 @@
 #include "../../!!adGlobals/wdir.h"
 #include "WarpingToolSubWindow.h"
 #include "ImageSaveLoad.h"
+#include "../../!!adGUI/TrackClipMenu.h"
 
 
 MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
@@ -33,6 +34,8 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	fSlider10msUnitsAtStart = 0.0;
 
 	PopulateGUI();
+
+	RegisterTrackClipCallback();
 }
 
 
@@ -389,3 +392,36 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 	return true;
 }
 
+
+void MediaSubWindow::RegisterTrackClipCallback()
+{
+	TrackClipMenu::Get()->OnClick =	[this](int item)
+	{
+		switch(item)
+		{
+		case TrackClipMenu::ITEM_SPLIT:
+			MessageBox( nullptr, TEXT("Open"), TEXT("Menu"), MB_OK);
+			break;
+
+		case TrackClipMenu::ITEM_DELETE:
+		{
+			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)
+			TrackClip* clipSelected = TrackClip::GetSelectedClip();
+
+			// REMOVE TOOL WINDOW FROM SIBLINGS LIST
+			WarpingToolSubWindow::RemoveSibling(clipSelected->windowTool);
+
+			// REMOVE CLIP FROM TRACKS LIST
+			TrackClip::RemoveSelectedClip();
+
+			// SELECT WELCOME TOOL
+			clipSelected->OnClipChange(WARPING_TOOL_WELCOME);
+
+			// FINAL DELETE
+			windowTimeLine->DeleteGUIelement(clipSelected);
+
+			break;
+		}
+		}
+	};
+}

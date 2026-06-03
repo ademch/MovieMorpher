@@ -10,6 +10,7 @@
 #include "../../!!adGUI/VideoPositionMediator.h"
 #include "../../!!adGlobals/JPG/JPEG_library.h"
 #include "../../!!adExtensions/debugger.h"
+#include "../../!!adGUI/TrackClipMenu.h"
 
 
 
@@ -102,7 +103,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	{
 		unsigned int width, height;
 		unsigned char* image = NULL;
-		read_JPEG_file("E:\\Or\\MovieMorpher\\Debug\\welcome.jpg", &image, width, height);
+		read_JPEG_file( FullPathToFile("Data\\Welcome.jpg"), &image, width, height );
 		if (image)
 		{
 			ImageSaveLoadHelper::_FlipImage(image, width, height);
@@ -112,9 +113,11 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 			free(image);
 		}
+		windowToolEditorDefault = windowToolEditor;
+		windowParamsDefault     = windowParams;
 	}
 
-	windowGlobalParams = new GlobalParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.35, 0.27,0.2);
+	windowGlobalParams = new GlobalParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.74,0.35, 0.25,0.2);
 	windowGlobalParams->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	liWindows.push_back(windowGlobalParams);
 
@@ -125,13 +128,13 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	liWindows.push_back(windowMedia);
 
 
-	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.27, 0.70, 0.024);
+	timelineSliderWindow = new TimelineSliderSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.27, 0.65, 0.024);
 	timelineSliderWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	timelineSliderWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineSliderWindow);
 
 
-	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.70, 0.2);
+	timelineWindow = new TimelineSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.07, 0.65, 0.2);
 	timelineWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	timelineWindow->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	timelineWindow->SetSwitchToolWindowCallback(OnToolWindowSwitch);
@@ -142,8 +145,13 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	timelineTrackParams->clrFrame = Vecc3(0.1, 0.5, 0.1);
 	liWindows.push_back(timelineTrackParams);
 
+	//timelineTrackTransp = new TrackTranspSubWindow(iAppWndWidth, iAppWndHeight, 0.73, 0.07, 0.085, 0.2);
+	//timelineTrackTransp->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE | GUI_DECORATION_FALSE);
+	//timelineTrackTransp->clrFrame = Vecc3(0.1, 0.5, 0.1);
+	//liWindows.push_back(timelineTrackTransp);
 
-	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.048, 0.70, 0.022);
+
+	timelineScrollBarWindow = new TimelineScrollBarSubWindow(iAppWndWidth, iAppWndHeight, 0.08, 0.048, 0.65, 0.022);
 	timelineScrollBarWindow->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE );
 	timelineScrollBarWindow->scrollBar->OnChange = [](Matr4 matrUserScale)
 	{
@@ -160,6 +168,7 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 	timelineWindow->OnVerticalPanChange = [](Vec3 vTranslation)
 	{
 		timelineTrackParams->SetVerticalTranslation(vTranslation); 
+//		timelineTrackTransp->SetVerticalTranslation(vTranslation); 
 	};
 
 	//ShowWindow(GetConsoleWindow(), SW_HIDE);
@@ -168,8 +177,10 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	ToolTip::Get();
 
+	TrackClipMenu::Get()->Create(handle);
+
 	//передача управлени€ циклу прорисовки сцены
-	glutMainLoop();
+    glutMainLoop();
 
 	return 0;
 }
@@ -185,12 +196,12 @@ OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows(char *title)
 	WarpingToolSubWindow* new_windowToolEditor;
 	ParamsSubWindow*      new_windowParams;
 
-	new_windowToolEditor = new WarpingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.35, 0.70,0.63);
+	new_windowToolEditor = new WarpingToolSubWindow(iAppWndWidth,iAppWndHeight, 0.01,0.35, 0.72,0.63);
 	sprintf(new_windowToolEditor->m_strCaption, "%s", "Zoom");
 	new_windowToolEditor->bSceneRotationAllowed = false;
 	liWindows.push_back(new_windowToolEditor);
 
-	new_windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.72,0.57, 0.27,0.41);
+	new_windowParams = new ParamsSubWindow(iAppWndWidth,iAppWndHeight, 0.74,0.57, 0.25,0.41);
 	new_windowParams->SetFlags(ROTATION_ALLOWED_FALSE | DRAG_ALLOWED_FALSE | ZOOM_ALLOWED_FALSE);
 	sprintf(new_windowParams->m_strCaption, "%s", title);
 	liWindows.push_back(new_windowParams);
@@ -228,7 +239,7 @@ void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd)
 {
 	std::cout << "Switching window request...";
 
-	if (!windowToolEditor->bActive)
+	if ((windowToolEditor) && (!windowToolEditor->bActive))
 	{
 		std::cout << "Blocked during playback";
 		return;
@@ -238,7 +249,16 @@ void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd)
 	{
 		std::cout << "Done\n";
 
-		assert(dynamic_cast<WarpingToolSubWindow*>(switchedWnd));
+		if (switchedWnd == WARPING_TOOL_WELCOME)
+		{
+			windowToolEditor = windowToolEditorDefault;
+			windowParams     = windowParamsDefault;
+
+			windowToolEditor->bActive = true;
+			windowParams->bActive     = true;
+
+			return;
+		}
 
 		// deactivate current windows
 		windowToolEditor->bActive = false;
@@ -269,10 +289,8 @@ void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd)
 
 void ReshapeWindow(OpenGLSubWindowWithGUI* wind)
 {
-	wind->Reshape(iAppWndWidth  * wind->fBottomLeftXperc,
-				  iAppWndHeight * wind->fBottomLeftYperc,
-				  iAppWndWidth  * wind->fWidthPerc,
-				  iAppWndHeight * wind->fHeightPerc);
+	wind->Reshape(iAppWndWidth  * wind->fBottomLeftXperc, iAppWndHeight * wind->fBottomLeftYperc,
+				  iAppWndWidth  * wind->fWidthPerc, 	  iAppWndHeight * wind->fHeightPerc);
 }
 
 
@@ -356,33 +374,6 @@ void keyboard(unsigned char key, int x, int y)
 			else
 				ShowWindow(GetConsoleWindow(), SW_SHOW);
 
-			break;
-		}
-		// Load image
-		case '2':
-		{
-			unsigned int width, height;
-			unsigned char* image = ImageSaveLoadHelper::LoadImageFromDisk(width, height);
-
-			if (image)
-			{
-//				fbo->Reshape(0, 0, width, height);TODO
-//				fbo->TextureUpdate(width, height, image);
-
-				//TextureDescriptor* texDesc = LoadTexture(width, height, image);
-				//free(image);
-
-				//std::string id = msSince1970();
-				//texBank.bank[id] = texDesc;
-
-				//windowParams->listBox->items.push_back(id);
-			}
-			break;
-		}
-		// Save image
-		case '5':
-		{
-			ImageSaveLoadHelper::SaveImageToDisk();
 			break;
 		}
 		case 27:

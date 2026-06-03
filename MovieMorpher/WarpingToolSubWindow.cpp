@@ -2,10 +2,11 @@
 #include "WarpingToolSubWindow.h"
 #include "GlobalParamsSubWindow.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
-#include <vector>
-#include <functional>
 #include "../../!!adGUI/VideoPositionMediator.h"
 #include "../../!!adGUI/TrackClip.h"
+#include "GLSL_Pipeline.h"
+#include <algorithm>
+
 
 const float const_fPointsDepth   = 3;
 const float const_fPointsSize    = 10;
@@ -16,7 +17,9 @@ const float const_fHandleJitter  = 3;
 #define TRANS_PIVOT			2
 #define TRANS_PIVOTUP		3
 
+
 std::vector<WarpingToolSubWindow*> WarpingToolSubWindow::m_liSiblings;
+
 
 WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 										   float fBottomLeftXperc, float fBottomLeftYperc,
@@ -32,10 +35,10 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	m_iJoystickFrameWidth  = morphFBOprocessor->Width();
 	m_iJoystickFrameHeight = morphFBOprocessor->Height();
 
-	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0));
-	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0));
-	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0));
-	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0));
+	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0 ) );
+	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0 ) );
+	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0 ) );
+	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0 ) );
 
 	ptTranslHandle = Vecc2();
 	ptRotateHandle = Vecc2(m_iJoystickFrameWidth/2.0*0.618, 0);
@@ -43,8 +46,8 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	matrImmediateVisualization     = Mat4MakeIdent();
 	matrObjectOrigin2joystickBasis = Mat4MakeIdent();
 
-	hCursorScaleProport = LoadCursorFromFileW(L"aero_moveProp.cur");
-	hCursorRotateAngle  = LoadCursorFromFileW(L"aero_rotateAngle.cur");
+	hCursorScaleProportional = LoadCursorFromFileW(L"Cursors\\aero_moveProp.cur");
+	hCursorRotateAngle		 = LoadCursorFromFileW(L"Cursors\\aero_rotateAngle.cur");
 
 }
 
@@ -68,27 +71,74 @@ void WarpingToolSubWindow::DrawFBOquad()
 	// We call here SetupGraphicsPipeline of WarpingToolSubWindow to apply warping transformations also
 	SetupGraphicsPipeline();
 
-	MorphingToolSubWindow::DrawFBOquad();
+	float fAlpha = m_ParamsSubWindow->fTransparency/100.0f;
+
+	TextureDescriptor* texDescr;
+	// Show output of the shader, while invisible input texture holds original
+	if (GlobalParamsSubWindow::Get()->ShouldShowOriginal())
+		texDescr = texBank[TEXTURE_INPUT_IMAGE];
+	else
+		texDescr = texBank[TEXTURE_MORPHED_IMAGE];
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+		//std::string sSelected = comboBox->GetSelected();
+		glColor4f(1.0, 1.0, 1.0, fAlpha);
+		RenderTexturedQuadTransparent( texDescr->m_uiTextureID,	// texture
+									  -texDescr->m_width/2,		// bottomX
+									  -texDescr->m_height/2,	// bottomY
+									   texDescr->m_width,		// width
+									   texDescr->m_height,		// z
+									  -110 + 10*zOrder );		// 0-> -110, 1-> -100, 2-> -90, 3-> -80
+
+	glDisable(GL_BLEND);
 
 }
 
 
 void WarpingToolSubWindow::Draw()
 {
-	int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
+	// sort features from farthest (track 0) to closest (track 5)
+	std::sort(	m_liSiblings.begin(), m_liSiblings.end(),
+				[](const auto& a, const auto& b)
+				{
+					return a->zOrder < b->zOrder;
+				});
 
-	// draw sibling fbos (do not draw the first window as that is welcome screen window)
-	for (unsigned int i=1; i < m_liSiblings.size(); i++ )
+	bool bPlayheadWithinThisClip = false;
+
+	if (m_liSiblings.size() == 1)
 	{
-		if (m_liSiblings[i] == this) continue;
+		// welcome screen window
+		m_liSiblings[0]->DrawFBOquad();
+		
+		bPlayheadWithinThisClip = true;
+	}
+	else
+	{
+		int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
 
-		TrackClip* clip = TrackClip::GetClip(m_liSiblings[i]);
-		if ( (iPlayhead10msTicks >= clip->m_iStartPos10msUnits) &&
-			 (iPlayhead10msTicks <  clip->m_iStartPos10msUnits + clip->m_iLength10msUnits) )
+		// draw sibling fbos (do not draw the first window as that is welcome screen window)
+		for (unsigned int i=1; i < m_liSiblings.size(); i++ )
 		{
-			m_liSiblings[i]->DrawFBOquad();
+			//if (m_liSiblings[i] == this) continue;
+
+			TrackClip* clip = TrackClip::GetClip(m_liSiblings[i]);
+			if ( (iPlayhead10msTicks >= clip->m_iStartPos10msUnits) &&
+				 (iPlayhead10msTicks <  clip->m_iStartPos10msUnits + clip->m_iLength10msUnits) )
+			{
+				//TrackTranspSubWindow::GetTrackTransp(clip->iTrack-1)/100.0f;
+				m_liSiblings[i]->DrawFBOquad();
+
+				// analyze this tool window
+				if (m_liSiblings[i] == this) bPlayheadWithinThisClip |= true;
+			}
 		}
 	}
+
+	// IF THIS TOOL'S CLIP IS OUTSIDE PLAYHEAD WE DO NOT DRAW ITS CONTROL POINTS
+	if (!bPlayheadWithinThisClip) return;
 
 	// draw object
 	MorphingToolSubWindow::Draw();
@@ -186,7 +236,7 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 					else
 					{
 						glutSetCursor(GLUT_CURSOR_NONE);
-						SetCursor(hCursorScaleProport);
+						SetCursor(hCursorScaleProportional);
 					}
 					
 					return true;
@@ -235,101 +285,101 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 
 		MorphingToolSubWindow::SetupGraphicsPipeline();
 
-		Vec3d v3DCoords;
-		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
+			Vec3d v3DCoords;
+			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-		if ((stateTransform == STATE_TRANS_IDLE) && (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
-		{
-			// SCALING
-			for (size_t i = 0; i < liScalingHandles.size(); i++)
+			if ((stateTransform == STATE_TRANS_IDLE) && (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 			{
-				auto& point = liScalingHandles[i];
+				// SCALING
+				for (size_t i = 0; i < liScalingHandles.size(); i++)
+				{
+					auto& point = liScalingHandles[i];
 
-				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(point.X, point.Y, const_fPointsDepth);
+					Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(point.X, point.Y, const_fPointsDepth);
+					if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
+					{
+						if (GetKeyState(VK_SHIFT) & 0x8000)
+						{
+							stateTransform = STATE_TRANS_SCALE_NONPROPORTIONAL;
+
+							glutSetCursor(GLUT_CURSOR_INFO);
+						}
+						else
+						{
+							stateTransform = STATE_TRANS_SCALE_PROPORTIONAL;
+
+							glutSetCursor(GLUT_CURSOR_NONE);
+							SetCursor(hCursorScaleProportional);
+						}
+
+						m_ptHandleClicked = point;
+
+						// find the opposite corner
+						size_t iCorner = (i + 2) % liScalingHandles.size();
+						m_ptHandlePivot = liScalingHandles[iCorner];
+
+						iCorner = (i + 3) % liScalingHandles.size();
+						m_ptHandlePivotUp = liScalingHandles[iCorner];
+
+						iCorner = (i + 1) % liScalingHandles.size();
+						m_ptHandlePivotRight = liScalingHandles[iCorner];
+
+						ptPrevPoint = Vecc2(x, y);
+
+						return true;
+					}
+				}
+
+				// TRANSLATION
+				auto& ptTranslate = ptTranslHandle;
+
+				Vec3 dxdydz;
+				dxdydz = Vecc3(v3DCoords) - Vecc3(ptTranslate.X, ptTranslate.Y, const_fPointsDepth);
 				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
+					stateTransform = STATE_TRANS_TRANSLATE;
+
+					glutSetCursor(GLUT_CURSOR_INFO);
+
+					m_ptHandleClicked = ptTranslate;
+
+					ptPrevPoint = Vecc2(x, y);
+
+					return true;
+				}
+
+				// ROTATION
+				auto& ptRotate = ptRotateHandle;
+
+				dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotate.X, ptRotate.Y, const_fPointsDepth);
+				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
+				{
+					//stateTransform = STATE_TRANS_ROTATE;
+
+					//glutSetCursor(GLUT_CURSOR_INFO);
+
 					if (GetKeyState(VK_SHIFT) & 0x8000)
 					{
-						stateTransform = STATE_TRANS_SCALE_NONPROPORTIONAL;
+						stateTransform = STATE_TRANS_ROTATE_W_STEPS;
 
-						glutSetCursor(GLUT_CURSOR_INFO);
+						glutSetCursor(GLUT_CURSOR_NONE);
+						SetCursor(hCursorRotateAngle);
 					}
 					else
 					{
-						stateTransform = STATE_TRANS_SCALE_PROPORTIONAL;
+						stateTransform = STATE_TRANS_ROTATE;
 
-						glutSetCursor(GLUT_CURSOR_NONE);
-						SetCursor(hCursorScaleProport);
+						glutSetCursor(GLUT_CURSOR_INFO);
 					}
 
-					m_ptHandleClicked = point;
-
-					// find the opposite corner
-					size_t iCorner = (i + 2) % liScalingHandles.size();
-					m_ptHandlePivot = liScalingHandles[iCorner];
-
-					iCorner = (i + 3) % liScalingHandles.size();
-					m_ptHandlePivotUp = liScalingHandles[iCorner];
-
-					iCorner = (i + 1) % liScalingHandles.size();
-					m_ptHandlePivotRight = liScalingHandles[iCorner];
+					m_ptHandleClicked = ptRotate;
+					m_ptHandlePivot   = ptTranslHandle;
 
 					ptPrevPoint = Vecc2(x, y);
 
 					return true;
 				}
 			}
-
-			// TRANSLATION
-			auto& ptTranslate = ptTranslHandle;
-
-			Vec3 dxdydz;
-			dxdydz = Vecc3(v3DCoords) - Vecc3(ptTranslate.X, ptTranslate.Y, const_fPointsDepth);
-			if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
-			{
-				stateTransform = STATE_TRANS_TRANSLATE;
-
-				glutSetCursor(GLUT_CURSOR_INFO);
-
-				m_ptHandleClicked = ptTranslate;
-
-				ptPrevPoint = Vecc2(x, y);
-
-				return true;
-			}
-
-			// ROTATION
-			auto& ptRotate = ptRotateHandle;
-
-			dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotate.X, ptRotate.Y, const_fPointsDepth);
-			if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
-			{
-				//stateTransform = STATE_TRANS_ROTATE;
-
-				//glutSetCursor(GLUT_CURSOR_INFO);
-
-				if (GetKeyState(VK_SHIFT) & 0x8000)
-				{
-					stateTransform = STATE_TRANS_ROTATE_W_STEPS;
-
-					glutSetCursor(GLUT_CURSOR_NONE);
-					SetCursor(hCursorRotateAngle);
-				}
-				else
-				{
-					stateTransform = STATE_TRANS_ROTATE;
-
-					glutSetCursor(GLUT_CURSOR_INFO);
-				}
-
-				m_ptHandleClicked = ptRotate;
-				m_ptHandlePivot   = ptTranslHandle;
-
-				ptPrevPoint = Vecc2(x, y);
-
-				return true;
-			}
-		}
 	}
 	
 	if ((stateTransform != STATE_TRANS_IDLE) && (button == GLUT_LEFT_BUTTON) && (state == GLUT_UP))
@@ -352,12 +402,15 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 		m_ptHandlePivotUp		= liScalingHandles[TRANS_PIVOTUP];
 		m_ptHandlePivotRight	= liScalingHandles[TRANS_PIVOTRIGHT];
 
-		matrObjectOrigin2joystickBasis = Mat4MakeTransformFromVectors(Vecc3(),
+		matrObjectOrigin2joystickBasis = Mat4MakeTransformFromVectors(Vecc3(),											// origin
 																	  Vecc3(m_iJoystickFrameWidth, 0),
 			                                                          Vecc3(0, m_iJoystickFrameHeight),
-																	  Vecc3(ptTranslHandle),
+																	  Vecc3(ptTranslHandle),							// new origin
 																	  Vecc3(m_ptHandlePivotRight - m_ptHandlePivot),
 																	  Vecc3(m_ptHandlePivotUp    - m_ptHandlePivot));
+		// non-normalized 2D transformation produces non identity Z
+		matrObjectOrigin2joystickBasis.m[2][2] = 1.0;
+		matrObjectOrigin2joystickBasis.m[3][3] = 1.0;
 	}
 
 	return MorphingToolSubWindow::MouseFunc(button, state, x, y);
@@ -401,6 +454,9 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 				// Calulcate matrix that transforms existing local coordinate system into new coordinate system
 				matrTrans = Mat4MakeTransformFromVectors(vPivotUp, vPivotRight,
 														 yProj - Vecc3(m_ptHandlePivot), xProj - Vecc3(m_ptHandlePivot))*matrTrans;
+				// non-normalized 2D transformation produces non identity Z
+				matrTrans.m[2][2] = 1.0;
+				matrTrans.m[3][3] = 1.0;
 
 				matrTrans = Mat4MakeTrans(m_ptHandlePivot.X, m_ptHandlePivot.Y, 0.0)*matrTrans;
 
@@ -425,6 +481,9 @@ void WarpingToolSubWindow::MotionFunc(int x, int y)
 				// Calulcate matrix that transforms existing local coordinate system into new coordinate system
 				matrTrans = Mat4MakeTransformFromVectors(vPivotUp, vPivotRight,
 														 yProj - Vecc3(m_ptHandlePivot), xProj - Vecc3(m_ptHandlePivot))*matrTrans;
+				// non-normalized 2D transformation produces non identity Z
+				matrTrans.m[2][2] = 1.0;
+				matrTrans.m[3][3] = 1.0;
 
 				matrTrans = Mat4MakeTrans(m_ptHandlePivot.X, m_ptHandlePivot.Y, 0.0)*matrTrans;
 
@@ -474,5 +533,19 @@ void WarpingToolSubWindow::KeyboardAux(int key, int state, int x, int y)
 	if (key == VK_SHIFT)
 	{
 		PassiveMotionFunc(x, y);
+	}
+}
+
+
+void WarpingToolSubWindow::RemoveSibling(OpenGLSubWindowWithGUI* _sibling)
+{
+	for (auto it = m_liSiblings.begin(); it != m_liSiblings.end(); ++it)
+	{
+		if ((*it) == _sibling)
+		{
+			//delete *it;					// m_liSiblings does not own the pointer
+			it = m_liSiblings.erase(it);	// erase returns next iterator
+			break;
+		}
 	}
 }

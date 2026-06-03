@@ -41,7 +41,16 @@ void ParamsSubWindow::PopulateGUI()
 	SliderMorphSmoothness->fTickGranularity = 0.5;
 	liGUI_Elements.push_back(SliderMorphSmoothness);
 
-	buttonMorphNext = new Button("Apply", 30,-100, 120, 6.3);
+	fTransparency = 100.0f;
+	SliderTransparency = new Slider<SL_INT>("Alpha", 30,-70, 0,100, &fTransparency, 7);
+	SliderTransparency->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
+	SliderTransparency->SetBoxWidth(200);
+	SliderTransparency->SetBoxSeparation(1);
+	SliderTransparency->fValueGranularity = 1;
+	SliderTransparency->fTickGranularity = 25;
+	liGUI_Elements.push_back(SliderTransparency);
+
+	buttonMorphNext = new Button("Apply", 30,-130, 120, 6.3);
 	buttonMorphNext->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
 	buttonMorphNext->OnClick = [this]() { return StartNextGeneration(); };
 	liGUI_Elements.push_back(buttonMorphNext);

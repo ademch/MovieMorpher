@@ -34,7 +34,7 @@ public:
 	void Draw() override;
 
 	std::function<OpenGLSubWindowWithGUI*(char*)> OnNewMedia;
-	std::function<void(bool)> OnPlaybackStarted;
+	std::function<void(bool)>                     OnPlaybackStarted;
 
 protected:
 
@@ -59,6 +59,8 @@ private:
 	double fSlider10msUnitsAtStart;
 
 	void UpdateVideoTrackPosition(double fVal);
+
+	void RegisterTrackClipCallback();
 
 };
 

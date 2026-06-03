@@ -1,5 +1,5 @@
-#ifndef PARAMSSUBSUBWINDOW_H
-#define PARAMSSUBSUBWINDOW_H
+#ifndef PARAMS_SUBWINDOW_H
+#define PARAMS_SUBWINDOW_H
 
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include "../../!!adGUI/Slider.h"
@@ -18,14 +18,14 @@ public:
 
 		glFontBegin(&font);
 			glFontTextOut("analog",  posx + 20, posy +13, 5, 5);
-			glFontTextOut("digital", posx + m_iBox_width/2 + 20, posy +13, 5, 5);
+			glFontTextOut("digital", posx + m_iWidth/2 + 20, posy +13, 5, 5);
 		glFontEnd();
 		glDisable(GL_TEXTURE_2D);
 
 		glColor3f(0.9,0.0,0.0);
 		glBegin(GL_LINES);
-			glVertex3f(posx + m_iBox_width / 2.0, posy, 5);
-			glVertex3f(posx + m_iBox_width / 2.0, posy + _text_height, 5);
+			glVertex3f(posx + m_iWidth / 2.0, posy, 5);
+			glVertex3f(posx + m_iWidth / 2.0, posy + m_iHeight, 5);
 		glEnd();
 	}
 };
@@ -42,8 +42,8 @@ public:
 
 		glColor3f(0.9, 0.0, 0.0);
 		glBegin(GL_LINES);
-			glVertex3f(posx + m_iBox_width / 10.0, posy, 5);
-			glVertex3f(posx + m_iBox_width / 10.0, posy + _text_height, 5);
+			glVertex3f(posx + m_iWidth / 10.0, posy, 5);
+			glVertex3f(posx + m_iWidth / 10.0, posy + m_iHeight, 5);
 		glEnd();
 	}
 };
@@ -59,6 +59,7 @@ public:
 	float fMorphPower;
 	float fMorphRadius;
 	float fMorphRatio;
+	float fTransparency;
 
 protected:
 
@@ -71,7 +72,8 @@ private:
 	Slider<SL_INT>*   SliderMorphRatio;
 	Slider<SL_INT>*   SliderMorphRadius;
 	SliderCenterLine* SliderMorphSmoothness;
-	
+	Slider<SL_INT>*   SliderTransparency;
+
 	Button*			  buttonMorphNext;
 
 };

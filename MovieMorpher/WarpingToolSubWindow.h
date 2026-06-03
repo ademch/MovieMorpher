@@ -2,12 +2,6 @@
 #define WARPINGTOOLSUBWINDOW_H
 
 #include "MorphingToolSubWindow.h"
-#include "ParamsSubWindow.h"
-#include "../../!!adGUI/gui_element.h"
-#include "../../!!adGUI/ComboBox.h"
-#include "../../!!adGUI/button.h"
-#include <vector>
-#include <functional>
 
 
 enum StateTransform_enum {
@@ -19,6 +13,9 @@ enum StateTransform_enum {
 	STATE_TRANS_TRANSLATE
 };
 
+#define WARPING_TOOL_WELCOME	NULL
+
+
 class WarpingToolSubWindow : public MorphingToolSubWindow
 {
 public:
@@ -26,6 +23,8 @@ public:
 						 float fBottomLeftXperc, float fBottomLeftYperc,
 						 float fWidthPerc, float fHeightPerc);
 	~WarpingToolSubWindow() {}
+
+	static void RemoveSibling(OpenGLSubWindowWithGUI* _sibling);
 
 	void Draw() override;
 
@@ -35,7 +34,7 @@ public:
 	void KeyboardAux(int key, int state, int x, int y) override;
 
 	void SetupGraphicsPipeline() override;
-	void DrawFBOquad() override;
+	void DrawFBOquad();
 
 protected:
 
@@ -63,7 +62,7 @@ private:
 
 	Vec2 ptPrevPoint;
 
-	HCURSOR hCursorScaleProport;
+	HCURSOR hCursorScaleProportional;
 	HCURSOR hCursorRotateAngle;
 
 	// shortcut for fbo width and height

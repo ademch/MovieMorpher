@@ -107,6 +107,8 @@ public:
 		m_setWindowCallback = callback;
 	}
 
+	void DeleteGUIelement(GUI_Element* _GUIelement);
+
 protected:
 
 	void PopulateGUI() override;
@@ -131,6 +133,7 @@ private:
 
 	std::function<void(OpenGLSubWindowWithGUI*)> m_setWindowCallback;
 
+	void RegisterTrackClipCallback();
 };
 
 
@@ -163,6 +166,36 @@ protected:
 private:
 
 };
+
+
+//class TrackTranspSubWindow : public OpenGLSubWindowWithGUI
+//{
+//public:
+//	TrackTranspSubWindow(int iParentWidth, int iParentHeight,
+//						 float fBottomLeftXperc, float fBottomLeftYperc,
+//						 float fWidthPerc, float fHeightPerc);
+//	~TrackTranspSubWindow() {}
+//
+//	// GUI is movable with MV matrix
+//	void SetupGraphicsPipelineWithIdentityModelViewMatrix() override
+//	{
+//		SetupGraphicsPipeline();
+//	}
+//
+//	void SetVerticalTranslation(Vec3 _translation)
+//	{
+//		vUserSceneTranslation = _translation;
+//	}
+//
+//	static std::vector<float> liTransp;
+//	static float GetTrackTransp(int iTrack);
+//
+//protected:
+//	void PopulateGUI() override;
+//
+//private:
+//
+//};
 
 
 

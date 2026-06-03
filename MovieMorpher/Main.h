@@ -18,7 +18,7 @@
 
 GLFONT font;
 
-int iAppWndWidth = 1200;
+int iAppWndWidth = 1300;
 int iAppWndHeight = 860;
 
 OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows(char *title);
@@ -52,6 +52,10 @@ GLSL_Pipeline glsl_pipeline;
 WarpingToolSubWindow*       windowToolEditor = NULL;
 ParamsSubWindow*            windowParams	 = NULL;
 
+// welcome screen
+WarpingToolSubWindow*       windowToolEditorDefault;
+ParamsSubWindow*            windowParamsDefault;
+
 GlobalParamsSubWindow*      windowGlobalParams;
 MediaSubWindow*             windowMedia;
 
@@ -59,6 +63,7 @@ TimelineSliderSubWindow*    timelineSliderWindow;
 TimelineSubWindow*          timelineWindow;
 TimelineScrollBarSubWindow* timelineScrollBarWindow;
 TrackParamsSubWindow*       timelineTrackParams;
+//TrackTranspSubWindow*       timelineTrackTransp;
 
 ToolTip* tooltip;
 

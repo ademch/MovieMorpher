@@ -21,7 +21,6 @@ void DoubleClickTimer(int value)
 }
 
 
-
 MorphingToolSubWindow::MorphingToolSubWindow(int iParentWidth, int iParentHeight,
 											 float fBottomLeftXperc, float fBottomLeftYperc,
 											 float fWidthPerc, float fHeightPerc) :
@@ -84,35 +83,6 @@ void MorphingToolSubWindow::PopulateGUI()
 }
 
 
-void MorphingToolSubWindow::DrawFBOquad()
-{
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	TextureDescriptor* texDescr;
-	// Show output of the shader, while invisible input texture holds original
-	if (GlobalParamsSubWindow::Get()->ShouldShowOriginal())
-		texDescr = texBank[TEXTURE_INPUT_IMAGE];
-	else
-		texDescr = texBank[TEXTURE_MORPHED_IMAGE];
-
-	float zValue = 0.0;
-	if (!bActive)	// active window ignore zOrder, nonActive become z sorted
-	{
-		zValue -= 100.0*zOrder;
-	}
-
-	//std::string sSelected = comboBox->GetSelected();
-	RenderTexturedQuad( texDescr->m_uiTextureID,	// texture
-					   -texDescr->m_width/2,		// bottomX
-					   -texDescr->m_height/2,		// bottomY
-						texDescr->m_width,			// width
-						texDescr->m_height,			// z
-						zValue);
-
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-}
-
-
 void MorphingToolSubWindow::ReshapeFBOprocessors(int _iBottomLeftX, int _iBottomLeftY, int _iWidth, int _iHeight)
 {
 	morphFBOprocessor->Reshape(_iBottomLeftX, _iBottomLeftY, _iWidth, _iHeight);
@@ -129,9 +99,6 @@ void MorphingToolSubWindow::Draw()
 	OpenGLSubWindowWithGUI::Draw();
 
 	sprintf(m_strCaption, "%s %5.0f%%", "Zoom", fUserScale*100.0f);
-
-	// Either parent's Draw prepares modelview matrix or childs DrawFBOquad overriden implementation
-	DrawFBOquad();
 
 	if (GlobalParamsSubWindow::Get()->PointsAreVisible())
 	{

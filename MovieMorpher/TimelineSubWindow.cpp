@@ -2,6 +2,7 @@
 #include "TimelineSubWindow.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 #include "../../!!adGUI/button.h"
+#include "../../!!adGUI/Slider.h"
 #include "../../!!adGlobals/glut/glut.h"
 
 
@@ -144,8 +145,8 @@ void TimelineSubWindow::Draw()
 	// Draw selection moir
 	if (bSelectionIsValid)
 	{
-		float fSelectionStartX = (m_fSelectionStartX0_1 - 0.5) * Width();
-		float fSelectionEndX   = (m_fSelectionEndX0_1   - 0.5) * Width();
+		float fSelectionStartX = m_fSelectionStartX0_1 * Width() - Width()/2;
+		float fSelectionEndX   = m_fSelectionEndX0_1   * Width() - Width()/2;
 
 		glColor4f(1,1,1, 0.2);
 		glEnable(GL_BLEND);
@@ -271,6 +272,19 @@ bool TimelineSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
 
 	return false;
 
+}
+
+void TimelineSubWindow::DeleteGUIelement(GUI_Element* _GUIelement)
+{
+	for (auto it = liGUI_Elements.begin(); it != liGUI_Elements.end(); ++it)
+	{
+		if ((*it) == _GUIelement)
+		{
+			delete *it;						// list owns the pointer
+			it = liGUI_Elements.erase(it);  // erase returns next iterator
+			break;
+		}
+	}
 }
 
 
@@ -409,4 +423,43 @@ void TrackParamsSubWindow::PopulateGUI()
 	}
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//std::vector<float> TrackTranspSubWindow::liTransp;
+//
+//TrackTranspSubWindow::TrackTranspSubWindow( int iParentWidth, int iParentHeight,
+//											float fBottomLeftXperc, float fBottomLeftYperc,
+//											float fWidthPerc, float fHeightPerc) :
+//					  OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
+//											 fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
+//{
+//	PopulateGUI();
+//}
+//
+//void TrackTranspSubWindow::PopulateGUI()
+//{
+//	liTransp.reserve(g_iTrackCount);
+//	for (int16_t iTrack = 1; iTrack <= g_iTrackCount; iTrack++)
+//	{
+//		liTransp.push_back(100);
+//
+//		Slider<SL_INT>* SliderTrackTransparency;
+//		SliderTrackTransparency = new Slider<SL_INT>("%", 10,-g_iTrackHeight*iTrack - g_iTrackPadding*iTrack + 14, 0,100, &liTransp.back(), 7.2);
+//		SliderTrackTransparency->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
+//		SliderTrackTransparency->SetBoxWidth(50);
+//		SliderTrackTransparency->SetBoxSeparation(1);
+//		SliderTrackTransparency->bDrawMinMaxValues = false;
+//		SliderTrackTransparency->fValueGranularity = 1;
+//		SliderTrackTransparency->fTickGranularity = 25;
+//		liGUI_Elements.push_back(SliderTrackTransparency);
+//	}
+//
+//}
+//
+//float TrackTranspSubWindow::GetTrackTransp(int iTrack)
+//{
+//	return liTransp[iTrack];
+//}
+//
 
