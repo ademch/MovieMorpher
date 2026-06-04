@@ -447,7 +447,13 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 	{
 		if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 		{
-			mediator->SetPos0_1(NULL, mediator->PosMarker0_1(), false);	// NULL has to trigger self update, nice!
+			mediator->SetPos0_1(NULL, mediator->PosMarker0_1(), false);		// NULL has to trigger self update, nice!
+			mediator->SetMarker(NULL, -1);
+		}
+		if ((stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED) ||
+			(stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH))
+		{
+			mediator->SetPos0_1(NULL, mediator->PosSelStart0_1(), false);	// NULL has to trigger self update, nice!
 			mediator->SetMarker(NULL, -1);
 		}
 
