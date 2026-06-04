@@ -62,7 +62,7 @@ void MediaSubWindow::PopulateGUI()
 	liGUI_Elements.push_back(pushButtonImg);
 
 	liButtons.push_back(pushButtonImg);
-	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
 	pushButtonImg = new PushButtonImage("PlayS2E", -166, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image7.bmp");
@@ -71,7 +71,7 @@ void MediaSubWindow::PopulateGUI()
 	liGUI_Elements.push_back(pushButtonImg);
 
 	liButtons.push_back(pushButtonImg);
-	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
 	pushButtonImg = new PushButtonImage("Pause", -132, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image6.bmp");
@@ -80,7 +80,7 @@ void MediaSubWindow::PopulateGUI()
 	liGUI_Elements.push_back(pushButtonImg);
 
 	liButtons.push_back(pushButtonImg);
-	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
 	pushButtonImg = new PushButtonImage("PlayFromCursor", -98, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image5.bmp");
@@ -89,7 +89,7 @@ void MediaSubWindow::PopulateGUI()
 	liGUI_Elements.push_back(pushButtonImg);
 
 	liButtons.push_back(pushButtonImg);
-	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
 	pushButtonImg = new PushButtonImage("Stop", -64, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image8.bmp");
@@ -98,7 +98,7 @@ void MediaSubWindow::PopulateGUI()
 	liGUI_Elements.push_back(pushButtonImg);
 
 	liButtons.push_back(pushButtonImg);
-	pushButtonImg->OnClick = [this, pushButtonImg]() { return Push(pushButtonImg); };
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
 	labelPlayhead = new Label("00:00:00.234", -201, -40, 11.9f);
 	labelPlayhead->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
@@ -207,7 +207,7 @@ void MediaSubWindow::Draw()
 				WarpingToolSubWindow* wndWarpingTool;
 				wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
 
-				if (wndWarpingTool->bActive) continue;
+				//if (wndWarpingTool->bActive) continue;
 
 				if (iterClip->mediaType == CLIP_IMAGE)
 				{
@@ -216,31 +216,7 @@ void MediaSubWindow::Draw()
 				}
 				else
 				{
-					// SHORTCUT
-					FFMS_Video* vid = iterClip->video;
-
-					// REMEMBER PREVIOUS FRAME FOR STATISTICS
-					int iFramePrev = vid->iCurrentFrame;
-
-					// CALC LOCAL TIME OF TRACK, TIME IS A RULE TO FOLLOW
-					float _fClipLocalTimeS = (iPlayhead10msTicks - iterClip->m_iStartPos10msUnits)/100.0;
-
-					// USE PREVIOUS FRAME AS A SEED, AND LEAVE IT AS IS OR MOVE TOWARDS PRESENTATION TIME INSIDE CACHE
-					FrameItem* frame = vid->videoCacheThread->GetFrameByTime(_fClipLocalTimeS, vid->iCurrentFrame);
-
-					// UPDATE IF NEW FRAME HAS BECOME AVAILABLE
-					if (iFramePrev != iterClip->video->iCurrentFrame)
-					{
-						//wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
-						wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
-						wndWarpingTool->ReDrawFBOprocessors();
-
-						printf("Frame second is: %f\n", frame->fS);
-					}
-					else
-						printf("Duplicate frame time!!!!!!!!!!!!!!!!!!! good\n");
-
-					wndWarpingTool->DrawFBOquad();
+					GetFrameFromVideoAndRender(iterClip, iPlayhead10msTicks);
 				}
 			}
 		}
@@ -292,49 +268,54 @@ void MediaSubWindow::UpdateVideoTrackPosition(double fVal)
 		if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msUnits) &&
 			 (iPlayhead10msTicks < (iterClip->m_iStartPos10msUnits + iterClip->m_iLength10msUnits)) )
 		{
-			WarpingToolSubWindow* wndWarpingTool;
-			wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
-
-			//if (wndWarpingTool->bActive) continue;
-
 			if (iterClip->mediaType == CLIP_IMAGE) continue;
 
-			FFMS_Video* vid = iterClip->video;
-
-			int iFramePrev = vid->iCurrentFrame;
-
-			// PRESENTATION TIME IS A RULE TO FOLLOW
-			float _fClipLocalTimeSec = (iPlayhead10msTicks - iterClip->m_iStartPos10msUnits)/100.0;
-			
-			// DURING SEEK GET INDEX FROM PRESENTATION TIME
-			vid->iCurrentFrame = vid->NextIndexAfter(_fClipLocalTimeSec);
-
-			// ACQUIRE NEEDED FRAME, LIKELY IT IS NOT IN CACHE, REVISIT SOON AFTER
-			FrameItem* frame = NULL;
-			while ((frame = vid->videoCacheThread->GetFrameByTime(_fClipLocalTimeSec, vid->iCurrentFrame)) == NULL)
-			{
-				Sleep(50);
-			}
-
-			if (iFramePrev != vid->iCurrentFrame)
-			{
-				//wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
-				wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
-				wndWarpingTool->ReDrawFBOprocessors();
-
-				printf("Frame Second is: %f\n", frame->fS);
-			}
-			else
-				printf("Duplicate frame time!!!!!!!!!!!!!!!!!!! good\n");
-
-			wndWarpingTool->DrawFBOquad();
+			GetFrameFromVideoAndRender(iterClip, iPlayhead10msTicks);
 		}
 	}
 
 }
 
+void MediaSubWindow::GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10msTicks)
+{
+	WarpingToolSubWindow* wndWarpingTool;
+	wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(clip->windowTool);
 
-bool MediaSubWindow::Push(PushButtonImage* target)
+	//if (wndWarpingTool->bActive) continue;
+
+	FFMS_Video* vid = clip->video;
+
+	int iFramePrev = vid->iCurrentFrame;
+
+	// PRESENTATION TIME IS A RULE TO FOLLOW
+	float _fClipLocalTimeSec = (iPlayhead10msTicks - clip->m_iStartPos10msUnits)/100.0;
+
+	// DURING SEEK GET INDEX FROM PRESENTATION TIME
+	vid->iCurrentFrame = vid->NextIndexAfter(_fClipLocalTimeSec);
+
+	// ACQUIRE NEEDED FRAME, LIKELY IT IS NOT IN CACHE, REVISIT SOON AFTER
+	FrameItem* frame = NULL;
+	while ((frame = vid->videoCacheThread->GetFrameByTime(_fClipLocalTimeSec, vid->iCurrentFrame)) == NULL)
+	{
+		Sleep(50);
+	}
+
+	if (iFramePrev != vid->iCurrentFrame)
+	{
+		//wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
+		wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
+		wndWarpingTool->ReDrawFBOprocessors();
+
+		printf("Frame Second is: %f\n", frame->fS);
+	}
+	else
+		printf("Duplicate frame time!!!!!!!!!!!!!!!!!!! good\n");
+
+	wndWarpingTool->DrawFBOquad();
+}
+
+
+bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 {
 	if (target->bPushed) return true;
 
@@ -360,6 +341,7 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 
 		QueryPerformanceCounter(&T0);
 		fSlider10msUnitsAtStart = 0.0;
+		PositionMediator::Get()->SetMarker(NULL, fSlider10msUnitsAtStart);
 
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING;
 
@@ -375,6 +357,8 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 
 		QueryPerformanceCounter(&T0);
 		fSlider10msUnitsAtStart = PositionMediator::Get()->Pos10msUnits();
+		
+		PositionMediator::Get()->SetMarker(NULL, PositionMediator::Get()->Pos0_1());
 
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING;
 
@@ -383,6 +367,14 @@ bool MediaSubWindow::Push(PushButtonImage* target)
 	}
 	if (target->_text == "Stop")
 	{
+		if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
+		{
+			PositionMediator* mediator = PositionMediator::Get();
+
+			mediator->SetPos0_1(NULL, mediator->PosMarker0_1(), false);	// NULL has to trigger self update, nice!
+			mediator->SetMarker(NULL, -1);
+		}
+
 		stateMediaPlayer = STATE_MEDIAPLAYER_IDLE;
 		if (OnPlaybackStarted)
 			OnPlaybackStarted(false);

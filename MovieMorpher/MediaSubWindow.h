@@ -49,7 +49,7 @@ protected:
 private:
 	std::vector<PushButtonImage*> liButtons;
 
-	bool Push(PushButtonImage* target);
+	bool OnButtonPush(PushButtonImage* target);
 
 	LARGE_INTEGER ticksPerSecond;
 	LARGE_INTEGER T0;
@@ -59,6 +59,7 @@ private:
 	double fSlider10msUnitsAtStart;
 
 	void UpdateVideoTrackPosition(double fVal);
+	void GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10msTicks);
 
 	void RegisterTrackClipCallback();
 

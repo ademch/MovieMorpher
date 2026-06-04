@@ -93,6 +93,7 @@ public:
 	void MotionFunc(int x, int y) override;
 
 	void SetSliderPos0_1(double _val);
+	void SetMarker0_1(double _val);
 
 	void SetZoom(Matr4 _matrUserScale)
 	{
@@ -114,6 +115,7 @@ protected:
 	void PopulateGUI() override;
 
 	double m_fSliderPos01;
+	double m_fMarkerPos01;
 
 	bool  bSelectionIsValid;
 	double m_fSelectionStartX0_1;

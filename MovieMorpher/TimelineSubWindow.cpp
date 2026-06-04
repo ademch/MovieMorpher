@@ -35,6 +35,8 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 						{ if (origin != this) SetSliderPos0_1(fVal); });
 	PositionMediator::Get()->subscribeForPosInit([this](void* origin, double fVal, int _iDuration10msTicks)
 						{ if (origin != this) SetSliderPos0_1(fVal); });
+	PositionMediator::Get()->subscribeForMarker([this](void* origin, double fVal)
+						{ if (origin != this) SetMarker0_1(fVal); });
 
 	PopulateGUI();
 
@@ -83,10 +85,13 @@ TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool, int i10ms
 									Width(),																		// width
 		                            26);																			// height
 	
-	int iTailFrame = FindLastClipOnTrack_Tail(iActiveTrack);
-	clip->SetAttr(iTailFrame, i10msCount);
+	int iTail10msUnit = FindLastClipOnTrack_Tail(iActiveTrack);
+	clip->SetAttr(iTail10msUnit, i10msCount);
 
+	// ASSOCIATE CLIP TO TRACK
 	clip->iTrack = iActiveTrack;
+
+	// SET ALIGNMENT
 	clip->SetAlignment(HALIGN_LEFT, VALIGN_TOP);
 	clip->Reposition(-m_iWidth/2 + clip->iHPosShift, m_iHeight/2 + clip->iVPosShift);
 	clip->Resize(Width(), 0);
@@ -94,6 +99,7 @@ TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool, int i10ms
 	liGUI_Elements.push_back(clip);
 	TrackClip::liClips.push_back(clip);
 
+	// SET SELECTED TRACK TO THE ID OF THIS CLIP
 	TrackClip::iSelected = clip->id;
 
 	// Pass callback deeper
@@ -111,6 +117,12 @@ void TimelineSubWindow::SetSliderPos0_1(double _val)
 	m_fSliderPos01 = _val;
 }
 
+// Called from outside
+void TimelineSubWindow::SetMarker0_1(double _val)
+{
+	m_fMarkerPos01 = _val;
+}
+
 
 void TimelineSubWindow::Draw()
 {
@@ -126,40 +138,58 @@ void TimelineSubWindow::Draw()
 
 	SetupGraphicsPipelineWithIdentityModelViewMatrix();
 
-	// matrUserScale contains transformation from HorrScrollBar,
-	// while vUserSceneTranslation contains vertical scroll which we do not want
-	glMultMatrixf(&matrUserScale.m[0][0]);
+		// matrUserScale contains transformation from HorrScrollBar,
+		// while vUserSceneTranslation contains vertical scroll which we do not want
+		glMultMatrixf(&matrUserScale.m[0][0]);
 
-	// draw position line
-	{
-		//                 float                    int
-		float m_fSliderX = m_fSliderPos01*Width() - Width()/2;
+		// draw position line
+		{
+			//                 float                    int
+			float m_fSliderX = m_fSliderPos01*Width() - Width()/2;
 
-		glColor3f(1,0,0);
+			glColor3f(1,0,0);
 
-		glLineWidth(1);
-		glLine( m_fSliderX, - m_iHeight/2,
-				m_fSliderX,   m_iHeight/2, 20);
-	}
+			glLineWidth(1);
+			glLine( m_fSliderX, - m_iHeight/2,
+					m_fSliderX,   m_iHeight/2, 20);
+		}
 
-	// Draw selection moir
-	if (bSelectionIsValid)
-	{
-		float fSelectionStartX = m_fSelectionStartX0_1 * Width() - Width()/2;
-		float fSelectionEndX   = m_fSelectionEndX0_1   * Width() - Width()/2;
+		// Draw selection moir
+		if (bSelectionIsValid)
+		{
+			float fSelectionStartX = m_fSelectionStartX0_1 * Width() - Width()/2;
+			float fSelectionEndX   = m_fSelectionEndX0_1   * Width() - Width()/2;
 
-		glColor4f(1,1,1, 0.2);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			glColor4f(1,1,1, 0.2);
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			glQuad( fSelectionStartX,
-				   -m_iHeight/2,
-				    fSelectionEndX - fSelectionStartX,
-				    m_iHeight,
-				    10);
+				glQuad( fSelectionStartX,
+					   -m_iHeight/2,
+						fSelectionEndX - fSelectionStartX,
+						m_iHeight,
+						10);
 
-		glDisable(GL_BLEND);
-	}
+			glDisable(GL_BLEND);
+		}
+
+		// DRAW marker if set
+		if (m_fMarkerPos01 >= 0)
+		{
+			//                 float                    int
+			float m_fMarkerX = m_fMarkerPos01*Width() - Width()/2;
+
+			glColor4f(1,1,1, 0.5);
+
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+				glLineWidth(1);
+				glLine( m_fMarkerX, - m_iHeight/2,
+						m_fMarkerX,   m_iHeight/2, 20);
+
+			glDisable(GL_BLEND);
+		}
 }
 
 
@@ -173,6 +203,7 @@ void TimelineSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 		elemRes->Resize(Width(), 0);
 	}
 }
+
 
 // OnClick
 bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
@@ -204,7 +235,7 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 				iStartDragX = x;
 				iStartDragY = y;
 
-				m_fSelectionStartX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2.0) / Width();
+				m_fSelectionStartX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2) / Width();
 
 				//if (OnChange != NULL) OnChange(Mat4MakeTrans(vUserSceneTranslation.X, 0, 0)*matrUserScale);
 
@@ -238,7 +269,7 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 			m_fSliderPos01 = m_fSelectionStartX0_1;
 			if (OnSliderPosChange != NULL) OnSliderPosChange( m_fSliderPos01 );
 
-			m_fSelectionEndX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2.0) / Width();
+			m_fSelectionEndX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2) / Width();
 			if (OnSelectionChange != NULL) OnSelectionChange( m_fSelectionStartX0_1, m_fSelectionEndX0_1 );
 	}
 
@@ -263,7 +294,7 @@ bool TimelineSubWindow::MouseWheelFunc(int state, int delta, int x, int y)
 				iVerticalPan -= 10;
 		}
 
-		vUserSceneTranslation = Vecc3(0.0, float(iVerticalPan));
+		vUserSceneTranslation = Vecc3(0.0, iVerticalPan);
 
 		if (OnVerticalPanChange) OnVerticalPanChange(vUserSceneTranslation);
 
@@ -280,8 +311,8 @@ void TimelineSubWindow::DeleteGUIelement(GUI_Element* _GUIelement)
 	{
 		if ((*it) == _GUIelement)
 		{
-			delete *it;						// list owns the pointer
-			it = liGUI_Elements.erase(it);  // erase returns next iterator
+			delete *it;					// list owns the pointer
+			liGUI_Elements.erase(it);
 			break;
 		}
 	}
