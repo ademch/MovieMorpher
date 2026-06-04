@@ -61,7 +61,7 @@ private:
 	void UpdateVideoTrackPosition(double fVal);
 	void GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10msTicks);
 
-	void RegisterTrackClipCallback();
+	void callback_RegisterTrackClip();
 
 };
 

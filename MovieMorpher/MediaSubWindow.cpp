@@ -35,7 +35,7 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 
 	PopulateGUI();
 
-	RegisterTrackClipCallback();
+	callback_RegisterTrackClip();
 }
 
 
@@ -291,9 +291,9 @@ void MediaSubWindow::GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10
 	float _fClipLocalTimeSec = (iPlayhead10msTicks - clip->m_iStartPos10msUnits)/100.0;
 
 	// DURING SEEK GET INDEX FROM PRESENTATION TIME
-	vid->iCurrentFrame = vid->NextIndexAfter(_fClipLocalTimeSec);
+	vid->iCurrentFrame = vid->NextIndexOrEqualFromTime(_fClipLocalTimeSec);
 
-	// ACQUIRE NEEDED FRAME, LIKELY IT IS NOT IN CACHE, REVISIT SOON AFTER
+	// ACQUIRE NEEDED FRAME, IF IT IS NOT IN CACHE, REVISIT SOON AFTER
 	FrameItem* frame = NULL;
 	while ((frame = vid->videoCacheThread->GetFrameByTime(_fClipLocalTimeSec, vid->iCurrentFrame)) == NULL)
 	{
@@ -330,16 +330,8 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 	{
 		target->bPushed = true;
 
-		for (auto iterClip : TrackClip::liClips)
-		{
-			WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
-
-			if (iterClip->mediaType != CLIP_VIDEO) continue;
-
-			iterClip->video->iCurrentFrame = 0;
-		}
-
 		QueryPerformanceCounter(&T0);
+
 		fSlider10msUnitsAtStart = 0.0;
 		PositionMediator::Get()->SetMarker(NULL, fSlider10msUnitsAtStart);
 
@@ -385,7 +377,7 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 }
 
 
-void MediaSubWindow::RegisterTrackClipCallback()
+void MediaSubWindow::callback_RegisterTrackClip()
 {
 	TrackClipMenu::Get()->OnClick =	[this](int item)
 	{

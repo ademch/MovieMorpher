@@ -135,7 +135,6 @@ private:
 
 	std::function<void(OpenGLSubWindowWithGUI*)> m_setWindowCallback;
 
-	void RegisterTrackClipCallback();
 };
 
 
