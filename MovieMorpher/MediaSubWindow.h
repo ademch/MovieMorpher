@@ -10,7 +10,9 @@
 
 enum StateMediaPlayer_enum {
 	STATE_MEDIAPLAYER_IDLE,
-	STATE_MEDIAPLAYER_PLAYING
+	STATE_MEDIAPLAYER_PLAYING,
+	STATE_MEDIAPLAYER_PLAYING_LOOPED,
+	STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH
 };
 
 
@@ -55,8 +57,10 @@ private:
 	LARGE_INTEGER T0;
 
 	StateMediaPlayer_enum stateMediaPlayer;
-	double fElapsedTimerS;
+	double fElapsedTimer10ms;
 	double fSlider10msUnitsAtStart;
+
+	PushButtonImage* pushButtonStop;
 
 	void UpdateVideoTrackPosition(double fVal);
 	void GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10msTicks);

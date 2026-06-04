@@ -118,8 +118,8 @@ protected:
 	double m_fMarkerPos01;
 
 	bool  bSelectionIsValid;
-	double m_fSelectionStartX0_1;
-	double m_fSelectionEndX0_1;
+	double m_fSelStartX0_1;
+	double m_fSelEndX0_1;
 
 	int iVerticalPan;
 	Matr4 matrSliderNonInverted;

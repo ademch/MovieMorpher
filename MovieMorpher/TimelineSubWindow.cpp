@@ -20,7 +20,6 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 										  fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
 	bMouseButtonPressed   = false;
-	bSelectionIsValid     = false;
 	
 	matrSliderNonInverted = Mat4MakeIdent();
 
@@ -30,7 +29,7 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	OnSliderPosChange = [this](double fPos)
 	                    {  PositionMediator::Get()->SetPos0_1(this, fPos); };
 	OnSelectionChange = [this](double fSelectionStart, double fSelectionEnd)
-	                    { PositionMediator::Get()->SetSelection(this, fSelectionStart, fSelectionEnd); };
+	                    { PositionMediator::Get()->SetSelection0_1(this, fSelectionStart, fSelectionEnd); };
 	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
 						{ if (origin != this) SetSliderPos0_1(fVal); });
 	PositionMediator::Get()->subscribeForPosInit([this](void* origin, double fVal, int _iDuration10msTicks)
@@ -41,6 +40,11 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	PopulateGUI();
 
 	iVerticalPan = 0.0;
+
+	bSelectionIsValid   = false;
+	m_fSelStartX0_1		= 0.0;
+	m_fSelEndX0_1		= 1.0;
+	OnSelectionChange( 0.0f, 1.0f );	// empty selection means the whole timeline
 }
 
 
@@ -157,8 +161,8 @@ void TimelineSubWindow::Draw()
 		// Draw selection moir
 		if (bSelectionIsValid)
 		{
-			float fSelectionStartX = m_fSelectionStartX0_1 * Width() - Width()/2;
-			float fSelectionEndX   = m_fSelectionEndX0_1   * Width() - Width()/2;
+			float fSelectionStartX = m_fSelStartX0_1 * Width() - Width()/2;
+			float fSelectionEndX   = m_fSelEndX0_1   * Width() - Width()/2;
 
 			glColor4f(1,1,1, 0.2);
 			glEnable(GL_BLEND);
@@ -229,13 +233,13 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 				if (bSelectionIsValid)
 				{
 					bSelectionIsValid   = false;
-					if (OnSelectionChange != NULL) OnSelectionChange( 0.0f, 0.0f );
+					if (OnSelectionChange != NULL) OnSelectionChange( 0.0f, 1.0f );	// empty selection means the whole timeline
 				}
 
 				iStartDragX = x;
 				iStartDragY = y;
 
-				m_fSelectionStartX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2) / Width();
+				m_fSelStartX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2) / Width();
 
 				//if (OnChange != NULL) OnChange(Mat4MakeTrans(vUserSceneTranslation.X, 0, 0)*matrUserScale);
 
@@ -266,11 +270,11 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 			Vec3d v3DCoords;
 			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-			m_fSliderPos01 = m_fSelectionStartX0_1;
+			m_fSliderPos01 = m_fSelStartX0_1;
 			if (OnSliderPosChange != NULL) OnSliderPosChange( m_fSliderPos01 );
 
-			m_fSelectionEndX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2) / Width();
-			if (OnSelectionChange != NULL) OnSelectionChange( m_fSelectionStartX0_1, m_fSelectionEndX0_1 );
+			m_fSelEndX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2) / Width();
+			if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
 	}
 
 }

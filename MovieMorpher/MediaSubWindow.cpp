@@ -30,7 +30,7 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 		if (origin != this) UpdateVideoTrackPosition(fVal);
 	});
 
-	fElapsedTimerS = 0.0;
+	fElapsedTimer10ms = 0.0;
 	fSlider10msUnitsAtStart = 0.0;
 
 	PopulateGUI();
@@ -55,6 +55,24 @@ void MediaSubWindow::PopulateGUI()
 	//liGUI_Elements.push_back(listBox);
 
 	PushButtonImage* pushButtonImg;
+	pushButtonImg = new PushButtonImage("Record", -268, 10, 30);
+	pushButtonImg->LoadImg("Icons\\Image2.bmp");
+	pushButtonImg->strHint = "Record";
+	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
+
+	liButtons.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
+
+	pushButtonImg = new PushButtonImage("PlayLoopBackForth", -234, 10, 30);
+	pushButtonImg->LoadImg("Icons\\Image3.bmp");
+	pushButtonImg->strHint = "Play selection in loop back and forth";
+	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
+
+	liButtons.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
+
 	pushButtonImg = new PushButtonImage("PlayLoop", -200, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image4.bmp");
 	pushButtonImg->strHint = "Play selection in loop";
@@ -64,7 +82,7 @@ void MediaSubWindow::PopulateGUI()
 	liButtons.push_back(pushButtonImg);
 	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
-	pushButtonImg = new PushButtonImage("PlayS2E", -166, 10, 30);
+	pushButtonImg = new PushButtonImage("PlayFromStart", -166, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image7.bmp");
 	pushButtonImg->strHint = "Play from start to end";
 	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
@@ -91,14 +109,14 @@ void MediaSubWindow::PopulateGUI()
 	liButtons.push_back(pushButtonImg);
 	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
-	pushButtonImg = new PushButtonImage("Stop", -64, 10, 30);
-	pushButtonImg->LoadImg("Icons\\Image8.bmp");
-	pushButtonImg->strHint = "Stop playback";
-	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	liGUI_Elements.push_back(pushButtonImg);
+	pushButtonStop = new PushButtonImage("Stop", -64, 10, 30);
+	pushButtonStop->LoadImg("Icons\\Image8.bmp");
+	pushButtonStop->strHint = "Stop playback";
+	pushButtonStop->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonStop);
 
-	liButtons.push_back(pushButtonImg);
-	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
+	liButtons.push_back(pushButtonStop);
+	pushButtonStop->OnClick = [this]() { return OnButtonPush(pushButtonStop); };
 
 	labelPlayhead = new Label("00:00:00.234", -201, -40, 11.9f);
 	labelPlayhead->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
@@ -195,7 +213,9 @@ bool MediaSubWindow::AddTrackVideo()
 
 void MediaSubWindow::Draw()
 {
-	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
+	if ((stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING) ||
+		(stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED) ||
+		(stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH))
 	{
 		int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
 
@@ -206,8 +226,6 @@ void MediaSubWindow::Draw()
 			{
 				WarpingToolSubWindow* wndWarpingTool;
 				wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
-
-				//if (wndWarpingTool->bActive) continue;
 
 				if (iterClip->mediaType == CLIP_IMAGE)
 				{
@@ -230,12 +248,48 @@ void MediaSubWindow::RenderGUI()
 	PositionMediator* mediator = PositionMediator::Get();
 	int iTotal10msUnits = mediator->Duration10msUnits();
 
+	LARGE_INTEGER T1;
+	QueryPerformanceCounter(&T1);
+
+	fElapsedTimer10ms = 100.0*( double(T1.QuadPart - T0.QuadPart) / double(ticksPerSecond.QuadPart) );
+
+	int iStart10msUnits, iEnd10msUnits;
+	mediator->PosSel10msUnits(iStart10msUnits, iEnd10msUnits);
+
 	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 	{
-		LARGE_INTEGER T1;
-		QueryPerformanceCounter(&T1);
-		fElapsedTimerS = double(T1.QuadPart - T0.QuadPart) / double(ticksPerSecond.QuadPart);
-		mediator->SetPos0_1(this, (fElapsedTimerS*100.0 + fSlider10msUnitsAtStart)/iTotal10msUnits, true);
+		if (fSlider10msUnitsAtStart + fElapsedTimer10ms > iEnd10msUnits)
+			OnButtonPush(pushButtonStop);
+		else
+			mediator->SetPos0_1(this, (fSlider10msUnitsAtStart + fElapsedTimer10ms)/iTotal10msUnits, true);
+	}
+	else if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED)
+	{
+		if (iStart10msUnits + fElapsedTimer10ms > iEnd10msUnits)
+		{
+			// RESET THE TIME AS IF PLAYBACK HAS JUST STARTED
+			QueryPerformanceCounter(&T0);
+			fElapsedTimer10ms = 0.0;
+		}
+
+		mediator->SetPos0_1(this, (iStart10msUnits + fElapsedTimer10ms )/iTotal10msUnits, true);
+	}
+	else if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH)
+	{
+		if (fElapsedTimer10ms > 2*(iEnd10msUnits - iStart10msUnits))
+		{
+			// RESET THE TIME AS IF PLAYBACK HAS JUST STARTED
+			QueryPerformanceCounter(&T0);
+			fElapsedTimer10ms = 0.0;
+
+			mediator->SetPos0_1(this, (iStart10msUnits + fElapsedTimer10ms)/iTotal10msUnits, true);
+		}
+		else if (fElapsedTimer10ms > iEnd10msUnits - iStart10msUnits)
+		{
+			mediator->SetPos0_1(this, (iEnd10msUnits + iEnd10msUnits - iStart10msUnits - fElapsedTimer10ms)/iTotal10msUnits, true);
+		}
+		else
+			mediator->SetPos0_1(this, (iStart10msUnits + fElapsedTimer10ms)/iTotal10msUnits, true);
 	}
 
 //	float fSecondPassed = video->audioThread->GetCurrentSecond();
@@ -295,9 +349,10 @@ void MediaSubWindow::GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10
 
 	// ACQUIRE NEEDED FRAME, IF IT IS NOT IN CACHE, REVISIT SOON AFTER
 	FrameItem* frame = NULL;
-	while ((frame = vid->videoCacheThread->GetFrameByTime(_fClipLocalTimeSec, vid->iCurrentFrame)) == NULL)
+	while ((frame = vid->videoCacheThread->GetFrame(vid->iCurrentFrame)) == NULL)
 	{
-		Sleep(50);
+		Sleep(10);
+		printf("Waiting for frame: %d\n", vid->iCurrentFrame);
 	}
 
 	if (iFramePrev != vid->iCurrentFrame)
@@ -306,7 +361,7 @@ void MediaSubWindow::GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10
 		wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
 		wndWarpingTool->ReDrawFBOprocessors();
 
-		printf("Frame Second is: %f\n", frame->fS);
+		printf("Frame Rendered: %d\n", vid->iCurrentFrame);
 	}
 	else
 		printf("Duplicate frame time!!!!!!!!!!!!!!!!!!! good\n");
@@ -322,18 +377,48 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 	for (auto* b : liButtons)
 		b->bPushed = false;
 
-	if (target->_text == "PlayLoop")
-	{
-		target->bPushed = true;
-	}
-	if (target->_text == "PlayS2E")
+	PositionMediator* mediator = PositionMediator::Get();
+
+	if (target->_text == "PlayLoopBackForth")
 	{
 		target->bPushed = true;
 
 		QueryPerformanceCounter(&T0);
 
+		int fSelStart10msUnits, fSelEnd10msUnits;
+		mediator->PosSel10msUnits(fSelStart10msUnits, fSelEnd10msUnits);
+
+		fSlider10msUnitsAtStart = fSelStart10msUnits;
+
+		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH;
+
+		if (OnPlaybackStarted)	OnPlaybackStarted(true);
+	}
+	if (target->_text == "PlayLoop")
+	{
+		target->bPushed = true;
+
+		QueryPerformanceCounter(&T0);
+
+		int fSelStart10msUnits, fSelEnd10msUnits;
+		mediator->PosSel10msUnits(fSelStart10msUnits, fSelEnd10msUnits);
+
+		fSlider10msUnitsAtStart = fSelStart10msUnits;
+
+		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING_LOOPED;
+
+		if (OnPlaybackStarted)	OnPlaybackStarted(true);
+	}
+	if (target->_text == "PlayFromStart")
+	{
+		target->bPushed = true;
+
+		QueryPerformanceCounter(&T0);
+
+		// PLAY FROM START
 		fSlider10msUnitsAtStart = 0.0;
-		PositionMediator::Get()->SetMarker(NULL, fSlider10msUnitsAtStart);
+
+		mediator->SetMarker(NULL, fSlider10msUnitsAtStart);
 
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING;
 
@@ -348,21 +433,20 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 		target->bPushed = true;
 
 		QueryPerformanceCounter(&T0);
-		fSlider10msUnitsAtStart = PositionMediator::Get()->Pos10msUnits();
+
+		// PLAY FROM CURRENT PLAYHEAD POSITION
+		fSlider10msUnitsAtStart = mediator->Pos10msUnits();
 		
-		PositionMediator::Get()->SetMarker(NULL, PositionMediator::Get()->Pos0_1());
+		mediator->SetMarker(NULL, mediator->Pos0_1());
 
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING;
 
 		if (OnPlaybackStarted)	OnPlaybackStarted(true);
-
 	}
 	if (target->_text == "Stop")
 	{
 		if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 		{
-			PositionMediator* mediator = PositionMediator::Get();
-
 			mediator->SetPos0_1(NULL, mediator->PosMarker0_1(), false);	// NULL has to trigger self update, nice!
 			mediator->SetMarker(NULL, -1);
 		}
@@ -370,7 +454,6 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 		stateMediaPlayer = STATE_MEDIAPLAYER_IDLE;
 		if (OnPlaybackStarted)
 			OnPlaybackStarted(false);
-
 	}
 
 	return true;
