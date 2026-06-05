@@ -1,13 +1,18 @@
 #include "stdafx.h"
 #include "MediaSubWindow.h"
+#include "WarpingToolSubWindow.h"
 #include "GLSL_Pipeline.h"
 #include "../../!!adGUI/TrackClip.h"
 #include "../../!!adVideo/FFMS_Video.h"
 #include "../../!!adGUI/VideoPositionMediator.h"
 #include "../../!!adGlobals/wdir.h"
-#include "WarpingToolSubWindow.h"
 #include "ImageSaveLoad.h"
 #include "../../!!adGUI/TrackClipMenu.h"
+
+
+// welcome screen
+extern WarpingToolSubWindow*       windowToolEditorDefault;
+extern ParamsSubWindow*            windowParamsDefault;
 
 
 MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
@@ -31,7 +36,10 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	});
 
 	fElapsedTimer10ms = 0.0;
-	fSlider10msUnitsAtStart = 0.0;
+	iSlider10msUnitsAtStart = 0.0;
+
+	bRecordingInProgress = false;
+	ffmpegPipe = NULL;
 
 	PopulateGUI();
 
@@ -55,49 +63,40 @@ void MediaSubWindow::PopulateGUI()
 	//liGUI_Elements.push_back(listBox);
 
 	PushButtonImage* pushButtonImg;
-	pushButtonImg = new PushButtonImage("Record", -268, 10, 30);
+	pushButtonImg = new PushButtonImage("Record", -240, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image2.bmp");
 	pushButtonImg->strHint = "Record";
 	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(pushButtonImg);
 
-	liButtons.push_back(pushButtonImg);
-	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
+	//liButtonsGroup.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonRecord(pushButtonImg); };
 
-	pushButtonImg = new PushButtonImage("PlayLoopBackForth", -234, 10, 30);
+	pushButtonImg = new PushButtonImage("PlayLoopBackForth", -200, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image3.bmp");
 	pushButtonImg->strHint = "Play selection in loop back and forth";
 	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(pushButtonImg);
 
-	liButtons.push_back(pushButtonImg);
+	liButtonsGroup.push_back(pushButtonImg);
 	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
-	pushButtonImg = new PushButtonImage("PlayLoop", -200, 10, 30);
+	pushButtonImg = new PushButtonImage("PlayLoop", -166, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image4.bmp");
 	pushButtonImg->strHint = "Play selection in loop";
 	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(pushButtonImg);
 
-	liButtons.push_back(pushButtonImg);
+	liButtonsGroup.push_back(pushButtonImg);
 	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
-	pushButtonImg = new PushButtonImage("PlayFromStart", -166, 10, 30);
+	pushButtonImg = new PushButtonImage("PlayFromStart", -132, 10, 30);
 	pushButtonImg->LoadImg("Icons\\Image7.bmp");
 	pushButtonImg->strHint = "Play from start to end";
 	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(pushButtonImg);
 
-	liButtons.push_back(pushButtonImg);
-	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
-
-	pushButtonImg = new PushButtonImage("Pause", -132, 10, 30);
-	pushButtonImg->LoadImg("Icons\\Image6.bmp");
-	pushButtonImg->strHint = "Pause playback";
-	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	liGUI_Elements.push_back(pushButtonImg);
-
-	liButtons.push_back(pushButtonImg);
+	liButtonsGroup.push_back(pushButtonImg);
 	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
 
 	pushButtonImg = new PushButtonImage("PlayFromCursor", -98, 10, 30);
@@ -106,8 +105,17 @@ void MediaSubWindow::PopulateGUI()
 	pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(pushButtonImg);
 
-	liButtons.push_back(pushButtonImg);
+	liButtonsGroup.push_back(pushButtonImg);
 	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPush(pushButtonImg); };
+
+	//pushButtonImg = new PushButtonImage("Pause", -98, 10, 30);
+	//pushButtonImg->LoadImg("Icons\\Image6.bmp");
+	//pushButtonImg->strHint = "Pause playback";
+	//pushButtonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
+	//liGUI_Elements.push_back(pushButtonImg);
+
+	////liButtonsGroup.push_back(pushButtonImg);
+	//pushButtonImg->OnClick = [this, pushButtonImg]() { return OnButtonPause(pushButtonImg); };
 
 	pushButtonStop = new PushButtonImage("Stop", -64, 10, 30);
 	pushButtonStop->LoadImg("Icons\\Image8.bmp");
@@ -115,7 +123,7 @@ void MediaSubWindow::PopulateGUI()
 	pushButtonStop->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
 	liGUI_Elements.push_back(pushButtonStop);
 
-	liButtons.push_back(pushButtonStop);
+	liButtonsGroup.push_back(pushButtonStop);
 	pushButtonStop->OnClick = [this]() { return OnButtonPush(pushButtonStop); };
 
 	labelPlayhead = new Label("00:00:00.234", -201, -40, 11.9f);
@@ -128,14 +136,14 @@ void MediaSubWindow::PopulateGUI()
 	buttonImg->LoadImg("Icons\\Image9.bmp");
 	buttonImg->strHint = "Add video track...";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	buttonImg->OnClick = [this]() {	return this->AddTrackVideo(); };
+	buttonImg->OnClick = [this]() {	return AddTrackVideo(); };
 	liGUI_Elements.push_back(buttonImg);
 
 	buttonImg = new ButtonImage("", -176, 60, 32);
 	buttonImg->LoadImg("Icons\\Image10.bmp");
 	buttonImg->strHint = "Add image...";
 	buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_CENTER);
-	buttonImg->OnClick = [this]() {	return this->AddTrackPicture(); };
+	buttonImg->OnClick = [this]() {	return AddTrackPicture(); };
 	liGUI_Elements.push_back(buttonImg);
 }
 
@@ -211,6 +219,38 @@ bool MediaSubWindow::AddTrackVideo()
 }
 
 
+bool MediaSubWindow::OnButtonRecord(PushButtonImage* target)
+{
+	target->bPushed = !target->bPushed;
+	bRecordingInProgress = target->bPushed;
+
+	if (bRecordingInProgress)
+	{
+		Vec2i vDim = Vecc2i(windowToolEditorDefault->Width(), windowToolEditorDefault->Height());
+		vDim.X &= ~1;	// make number even
+		vDim.Y &= ~1;	// make number even
+
+		char cmd[4096];
+		sprintf(cmd, "E:\\Or\\MovieMorpher\\Debug\\ffmpeg.exe "
+					 "-f rawvideo -pix_fmt rgb24 -s %dx%d -r 20 -i - "
+					 "-vf vflip "
+					 "-c:v libx264 -preset veryfast -pix_fmt yuv420p E:\\Or\\MovieMorpher\\Debug\\output.mp4",
+					 vDim.X, vDim.Y);
+
+		ffmpegPipe = _popen( cmd, "wb" );
+	}
+	else
+	{
+		if (!ffmpegPipe) return false;
+
+		fflush(ffmpegPipe);
+		_pclose(ffmpegPipe); 
+	}
+
+return true;
+}
+
+
 void MediaSubWindow::Draw()
 {
 	if ((stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING) ||
@@ -238,19 +278,33 @@ void MediaSubWindow::Draw()
 				}
 			}
 		}
+
+		if (bRecordingInProgress)
+		{
+			Vec2i ptStart = Vecc2i(windowToolEditorDefault->BottomLeftX(), windowToolEditorDefault->BottomLeftY());
+			Vec2i vDim    = Vecc2i(windowToolEditorDefault->Width(),       windowToolEditorDefault->Height());
+
+			vDim.X &= ~1;	// make number even
+			vDim.Y &= ~1;	// make number even
+
+			std::vector<unsigned char> pixels(vDim.X * vDim.Y * 3);
+			glReadPixels(  ptStart.X, ptStart.Y,  vDim.X, vDim.Y,  GL_RGB,  GL_UNSIGNED_BYTE,  pixels.data() );
+
+			if (ffmpegPipe)
+				fwrite( pixels.data(), 1, pixels.size(), ffmpegPipe );
+		}
 	}
 }
-
 
 
 void MediaSubWindow::RenderGUI()
 {
 	PositionMediator* mediator = PositionMediator::Get();
+
 	int iTotal10msUnits = mediator->Duration10msUnits();
 
 	LARGE_INTEGER T1;
 	QueryPerformanceCounter(&T1);
-
 	fElapsedTimer10ms = 100.0*( double(T1.QuadPart - T0.QuadPart) / double(ticksPerSecond.QuadPart) );
 
 	int iStart10msUnits, iEnd10msUnits;
@@ -258,38 +312,48 @@ void MediaSubWindow::RenderGUI()
 
 	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 	{
-		if (fSlider10msUnitsAtStart + fElapsedTimer10ms > iEnd10msUnits)
+		if (iSlider10msUnitsAtStart + fElapsedTimer10ms > iEnd10msUnits)
 			OnButtonPush(pushButtonStop);
 		else
-			mediator->SetPos0_1(this, (fSlider10msUnitsAtStart + fElapsedTimer10ms)/iTotal10msUnits, true);
+			mediator->SetPos0_1(this, (iSlider10msUnitsAtStart + fElapsedTimer10ms)/iTotal10msUnits, true);
 	}
 	else if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED)
 	{
-		if (iStart10msUnits + fElapsedTimer10ms > iEnd10msUnits)
+		if (iSlider10msUnitsAtStart + fElapsedTimer10ms > iEnd10msUnits)
 		{
 			// RESET THE TIME AS IF PLAYBACK HAS JUST STARTED
 			QueryPerformanceCounter(&T0);
 			fElapsedTimer10ms = 0.0;
+			iSlider10msUnitsAtStart = iStart10msUnits;
 		}
 
-		mediator->SetPos0_1(this, (iStart10msUnits + fElapsedTimer10ms )/iTotal10msUnits, true);
+		mediator->SetPos0_1(this, (iSlider10msUnitsAtStart + fElapsedTimer10ms )/iTotal10msUnits, true);
 	}
 	else if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH)
 	{
-		if (fElapsedTimer10ms > 2*(iEnd10msUnits - iStart10msUnits))
+		int iLength10msUnits = iEnd10msUnits - iStart10msUnits;
+
+		double fCurrentTime10msUnits = iSlider10msUnitsAtStart + fElapsedTimer10ms;
+
+		if (fCurrentTime10msUnits >= iStart10msUnits + 2*iLength10msUnits)
 		{
-			// RESET THE TIME AS IF PLAYBACK HAS JUST STARTED
 			QueryPerformanceCounter(&T0);
 			fElapsedTimer10ms = 0.0;
-
-			mediator->SetPos0_1(this, (iStart10msUnits + fElapsedTimer10ms)/iTotal10msUnits, true);
+			iSlider10msUnitsAtStart = iStart10msUnits;
+			fCurrentTime10msUnits = iStart10msUnits;
 		}
-		else if (fElapsedTimer10ms > iEnd10msUnits - iStart10msUnits)
+
+		if (fCurrentTime10msUnits - iStart10msUnits < iLength10msUnits)
 		{
-			mediator->SetPos0_1(this, (iEnd10msUnits + iEnd10msUnits - iStart10msUnits - fElapsedTimer10ms)/iTotal10msUnits, true);
+			// FORWARD: start -> end
+			mediator->SetPos0_1(this, fCurrentTime10msUnits/iTotal10msUnits, true);
 		}
 		else
-			mediator->SetPos0_1(this, (iStart10msUnits + fElapsedTimer10ms)/iTotal10msUnits, true);
+		{
+			// BACKWARD: end -> start
+			mediator->SetPos0_1(this, (2*iEnd10msUnits - fCurrentTime10msUnits)/iTotal10msUnits, true);
+		}
+
 	}
 
 //	float fSecondPassed = video->audioThread->GetCurrentSecond();
@@ -374,7 +438,7 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 {
 	if (target->bPushed) return true;
 
-	for (auto* b : liButtons)
+	for (auto* b : liButtonsGroup)
 		b->bPushed = false;
 
 	PositionMediator* mediator = PositionMediator::Get();
@@ -388,7 +452,7 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 		int fSelStart10msUnits, fSelEnd10msUnits;
 		mediator->PosSel10msUnits(fSelStart10msUnits, fSelEnd10msUnits);
 
-		fSlider10msUnitsAtStart = fSelStart10msUnits;
+		iSlider10msUnitsAtStart = mediator->Pos10msUnits();//fSelStart10msUnits;
 
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH;
 
@@ -403,7 +467,7 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 		int fSelStart10msUnits, fSelEnd10msUnits;
 		mediator->PosSel10msUnits(fSelStart10msUnits, fSelEnd10msUnits);
 
-		fSlider10msUnitsAtStart = fSelStart10msUnits;
+		iSlider10msUnitsAtStart = mediator->Pos10msUnits();// fSelStart10msUnits;
 
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING_LOOPED;
 
@@ -416,9 +480,9 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 		QueryPerformanceCounter(&T0);
 
 		// PLAY FROM START
-		fSlider10msUnitsAtStart = 0.0;
+		iSlider10msUnitsAtStart = 0;
 
-		mediator->SetMarker(NULL, fSlider10msUnitsAtStart);
+		mediator->SetMarker(NULL, 0.0);
 
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING;
 
@@ -435,7 +499,7 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 		QueryPerformanceCounter(&T0);
 
 		// PLAY FROM CURRENT PLAYHEAD POSITION
-		fSlider10msUnitsAtStart = mediator->Pos10msUnits();
+		iSlider10msUnitsAtStart = mediator->Pos10msUnits();
 		
 		mediator->SetMarker(NULL, mediator->Pos0_1());
 
@@ -447,13 +511,13 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 	{
 		if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 		{
-			mediator->SetPos0_1(NULL, mediator->PosMarker0_1(), false);		// NULL has to trigger self update, nice!
+			//mediator->SetPos0_1(NULL, mediator->PosMarker0_1(), false);		// NULL has to trigger self update, nice!
 			mediator->SetMarker(NULL, -1);
 		}
 		if ((stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED) ||
 			(stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH))
 		{
-			mediator->SetPos0_1(NULL, mediator->PosSelStart0_1(), false);	// NULL has to trigger self update, nice!
+			//mediator->SetPos0_1(NULL, mediator->PosSelStart0_1(), false);	// NULL has to trigger self update, nice!
 			mediator->SetMarker(NULL, -1);
 		}
 

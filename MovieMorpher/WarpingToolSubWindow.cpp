@@ -71,28 +71,34 @@ void WarpingToolSubWindow::DrawFBOquad()
 	// We call here SetupGraphicsPipeline of WarpingToolSubWindow to apply warping transformations also
 	SetupGraphicsPipeline();
 
-	float fAlpha = m_ParamsSubWindow->fTransparency/100.0f;
+		float fAlpha = m_ParamsSubWindow->fTransparency/100.0f;
 
-	TextureDescriptor* texDescr;
-	// Show output of the shader, while invisible input texture holds original
-	if (GlobalParamsSubWindow::Get()->ShouldShowOriginal())
-		texDescr = texBank[TEXTURE_INPUT_IMAGE];
-	else
-		texDescr = texBank[TEXTURE_MORPHED_IMAGE];
+		TextureDescriptor* texDescr;
+		// Show output of the shader, while invisible input texture holds original
+		if (GlobalParamsSubWindow::Get()->ShouldShowOriginal())
+			texDescr = texBank[TEXTURE_INPUT_IMAGE];
+		else
+			texDescr = texBank[TEXTURE_MORPHED_IMAGE];
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		//std::string sSelected = comboBox->GetSelected();
-		glColor4f(1.0, 1.0, 1.0, fAlpha);
-		RenderTexturedQuadTransparent( texDescr->m_uiTextureID,	// texture
-									  -texDescr->m_width/2,		// bottomX
-									  -texDescr->m_height/2,	// bottomY
-									   texDescr->m_width,		// width
-									   texDescr->m_height,		// z
-									  -110 + 10*zOrder );		// 0-> -110, 1-> -100, 2-> -90, 3-> -80
+		glBindTexture(GL_TEXTURE_2D, texDescr->m_uiTextureID);
 
-	glDisable(GL_BLEND);
+			// override sampler default settings (set in fbo->Init)
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+			//std::string sSelected = comboBox->GetSelected();
+			glColor4f(1.0, 1.0, 1.0, fAlpha);
+			RenderTexturedQuadTransparent( texDescr->m_uiTextureID,	// texture
+										  -texDescr->m_width/2,		// bottomX
+										  -texDescr->m_height/2,	// bottomY
+										   texDescr->m_width,		// width
+										   texDescr->m_height,		// z
+										  -110 + 10*zOrder );		// 0-> -110, 1-> -100, 2-> -90, 3-> -80
+
+		glDisable(GL_BLEND);
 
 }
 

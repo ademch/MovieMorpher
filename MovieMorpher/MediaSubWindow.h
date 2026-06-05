@@ -49,16 +49,21 @@ protected:
 	Label*             labelPlayhead;
 
 private:
-	std::vector<PushButtonImage*> liButtons;
+	std::vector<PushButtonImage*> liButtonsGroup;
 
 	bool OnButtonPush(PushButtonImage* target);
+	bool OnButtonRecord(PushButtonImage* target);
 
 	LARGE_INTEGER ticksPerSecond;
 	LARGE_INTEGER T0;
 
 	StateMediaPlayer_enum stateMediaPlayer;
+	
+	FILE* ffmpegPipe;
+	bool bRecordingInProgress;
+
 	double fElapsedTimer10ms;
-	double fSlider10msUnitsAtStart;
+	int iSlider10msUnitsAtStart;
 
 	PushButtonImage* pushButtonStop;
 
