@@ -251,6 +251,20 @@ void OnToolWindowSwitch(OpenGLSubWindowWithGUI* switchedWnd)
 
 		if (switchedWnd == WARPING_TOOL_WELCOME)
 		{
+			auto it = std::find(liWindows.begin(), liWindows.end(), windowParams);
+			if (it != liWindows.end())
+			{
+				delete *it;
+				liWindows.erase(it);
+			}
+
+			it = std::find(liWindows.begin(), liWindows.end(), windowToolEditor);
+			if (it != liWindows.end())
+			{
+				delete *it;
+				liWindows.erase(it);
+			}
+
 			windowToolEditor = windowToolEditorDefault;
 			windowParams     = windowParamsDefault;
 

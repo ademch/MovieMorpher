@@ -13,6 +13,7 @@
 *.mp4
 *.MP4
 *.enc
+*.exe
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

@@ -554,7 +554,7 @@ void MediaSubWindow::callback_RegisterTrackClip()
 			// SELECT WELCOME TOOL
 			clipSelected->OnClipChange(WARPING_TOOL_WELCOME);
 
-			// FINAL DELETE
+			// DELETE CLIP
 			windowTimeLine->DeleteGUIelement(clipSelected);
 
 			break;
