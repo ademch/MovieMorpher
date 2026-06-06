@@ -66,6 +66,13 @@ protected:
 	void PopulateGUI() override;
 };
 
+enum StateTimeLineDrag_enum {
+	STATE_TIMELINE_IDLE,
+	STATE_TIMELINE_DEFINE_SELECTION,
+	STATE_TIMELINE_DRAG_SELECTION_HEAD,
+	STATE_TIMELINE_DRAG_SELECTION_TAIL
+};
+
 
 class TimelineSubWindow : public OpenGLSubWindowWithGUI
 {
@@ -91,6 +98,7 @@ public:
 	bool MouseWheelFunc(int state, int delta, int x, int y) override;
 	bool MouseFunc(int button, int state, int x, int y) override;
 	void MotionFunc(int x, int y) override;
+	bool PassiveMotionFunc(int x, int y) override;
 
 	void SetSliderPos0_1(double _val);
 	void SetMarker0_1(double _val);
@@ -124,10 +132,11 @@ protected:
 	int iVerticalPan;
 	Matr4 matrSliderNonInverted;
 
-	bool bMouseButtonPressed;
 	int  iStartDragX, iStartDragY;
 
 	int iBorder;
+
+	StateTimeLineDrag_enum stateTimeLine;
 
 	int FindLastClipOnTrack_Tail(int iTrackNumber);
 

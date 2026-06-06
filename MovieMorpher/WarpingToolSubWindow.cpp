@@ -241,8 +241,11 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 						glutSetCursor(GLUT_CURSOR_INFO);
 					else
 					{
-						glutSetCursor(GLUT_CURSOR_NONE);
-						SetCursor(hCursorScaleProportional);
+						if (GetCursor() != hCursorScaleProportional)
+						{
+							glutSetCursor(200);
+							SetCursor(hCursorScaleProportional);
+						}
 					}
 					
 					return true;
@@ -266,8 +269,11 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 				{
 					if (GetKeyState(VK_SHIFT) & 0x8000)
 					{
-						glutSetCursor(GLUT_CURSOR_NONE);
-						SetCursor(hCursorRotateAngle);
+						if (GetCursor() != hCursorRotateAngle)
+						{
+							glutSetCursor(200);
+							SetCursor(hCursorRotateAngle);
+						}
 					}
 					else
 					{
@@ -314,8 +320,11 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 						{
 							stateTransform = STATE_TRANS_SCALE_PROPORTIONAL;
 
-							glutSetCursor(GLUT_CURSOR_NONE);
-							SetCursor(hCursorScaleProportional);
+							if (GetCursor() != hCursorScaleProportional)
+							{	
+								glutSetCursor(200);
+								SetCursor(hCursorScaleProportional);
+							}
 						}
 
 						m_ptHandleClicked = point;
@@ -360,16 +369,15 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 				dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotate.X, ptRotate.Y, const_fPointsDepth);
 				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
-					//stateTransform = STATE_TRANS_ROTATE;
-
-					//glutSetCursor(GLUT_CURSOR_INFO);
-
 					if (GetKeyState(VK_SHIFT) & 0x8000)
 					{
 						stateTransform = STATE_TRANS_ROTATE_W_STEPS;
 
-						glutSetCursor(GLUT_CURSOR_NONE);
-						SetCursor(hCursorRotateAngle);
+						if (GetCursor() != hCursorRotateAngle)
+						{
+							glutSetCursor(200);
+							SetCursor(hCursorRotateAngle);
+						}
 					}
 					else
 					{

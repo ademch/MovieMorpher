@@ -449,10 +449,10 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 
 		QueryPerformanceCounter(&T0);
 
-		int fSelStart10msUnits, fSelEnd10msUnits;
-		mediator->PosSel10msUnits(fSelStart10msUnits, fSelEnd10msUnits);
+		int iSelStart10msUnits, iSelEnd10msUnits;
+		mediator->PosSel10msUnits(iSelStart10msUnits, iSelEnd10msUnits);
 
-		iSlider10msUnitsAtStart = mediator->Pos10msUnits();//fSelStart10msUnits;
+		iSlider10msUnitsAtStart = CLAMP(mediator->Pos10msUnits(), iSelStart10msUnits, iSelEnd10msUnits);
 
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH;
 
@@ -464,10 +464,10 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 
 		QueryPerformanceCounter(&T0);
 
-		int fSelStart10msUnits, fSelEnd10msUnits;
-		mediator->PosSel10msUnits(fSelStart10msUnits, fSelEnd10msUnits);
+		int iSelStart10msUnits, iSelEnd10msUnits;
+		mediator->PosSel10msUnits(iSelStart10msUnits, iSelEnd10msUnits);
 
-		iSlider10msUnitsAtStart = mediator->Pos10msUnits();// fSelStart10msUnits;
+		iSlider10msUnitsAtStart = CLAMP(mediator->Pos10msUnits(), iSelStart10msUnits, iSelEnd10msUnits);
 
 		stateMediaPlayer = STATE_MEDIAPLAYER_PLAYING_LOOPED;
 

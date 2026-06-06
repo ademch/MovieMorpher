@@ -19,8 +19,6 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 				   OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 										  fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
-	bMouseButtonPressed   = false;
-	
 	matrSliderNonInverted = Mat4MakeIdent();
 
 	m_fSliderPos01 = 0;
@@ -45,6 +43,9 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	m_fSelStartX0_1		= 0.0;
 	m_fSelEndX0_1		= 1.0;
 	OnSelectionChange( 0.0f, 1.0f );	// empty selection means the whole timeline
+
+	stateTimeLine = STATE_TIMELINE_IDLE;
+
 }
 
 
@@ -139,7 +140,6 @@ void TimelineSubWindow::Draw()
 		iterElement->Draw();
 	}
 
-
 	SetupGraphicsPipelineWithIdentityModelViewMatrix();
 
 		// matrUserScale contains transformation from HorrScrollBar,
@@ -209,6 +209,44 @@ void TimelineSubWindow::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 }
 
 
+bool TimelineSubWindow::PassiveMotionFunc(int x, int y)
+{
+	// here go tracks and clips
+	if (OpenGLSubWindowWithGUI::PassiveMotionFunc(x, y)) return true;
+
+	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
+		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
+	{
+		SetupGraphicsPipelineWithIdentityModelViewMatrix();
+
+			Vec3d v3DCoords;
+			gluUnProjectFriendlyZ(x, y, 0.5, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
+
+			float fX = (matrSliderNonInverted * Vecc3(v3DCoords.X)).X;
+
+			if (bSelectionIsValid)
+			{
+				if (abs(fX + Width()/2 - m_fSelStartX0_1*Width()) < 2*matrSliderNonInverted.m[0][0])
+				{
+					glutSetCursor(GLUT_CURSOR_LEFT_RIGHT);
+					return true;
+				}
+				else
+				if (abs(fX + Width()/2 - m_fSelEndX0_1*Width()) < 2*matrSliderNonInverted.m[0][0])
+				{
+					glutSetCursor(GLUT_CURSOR_LEFT_RIGHT);
+					return true;
+				}
+				else
+					glutSetCursor(GLUT_CURSOR_INHERIT);
+			}
+
+			return false;
+	}
+
+	return false;
+}
+
 // OnClick
 bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 {
@@ -218,37 +256,65 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
 		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
 	{
-		SetupGraphicsPipelineWithIdentityModelViewMatrix();
-
-		Vec3d v3DCoords;
-		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
-
-		if (button == GLUT_LEFT_BUTTON)
+		if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 		{
-			if (state == GLUT_DOWN)
-			{
-				bMouseButtonPressed = true;
-				
-				// reset selection first
-				if (bSelectionIsValid)
+			SetupGraphicsPipelineWithIdentityModelViewMatrix();
+
+				Vec3d v3DCoords;
+				gluUnProjectFriendlyZ(x, y, 0.5, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
+
+				double fX = (matrSliderNonInverted * Vecc3(v3DCoords.X)).X;
+
+				if ((abs(fX + Width()/2 - m_fSelStartX0_1*Width()) < 2*matrSliderNonInverted.m[0][0]) && bSelectionIsValid)
 				{
-					bSelectionIsValid   = false;
-					if (OnSelectionChange != NULL) OnSelectionChange( 0.0f, 1.0f );	// empty selection means the whole timeline
+					iStartDragX = x;
+					iStartDragY = y;
+
+					stateTimeLine = STATE_TIMELINE_DRAG_SELECTION_HEAD;
+					return true;
 				}
+				else if ((abs(fX + Width()/2 - m_fSelEndX0_1*Width()) < 2*matrSliderNonInverted.m[0][0]) && bSelectionIsValid)
+				{
+					iStartDragX = x;
+					iStartDragY = y;
 
-				iStartDragX = x;
-				iStartDragY = y;
+					stateTimeLine = STATE_TIMELINE_DRAG_SELECTION_TAIL;
+					return true;
+				}
+				else 
+				{
+					stateTimeLine = STATE_TIMELINE_DEFINE_SELECTION;
+				
+					// reset selection first
+					if (bSelectionIsValid)
+					{
+						bSelectionIsValid   = false;
+						if (OnSelectionChange != NULL) OnSelectionChange( 0.0f, 1.0f );	// empty selection means the whole timeline
+					}
 
-				m_fSelStartX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2) / Width();
+					iStartDragX = x;
+					iStartDragY = y;
 
-				//if (OnChange != NULL) OnChange(Mat4MakeTrans(vUserSceneTranslation.X, 0, 0)*matrUserScale);
+					m_fSelStartX0_1 = CLAMP((fX + Width()/2) / Width(), 0.0, 1.0);
 
-				return true;
-			}
+					//if (OnChange != NULL) OnChange(Mat4MakeTrans(vUserSceneTranslation.X, 0, 0)*matrUserScale);
+
+					return true;
+				}
 		}
 	}
 
-	bMouseButtonPressed = false;
+	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP) && (stateTimeLine = STATE_TIMELINE_DEFINE_SELECTION))
+	{
+		// make sure start is earlier than end
+		if (m_fSelStartX0_1 > m_fSelEndX0_1)
+		{
+			std::swap(m_fSelStartX0_1, m_fSelEndX0_1);
+			if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
+		}
+	}
+
+	stateTimeLine = STATE_TIMELINE_IDLE;
 
 	return false;
 }
@@ -258,25 +324,50 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 {
 	OpenGLSubWindowWithGUI::MotionFunc(x, y);
 
-	if (bMouseButtonPressed)
+	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
+		(y > m_iBottomLeftY) && (y < m_iBottomLeftY + m_iHeight))
 	{
-		if (!bSelectionIsValid)
-			if (PointDist(Vecc2(x,y), Vecc2(iStartDragX, iStartDragY)) < 3) return;
-
-		bSelectionIsValid = true;
-
+		// Ignore under 1 pixel drag for all cases
+		if (abs(x - iStartDragX) < 1) return;
+		
 		SetupGraphicsPipelineWithIdentityModelViewMatrix();
 
 			Vec3d v3DCoords;
-			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
+			gluUnProjectFriendlyZ(x, y, 0.5, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-			m_fSliderPos01 = m_fSelStartX0_1;
-			if (OnSliderPosChange != NULL) OnSliderPosChange( m_fSliderPos01 );
+			double fX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X + Width()/2) / Width();
 
-			m_fSelEndX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X  + Width()/2) / Width();
-			if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
+			if (stateTimeLine == STATE_TIMELINE_DEFINE_SELECTION)
+			{
+				bSelectionIsValid = true;
+
+				m_fSliderPos01 = m_fSelStartX0_1;
+				if (OnSliderPosChange != NULL) OnSliderPosChange( m_fSliderPos01 );
+
+				m_fSelEndX0_1 = CLAMP(fX0_1, 0.0, 1.0);
+				if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
+
+				return;
+			}
+			if ((stateTimeLine == STATE_TIMELINE_DRAG_SELECTION_HEAD) && bSelectionIsValid)
+			{
+				int iTail10msUnits = PositionMediator::Get()->Duration10msUnits()*m_fSelEndX0_1;
+
+				m_fSelStartX0_1 = CLAMP(fX0_1, 0.0, double(iTail10msUnits - 100)/double(PositionMediator::Get()->Duration10msUnits()));
+				if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
+
+				return;
+			}
+			if ((stateTimeLine == STATE_TIMELINE_DRAG_SELECTION_TAIL) && bSelectionIsValid)
+			{
+				int iHead10msUnits = PositionMediator::Get()->Duration10msUnits()*m_fSelStartX0_1;
+
+				m_fSelEndX0_1 = CLAMP(fX0_1, double(iHead10msUnits + 100)/double(PositionMediator::Get()->Duration10msUnits()), 1.0);
+				if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
+
+				return;
+			}
 	}
-
 }
 
 
