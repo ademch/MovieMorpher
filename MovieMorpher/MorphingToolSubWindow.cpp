@@ -559,11 +559,6 @@ bool MorphingToolSubWindow::KeyboardFunc(unsigned char key, int x, int y)
 
 	switch (key)
 	{
-	case '2':
-	{
-		ClearMorph();
-		break;
-	}
 	case '4':
 	{
 		StartNextGeneration();
@@ -586,6 +581,7 @@ void MorphingToolSubWindow::ReDrawFBOprocessors()
 	morphFBOprocessor->Render();
 }
 
+
 bool MorphingToolSubWindow::SourcePolylineClicked()
 {
 	// Sequence here matters
@@ -597,6 +593,7 @@ bool MorphingToolSubWindow::SourcePolylineClicked()
 	if (stateCurrent == STATE_IDLE)
 	{
 		stateCurrent = STATE_SOURCE_DRAWING_INPUT;
+
 		glutSetCursor(GLUT_CURSOR_TOP_SIDE);
 
 		buttonSource->bEnabled = false;
@@ -621,9 +618,10 @@ bool MorphingToolSubWindow::DestinationPolylineClicked()
 	if (stateCurrent == STATE_IDLE)
 	{
 		stateCurrent = STATE_DESTINATION_DRAWING_INPUT;
-		buttonDestination->_text = "Drawing";
 
 		glutSetCursor(GLUT_CURSOR_TOP_SIDE);
+
+		buttonDestination->_text = "Drawing";
 
 		// nice touch
 		GlobalParamsSubWindow::Get()->MakePointsVisible();
@@ -664,10 +662,10 @@ void MorphingToolSubWindow::StartNextGeneration()
 	unsigned char* data = (unsigned char *)malloc(iWidthSrc*iHeightSrc*nrChannels);
 
 		glBindTexture(GL_TEXTURE_2D, idSrc);
-		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 		glBindTexture(GL_TEXTURE_2D, idDst);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, iWidthDst, iHeightDst, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, iWidthDst, iHeightDst, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	free(data);
 }

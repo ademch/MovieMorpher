@@ -394,6 +394,7 @@ void MediaSubWindow::UpdateVideoTrackPosition(double fVal)
 
 }
 
+
 void MediaSubWindow::GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10msTicks)
 {
 	WarpingToolSubWindow* wndWarpingTool;
