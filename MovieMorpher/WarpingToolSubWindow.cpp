@@ -60,7 +60,7 @@ void WarpingToolSubWindow::SetupGraphicsPipeline()
 	// When the button is released matrObjectOrigin2joystickBasis is recomputed and this matrix is reset to identity
 	glMultMatrixf(&matrImmediateVisualization.m[0][0]);
 
-	// basis 1,1,1 is transformed to joystick basis on every mouseup
+	// basis 1,1,1 is transformed to joystick basis on every mouseup (previous transformation)
 	glMultMatrixf(&matrObjectOrigin2joystickBasis.m[0][0]);
 }
 

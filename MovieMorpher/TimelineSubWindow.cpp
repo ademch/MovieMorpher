@@ -322,6 +322,8 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 // OnDrag
 void TimelineSubWindow::MotionFunc(int x, int y)
 {
+	int iSnapPx = 9;
+
 	OpenGLSubWindowWithGUI::MotionFunc(x, y);
 
 	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
@@ -329,6 +331,9 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 	{
 		// Ignore under 1 pixel drag for all cases
 		if (abs(x - iStartDragX) < 1) return;
+
+		// Pixels per 10ms
+		float fPPU = float(m_iWidth)/PositionMediator::Get()->Duration10msUnits();
 		
 		SetupGraphicsPipelineWithIdentityModelViewMatrix();
 
@@ -351,18 +356,30 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 			}
 			if ((stateTimeLine == STATE_TIMELINE_DRAG_SELECTION_HEAD) && bSelectionIsValid)
 			{
-				int iTail10msUnits = PositionMediator::Get()->Duration10msUnits()*m_fSelEndX0_1;
+				PositionMediator* mediator = PositionMediator::Get();
 
-				m_fSelStartX0_1 = CLAMP(fX0_1, 0.0, double(iTail10msUnits - 100)/double(PositionMediator::Get()->Duration10msUnits()));
+				if ( abs(fX0_1*mediator->Duration10msUnits() - mediator->Pos10msUnits()) < (iSnapPx*matrSliderNonInverted.m[0][0])/fPPU )
+					fX0_1 = mediator->Pos0_1();
+
+				int iTail10msUnits = mediator->Duration10msUnits()*m_fSelEndX0_1;
+
+				// make sure the head of selection is not earlier than 0ms timeline and not closer to the tail of selection than 1s
+				m_fSelStartX0_1 = CLAMP(fX0_1, 0.0, double(iTail10msUnits - 100)/double(mediator->Duration10msUnits()));
 				if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
 
 				return;
 			}
 			if ((stateTimeLine == STATE_TIMELINE_DRAG_SELECTION_TAIL) && bSelectionIsValid)
 			{
+				PositionMediator* mediator = PositionMediator::Get();
+
+				if ( abs(fX0_1*mediator->Duration10msUnits() - mediator->Pos10msUnits()) < (iSnapPx*matrSliderNonInverted.m[0][0])/fPPU )
+					fX0_1 = mediator->Pos0_1();
+
 				int iHead10msUnits = PositionMediator::Get()->Duration10msUnits()*m_fSelStartX0_1;
 
-				m_fSelEndX0_1 = CLAMP(fX0_1, double(iHead10msUnits + 100)/double(PositionMediator::Get()->Duration10msUnits()), 1.0);
+				// make sure the tail of selection is not later than the end of the timeline and not closer to the head of selection than 1s
+				m_fSelEndX0_1 = CLAMP(fX0_1, double(iHead10msUnits + 100)/double(mediator->Duration10msUnits()), 1.0);
 				if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
 
 				return;
