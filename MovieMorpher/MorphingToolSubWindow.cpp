@@ -98,71 +98,73 @@ void MorphingToolSubWindow::Draw()
 {
 	OpenGLSubWindowWithGUI::Draw();
 
-	sprintf(m_strCaption, "%s %5.0f%%", "Zoom", fUserScale*100.0f);
+	SetupGraphicsPipeline();
 
-	if (GlobalParamsSubWindow::Get()->PointsAreVisible())
-	{
-		// SOURCE
+		sprintf(m_strCaption, "%s %5.0f%%", "Zoom", fUserScale*100.0f);
+
+		if (GlobalParamsSubWindow::Get()->PointsAreVisible())
 		{
-			//glEnable(GL_LINE_SMOOTH);
-			glLineWidth(const_fLineWidth);
-			glColor3f(0.83, 0.69, 0);
-			std::vector<Vec2> listOutSrc;
-			CatmullSubdivide(liSource, listOutSrc, 10);
-			glBegin(GL_LINE_STRIP);
-				for (auto element : listOutSrc) {
-					glVertex3f(element.X, element.Y, 0.1);
-				}
-			glEnd();
+			// SOURCE
+			{
+				//glEnable(GL_LINE_SMOOTH);
+				glLineWidth(const_fLineWidth);
+				glColor3f(0.83, 0.69, 0);
+				std::vector<Vec2> listOutSrc;
+				CatmullSubdivide(liSource, listOutSrc, 10);
+				glBegin(GL_LINE_STRIP);
+					for (auto element : listOutSrc) {
+						glVertex3f(element.X, element.Y, 0.1);
+					}
+				glEnd();
 
-			glPointSize(const_fPointsSize);
-			glColor3f(0.93, 0.8, 0);
-			glBegin(GL_POINTS);
-				for (auto element : liSource) {
-					glVertex3f(element.X, element.Y, const_fPointsDepth);
-				}
-			glEnd();
+				glPointSize(const_fPointsSize);
+				glColor3f(0.93, 0.8, 0);
+				glBegin(GL_POINTS);
+					for (auto element : liSource) {
+						glVertex3f(element.X, element.Y, const_fPointsDepth);
+					}
+				glEnd();
+			}
+
+			// DESTINATION
+			{
+				glLineWidth(const_fLineWidth);
+				glColor3f(0.23, 0.71, 0);
+				std::vector<Vec2> listOutDst;
+				CatmullSubdivide(liDestination, listOutDst, 10);
+				glBegin(GL_LINE_STRIP);
+					for (auto element : listOutDst) {
+						glVertex3f(element.X, element.Y, 0.1);
+					}
+				glEnd();
+
+				glPointSize(const_fPointsSize);
+				glColor3f(0.3, 0.8, 0);
+				glBegin(GL_POINTS);
+					for (auto element : liDestination) {
+						glVertex3f(element.X, element.Y, const_fPointsDepth);
+					}
+				glEnd();
+			}
+
+			glColor3f(1,0,0);
+			glLineWidth(3);
+			float fFinRadCorrected = _fFinalizationRadius / fUserScale;
+			if ((stateCurrent == STATE_SOURCE_POINT_INPUT) && (liSource.size() > 0))
+				DrawCircle(Vecc3(liSource.back(), 0.3), fFinRadCorrected, 20);
+			if ((stateCurrent == STATE_DESTINATION_POINT_INPUT) && (liDestination.size() > 0))
+				DrawCircle(Vecc3(liDestination.back(), 0.3), fFinRadCorrected, 20);
+
+			// Highlight matching point in a source curve when adding points to destination
+			if ((stateCurrent == STATE_DESTINATION_POINT_INPUT) &&
+				(liDestination.size() > 0) && (liSource.size() > 0))
+			{
+				unsigned int indexLast = liDestination.size();
+				if (indexLast <= liSource.size())
+					DrawCircle(Vecc3(liSource[indexLast-1].X, liSource[indexLast-1].Y, 0.3), fFinRadCorrected, 20);
+			}
+
 		}
-
-		// DESTINATION
-		{
-			glLineWidth(const_fLineWidth);
-			glColor3f(0.23, 0.71, 0);
-			std::vector<Vec2> listOutDst;
-			CatmullSubdivide(liDestination, listOutDst, 10);
-			glBegin(GL_LINE_STRIP);
-				for (auto element : listOutDst) {
-					glVertex3f(element.X, element.Y, 0.1);
-				}
-			glEnd();
-
-			glPointSize(const_fPointsSize);
-			glColor3f(0.3, 0.8, 0);
-			glBegin(GL_POINTS);
-				for (auto element : liDestination) {
-					glVertex3f(element.X, element.Y, const_fPointsDepth);
-				}
-			glEnd();
-		}
-
-		glColor3f(1,0,0);
-		glLineWidth(3);
-		float fFinRadCorrected = _fFinalizationRadius / fUserScale;
-		if ((stateCurrent == STATE_SOURCE_POINT_INPUT) && (liSource.size() > 0))
-			DrawCircle(Vecc3(liSource.back(), 0.3), fFinRadCorrected, 20);
-		if ((stateCurrent == STATE_DESTINATION_POINT_INPUT) && (liDestination.size() > 0))
-			DrawCircle(Vecc3(liDestination.back(), 0.3), fFinRadCorrected, 20);
-
-		// Highlight matching point in a source curve when adding points to destination
-		if ((stateCurrent == STATE_DESTINATION_POINT_INPUT) &&
-			(liDestination.size() > 0) && (liSource.size() > 0))
-		{
-			unsigned int indexLast = liDestination.size();
-			if (indexLast <= liSource.size())
-				DrawCircle(Vecc3(liSource[indexLast-1].X, liSource[indexLast-1].Y, 0.3), fFinRadCorrected, 20);
-		}
-
-	}
 	///////
 
 	if (SrcCurveIsDone()) {

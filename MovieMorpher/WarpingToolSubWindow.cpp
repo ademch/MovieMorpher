@@ -146,7 +146,7 @@ void WarpingToolSubWindow::Draw()
 	// IF THIS TOOL'S CLIP IS OUTSIDE PLAYHEAD WE DO NOT DRAW ITS CONTROL POINTS
 	if (!bPlayheadWithinThisClip) return;
 
-	// draw object
+	// draw Morphing tool controls
 	MorphingToolSubWindow::Draw();
 
 	// here we call parents SetupGraphicsPipeline for the reason described below 
