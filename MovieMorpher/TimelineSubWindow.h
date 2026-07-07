@@ -19,6 +19,8 @@ public:
 							float fWidthPerc, float fHeightPerc);
 	~TimelineSliderSubWindow() {}
 
+	VideoSlider*  videoSlider;
+
 	int Width()  { return m_iWidth - iBorder*2;  }	// HIDES parent implementation
 
 	void Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight) override;
@@ -44,8 +46,6 @@ private:
 	int iBorder;
 
 	Matr4 matrSliderNonInverted;
-
-	VideoSlider*  videoSlider;
 };
 
 

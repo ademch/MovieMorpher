@@ -228,9 +228,12 @@ OpenGLSubWindowWithGUI* ConstructToolAndParamsSubWindows(char *title)
 
 void OnPlayback(bool bStarted)
 {
-	// activate/deactivate current windows
+	// activate/deactivate current tool windows
 	windowToolEditor->bActive = !bStarted;
 	windowParams->bActive     = !bStarted;
+
+	// prevent from changing position during playback (like in CoolEdit)
+	timelineSliderWindow->videoSlider->bEnabled = !bStarted;
 }
 
 
