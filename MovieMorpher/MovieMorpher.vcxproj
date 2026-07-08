@@ -213,6 +213,7 @@
     <ClCompile Include="..\..\!!adGlobals\JPG\jpeg-9e\jdatasrc.cpp" />
     <ClCompile Include="..\..\!!adGlobals\JPG\JPEG_library.cpp" />
     <ClCompile Include="..\..\!!adGlobals\PNG\lodepng.cpp" />
+    <ClCompile Include="..\..\!!adGlobals\Quaternion.cpp" />
     <ClCompile Include="..\..\!!adGlobals\TextureDescriptor.cpp" />
     <ClCompile Include="..\..\!!adGlobals\trackball.cpp" />
     <ClCompile Include="..\..\!!adGlobals\vector_math.cpp" />

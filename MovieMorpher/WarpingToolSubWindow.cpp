@@ -56,11 +56,11 @@ void WarpingToolSubWindow::SetupGraphicsPipeline()
 	// Call SetupGraphicsPipeline of a parent to observe basic user pan/zoom
 	MorphingToolSubWindow::SetupGraphicsPipeline();
 
-	// the last transformation is previewed until the mouse button is released using this matrix
+	// The last transformation is previewed using this matrix until the mouse button is released.
 	// When the button is released matrObjectOrigin2joystickBasis is recomputed and this matrix is reset to identity
 	glMultMatrixf(&matrImmediateVisualization.m[0][0]);
 
-	// basis 1,1,1 is transformed to joystick basis on every mouseup (previous transformation)
+	// Basis (1,1,1) is transformed to joystick basis on every mouseup (previous transformation)
 	glMultMatrixf(&matrObjectOrigin2joystickBasis.m[0][0]);
 }
 
@@ -165,9 +165,9 @@ void WarpingToolSubWindow::Draw()
 
 				// frame
 				glBegin(GL_LINE_LOOP);
-				for (auto& element : liScalingHandles) {
-					glVertex3f(element.X, element.Y, 2);
-				}
+					for (auto& element : liScalingHandles) {
+						glVertex3f(element.X, element.Y, 2);
+					}
 				glEnd();
 
 				// Line from the center to rotation handle
@@ -216,6 +216,7 @@ void WarpingToolSubWindow::Draw()
 		}
 
 }
+
 
 bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 {
