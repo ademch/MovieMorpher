@@ -176,9 +176,9 @@ void MorphingToolSubWindow::Draw()
 		buttonDestination->bEnabled = true;
 	}
 
-	bool bFBOparamsInSync = (morphFBOprocessor->fMorphRadius   == m_ParamsSubWindow->fMorphRadius) &&
-						    (morphFBOprocessor->fMorphPower    == m_ParamsSubWindow->fMorphPower) &&
-						    (morphFBOprocessor->fMorphRatio    == m_ParamsSubWindow->fMorphRatio) &&
+	bool bFBOparamsInSync = (morphFBOprocessor->fMorphRadius   == m_ParamsSubWindow->MorphRadius()) &&
+						    (morphFBOprocessor->fMorphPower    == m_ParamsSubWindow->MorphPower()) &&
+						    (morphFBOprocessor->fMorphRatio    == m_ParamsSubWindow->MorphRatio()) &&
 						    (morphFBOprocessor->bShowWireframe == GlobalParamsSubWindow::Get()->IsWireframeShown());
 
 	if (morphFBOprocessor->bOutdated || !bFBOparamsInSync)
@@ -575,9 +575,9 @@ bool MorphingToolSubWindow::KeyboardFunc(unsigned char key, int x, int y)
 
 void MorphingToolSubWindow::ReDrawFBOprocessors()
 {
-	morphFBOprocessor->fMorphRadius   = m_ParamsSubWindow->fMorphRadius;
-	morphFBOprocessor->fMorphPower    = m_ParamsSubWindow->fMorphPower;
-	morphFBOprocessor->fMorphRatio    = m_ParamsSubWindow->fMorphRatio;
+	morphFBOprocessor->fMorphRadius   = m_ParamsSubWindow->MorphRadius();
+	morphFBOprocessor->fMorphPower    = m_ParamsSubWindow->MorphPower();
+	morphFBOprocessor->fMorphRatio    = m_ParamsSubWindow->MorphRatio();
 	morphFBOprocessor->bShowWireframe = GlobalParamsSubWindow::Get()->IsWireframeShown();
 
 	morphFBOprocessor->Render();

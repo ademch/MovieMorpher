@@ -43,6 +43,13 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	ptTranslHandle = Vecc2();
 	ptRotateHandle = Vecc2(m_iJoystickFrameWidth/2.0*0.618, 0);
 
+	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
+	{
+		if (!bActive) return;
+
+		RecalcJoysticksPositionsFromScratch();
+	});
+
 	matrImmediateVisualization     = Mat4MakeIdent();
 	matrObjectOrigin2joystickBasis = Mat4MakeIdent();
 
@@ -50,6 +57,20 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	hCursorRotateAngle		 = LoadCursorFromFileW(L"Cursors\\aero_rotateAngle.cur");
 
 }
+
+void WarpingToolSubWindow::RecalcJoysticksPositionsFromScratch()
+{
+	Matr4 m = animatedTRSTransform.Evaluate( GetClipLocalTimeS() );
+
+	liScalingHandles[0] = Vecc2( m*Vecc3(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0 ) );
+	liScalingHandles[1] = Vecc2( m*Vecc3(  m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0 ) );
+	liScalingHandles[2] = Vecc2( m*Vecc3( -m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0 ) );
+	liScalingHandles[3] = Vecc2( m*Vecc3( -m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0 ) );
+
+	ptTranslHandle = Vecc2( m*Vecc3() );
+	ptRotateHandle = Vecc2( m*Vecc3(m_iJoystickFrameWidth/2.0*0.618, 0) );
+}
+
 
 void WarpingToolSubWindow::SetupGraphicsPipeline()
 {
@@ -61,7 +82,8 @@ void WarpingToolSubWindow::SetupGraphicsPipeline()
 	glMultMatrixf(&matrImmediateVisualization.m[0][0]);
 
 	// Basis (1,1,1) is transformed to joystick basis on every mouseup (previous transformation)
-	glMultMatrixf(&matrObjectOrigin2joystickBasis.m[0][0]);
+	//glMultMatrixf(&matrObjectOrigin2joystickBasis.m[0][0]);
+	glMultMatrixf( &animatedTRSTransform.Evaluate( GetClipLocalTimeS() ).m[0][0] );
 }
 
 
@@ -71,7 +93,7 @@ void WarpingToolSubWindow::DrawFBOquad()
 	// We call here SetupGraphicsPipeline of WarpingToolSubWindow to apply warping transformations also
 	SetupGraphicsPipeline();
 
-		float fAlpha = m_ParamsSubWindow->fTransparency/100.0f;
+		float fAlpha = m_ParamsSubWindow->Transparency( GetClipLocalTimeS() )/100.0f;
 
 		TextureDescriptor* texDescr;
 		// Show output of the shader, while invisible input texture holds original
@@ -347,17 +369,15 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 				}
 
 				// TRANSLATION
-				auto& ptTranslate = ptTranslHandle;
-
 				Vec3 dxdydz;
-				dxdydz = Vecc3(v3DCoords) - Vecc3(ptTranslate.X, ptTranslate.Y, const_fPointsDepth);
+				dxdydz = Vecc3(v3DCoords) - Vecc3(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
 				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
 					stateTransform = STATE_TRANS_TRANSLATE;
 
 					glutSetCursor(GLUT_CURSOR_INFO);
 
-					m_ptHandleClicked = ptTranslate;
+					m_ptHandleClicked = ptTranslHandle;
 
 					ptPrevPoint = Vecc2(x, y);
 
@@ -365,9 +385,7 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 				}
 
 				// ROTATION
-				auto& ptRotate = ptRotateHandle;
-
-				dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotate.X, ptRotate.Y, const_fPointsDepth);
+				dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
 				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
 					if (GetKeyState(VK_SHIFT) & 0x8000)
@@ -387,7 +405,7 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 						glutSetCursor(GLUT_CURSOR_INFO);
 					}
 
-					m_ptHandleClicked = ptRotate;
+					m_ptHandleClicked = ptRotateHandle;
 					m_ptHandlePivot   = ptTranslHandle;
 
 					ptPrevPoint = Vecc2(x, y);
@@ -403,9 +421,8 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 
 		// Transform all handles
 		{
-			for (auto& element : liScalingHandles) {
+			for (auto& element : liScalingHandles)
 				element = Vecc2( matrImmediateVisualization*Vecc3(element) );
-			}
 
 			ptTranslHandle = Vecc2( matrImmediateVisualization*Vecc3(ptTranslHandle) );
 			ptRotateHandle = Vecc2( matrImmediateVisualization*Vecc3(ptRotateHandle) );
@@ -426,6 +443,16 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 		// non-normalized 2D transformation produces non identity Z
 		matrObjectOrigin2joystickBasis.m[2][2] = 1.0;
 		matrObjectOrigin2joystickBasis.m[3][3] = 1.0;
+
+		// Save matrix into animation sequence
+		{
+			TrackClip* clip = TrackClip::GetClip(this);
+			 
+			if (clip && clip->bKeyframeEditing)
+				animatedTRSTransform.SetValueAt( GetClipLocalTimeS(), Mat4Decompose(matrObjectOrigin2joystickBasis) );
+			else
+				animatedTRSTransform.SetValueAt( 0.0, Mat4Decompose(matrObjectOrigin2joystickBasis) );
+		};
 	}
 
 	return MorphingToolSubWindow::MouseFunc(button, state, x, y);
@@ -564,3 +591,14 @@ void WarpingToolSubWindow::RemoveSibling(OpenGLSubWindowWithGUI* _sibling)
 		}
 	}
 }
+
+double WarpingToolSubWindow::GetClipLocalTimeS()
+{
+	TrackClip* clip = TrackClip::GetClip(this);
+	if (!clip) return 0;	// eg welcome screen
+
+	int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
+
+	return (iPlayhead10msTicks - clip->m_iStartPos10msUnits)/100.0;
+}
+

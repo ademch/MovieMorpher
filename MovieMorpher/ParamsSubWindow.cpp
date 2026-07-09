@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "ParamsSubWindow.h"
+#include "../../!!adGUI/TrackClip.h"
+#include "../../!!adGUI/VideoPositionMediator.h"
 
 
 ParamsSubWindow::ParamsSubWindow(int iParentWidth, int iParentHeight,
@@ -9,6 +11,12 @@ ParamsSubWindow::ParamsSubWindow(int iParentWidth, int iParentHeight,
 										fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
 	PopulateGUI();
+
+	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
+	{
+		if (!bActive) return;
+		fTransparency = animatedfTransparency.Evaluate( TrackClip::GetSelectedClipLocalTimeS() );
+	});
 }
 
 
@@ -33,13 +41,13 @@ void ParamsSubWindow::PopulateGUI()
 	liGUI_Elements.push_back(SliderMorphRadius);
 
 	fMorphPower = 1.0f;
-	SliderMorphSmoothness = new SliderCenterLine("Power", 30,0, 0.1, 10.1, &fMorphPower, 7);
-	SliderMorphSmoothness->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
-	SliderMorphSmoothness->SetBoxWidth(200);
-	SliderMorphSmoothness->SetBoxSeparation(1);
-	SliderMorphSmoothness->fValueGranularity = 0.1;
-	SliderMorphSmoothness->fTickGranularity = 0.5;
-	liGUI_Elements.push_back(SliderMorphSmoothness);
+	SliderMorphPower = new SliderCenterLine("Power", 30,0, 0.1, 10.1, &fMorphPower, 7);
+	SliderMorphPower->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
+	SliderMorphPower->SetBoxWidth(200);
+	SliderMorphPower->SetBoxSeparation(1);
+	SliderMorphPower->fValueGranularity = 0.1;
+	SliderMorphPower->fTickGranularity = 0.5;
+	liGUI_Elements.push_back(SliderMorphPower);
 
 	fTransparency = 100.0f;
 	SliderTransparency = new Slider<SL_INT>("Alpha", 30,-70, 0,100, &fTransparency, 7);
@@ -48,7 +56,22 @@ void ParamsSubWindow::PopulateGUI()
 	SliderTransparency->SetBoxSeparation(1);
 	SliderTransparency->fValueGranularity = 1;
 	SliderTransparency->fTickGranularity = 25;
+	SliderTransparency->OnClick = [this]()
+	{
+		TrackClip* clip = TrackClip::GetSelectedClip();
+
+		if (clip && clip->bKeyframeEditing)
+			animatedfTransparency.SetValueAt(TrackClip::GetSelectedClipLocalTimeS(), fTransparency);
+		else
+			animatedfTransparency.SetValueAt(0.0, fTransparency);
+
+		return true;
+	};
+	SliderTransparency->OnClickDrag = SliderTransparency->OnClick;
+
 	liGUI_Elements.push_back(SliderTransparency);
+
+	animatedfTransparency.SetValueAt(0, fTransparency);
 
 	buttonMorphNext = new Button("Apply", 30,-130, 120, 6.3);
 	buttonMorphNext->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);

@@ -537,10 +537,14 @@ void MediaSubWindow::callback_RegisterTrackClip()
 	{
 		switch(item)
 		{
-		case TrackClipMenu::ITEM_SPLIT:
-			MessageBox( nullptr, TEXT("Open"), TEXT("Menu"), MB_OK);
-			break;
+		case TrackClipMenu::ITEM_KEYFRAME_EDITING:
+		{
+			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)
+			TrackClip* clipSelected = TrackClip::GetSelectedClip();
+			clipSelected->bKeyframeEditing = !clipSelected->bKeyframeEditing;
 
+			break;
+		}
 		case TrackClipMenu::ITEM_DELETE:
 		{
 			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)

@@ -234,6 +234,9 @@ void OnPlayback(bool bStarted)
 
 	// prevent from changing position during playback (like in CoolEdit)
 	timelineSliderWindow->videoSlider->bEnabled = !bStarted;
+
+	// Joysticks positions are not updated during playback, update them now
+	if (!bStarted) windowToolEditor->RecalcJoysticksPositionsFromScratch();
 }
 
 

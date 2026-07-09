@@ -26,6 +26,8 @@ public:
 
 	static void RemoveSibling(OpenGLSubWindowWithGUI* _sibling);
 
+	void RecalcJoysticksPositionsFromScratch();
+
 	void Draw() override;
 
 	bool PassiveMotionFunc(int x, int y) override;
@@ -68,6 +70,10 @@ private:
 	// shortcut for fbo width and height
 	int m_iJoystickFrameWidth;
 	int m_iJoystickFrameHeight;
+
+	double GetClipLocalTimeS();
+
+	AnimatedParamTRSTransform animatedTRSTransform;
 
 };
 
