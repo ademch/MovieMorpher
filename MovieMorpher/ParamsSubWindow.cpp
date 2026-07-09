@@ -12,11 +12,16 @@ ParamsSubWindow::ParamsSubWindow(int iParentWidth, int iParentHeight,
 {
 	PopulateGUI();
 
-	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
+	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
 	{
 		if (!bActive) return;
 		fTransparency = animatedfTransparency.Evaluate( TrackClip::GetSelectedClipLocalTimeS() );
 	});
+}
+
+ParamsSubWindow::~ParamsSubWindow()
+{
+	PositionMediator::Get()->unsubscribeForPos(this);
 }
 
 

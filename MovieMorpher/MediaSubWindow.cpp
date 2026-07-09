@@ -30,7 +30,7 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 	stateMediaPlayer = STATE_MEDIAPLAYER_IDLE;
 	QueryPerformanceFrequency(&ticksPerSecond);
 
-	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
+	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
 	{
 		if (origin != this) UpdateVideoTrackPosition(fVal);
 	});

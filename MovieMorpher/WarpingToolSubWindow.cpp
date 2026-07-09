@@ -43,7 +43,7 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	ptTranslHandle = Vecc2();
 	ptRotateHandle = Vecc2(m_iJoystickFrameWidth/2.0*0.618, 0);
 
-	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
+	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
 	{
 		if (!bActive) return;
 
@@ -56,6 +56,12 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	hCursorScaleProportional = LoadCursorFromFileW(L"Cursors\\aero_moveProp.cur");
 	hCursorRotateAngle		 = LoadCursorFromFileW(L"Cursors\\aero_rotateAngle.cur");
 
+}
+
+
+WarpingToolSubWindow::~WarpingToolSubWindow()
+{
+	PositionMediator::Get()->unsubscribeForPos(this);
 }
 
 void WarpingToolSubWindow::RecalcJoysticksPositionsFromScratch()

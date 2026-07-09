@@ -28,11 +28,12 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	                    {  PositionMediator::Get()->SetPos0_1(this, fPos); };
 	OnSelectionChange = [this](double fSelectionStart, double fSelectionEnd)
 	                    { PositionMediator::Get()->SetSelection0_1(this, fSelectionStart, fSelectionEnd); };
-	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
+	
+	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
 						{ if (origin != this) SetSliderPos0_1(fVal); });
-	PositionMediator::Get()->subscribeForPosInit([this](void* origin, double fVal, int _iDuration10msTicks)
+	PositionMediator::Get()->subscribeForPosInit(this, [this](void* origin, double fVal, int _iDuration10msTicks)
 						{ if (origin != this) SetSliderPos0_1(fVal); });
-	PositionMediator::Get()->subscribeForMarker([this](void* origin, double fVal)
+	PositionMediator::Get()->subscribeForMarker(this, [this](void* origin, double fVal)
 						{ if (origin != this) SetMarker0_1(fVal); });
 
 	PopulateGUI();
@@ -91,6 +92,11 @@ TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool, int i10ms
 		                            26);																			// height
 	
 	int iTail10msUnit = FindLastClipOnTrack_Tail(iActiveTrack);
+
+	// nice touch: position clip starting at playhead on empty track
+	if (iTail10msUnit == 0)
+		iTail10msUnit = PositionMediator::Get()->Pos10msUnits();
+
 	clip->SetAttr(iTail10msUnit, i10msCount);
 
 	// ASSOCIATE CLIP TO TRACK
@@ -456,11 +462,11 @@ void TimelineSliderSubWindow::PopulateGUI()
 	{
 		PositionMediator::Get()->SetPos0_1(videoSlider, fVal);
 	};
-	PositionMediator::Get()->subscribeForPos([this](void* origin, double fVal)
+	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
 	{
 		if (origin != videoSlider) videoSlider->SetPos0_1(fVal);
 	});
-	PositionMediator::Get()->subscribeForPosInit([this](void* origin, double fVal, int _iDuration10msTicks)
+	PositionMediator::Get()->subscribeForPosInit(this, [this](void* origin, double fVal, int _iDuration10msTicks)
 	{
 		if (origin != videoSlider) videoSlider->SetPosInit(fVal, _iDuration10msTicks);
 	});
@@ -504,7 +510,7 @@ void TimelineScrollBarSubWindow::PopulateGUI()
 {
 	scrollBar = new HorScrollBar("", g_iHorrScrollBarBorder,1);
 	scrollBar->SetAlignment(HALIGN_LEFT, VALIGN_BOTTOM);
-	PositionMediator::Get()->subscribeForPosUpdateFromTimer([this](void* origin, double fVal)
+	PositionMediator::Get()->subscribeForPosUpdateFromTimer(this, [this](void* origin, double fVal)
 	{
 		scrollBar->ScrollToMakePlayheadVisible(fVal);
 	});

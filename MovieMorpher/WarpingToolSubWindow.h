@@ -22,7 +22,7 @@ public:
 	WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 						 float fBottomLeftXperc, float fBottomLeftYperc,
 						 float fWidthPerc, float fHeightPerc);
-	~WarpingToolSubWindow() {}
+	~WarpingToolSubWindow();
 
 	static void RemoveSibling(OpenGLSubWindowWithGUI* _sibling);
 
