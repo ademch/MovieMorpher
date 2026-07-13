@@ -236,7 +236,7 @@ void OnPlayback(bool bStarted)
 	timelineSliderWindow->videoSlider->bEnabled = !bStarted;
 
 	// Joysticks positions are not updated during playback, update them now
-	if (!bStarted) windowToolEditor->RecalcJoysticksPositionsFromScratch();
+	if (!bStarted) windowToolEditor->RecalcAnimatedParamsFromKeyframes();
 }
 
 

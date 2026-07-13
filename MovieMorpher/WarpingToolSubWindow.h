@@ -24,9 +24,11 @@ public:
 						 float fWidthPerc, float fHeightPerc);
 	~WarpingToolSubWindow();
 
+	AnimatedParamTRSTransform animatedTRSTransform;
+
 	static void RemoveSibling(OpenGLSubWindowWithGUI* _sibling);
 
-	void RecalcJoysticksPositionsFromScratch();
+	void RecalcAnimatedParamsFromKeyframes() override;
 
 	void Draw() override;
 
@@ -70,10 +72,6 @@ private:
 	// shortcut for fbo width and height
 	int m_iJoystickFrameWidth;
 	int m_iJoystickFrameHeight;
-
-	double GetClipLocalTimeS();
-
-	AnimatedParamTRSTransform animatedTRSTransform;
 
 };
 

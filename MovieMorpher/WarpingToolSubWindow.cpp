@@ -43,13 +43,6 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	ptTranslHandle = Vecc2();
 	ptRotateHandle = Vecc2(m_iJoystickFrameWidth/2.0*0.618, 0);
 
-	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
-	{
-		if (!bActive) return;
-
-		RecalcJoysticksPositionsFromScratch();
-	});
-
 	matrImmediateVisualization     = Mat4MakeIdent();
 	matrObjectOrigin2joystickBasis = Mat4MakeIdent();
 
@@ -64,8 +57,13 @@ WarpingToolSubWindow::~WarpingToolSubWindow()
 	PositionMediator::Get()->unsubscribeForPos(this);
 }
 
-void WarpingToolSubWindow::RecalcJoysticksPositionsFromScratch()
+
+void WarpingToolSubWindow::RecalcAnimatedParamsFromKeyframes()
 {
+	MorphingToolSubWindow::RecalcAnimatedParamsFromKeyframes();
+	
+	if (!bActive) return;
+
 	Matr4 m = animatedTRSTransform.Evaluate( GetClipLocalTimeS() );
 
 	liScalingHandles[0] = Vecc2( m*Vecc3(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0 ) );
@@ -597,14 +595,3 @@ void WarpingToolSubWindow::RemoveSibling(OpenGLSubWindowWithGUI* _sibling)
 		}
 	}
 }
-
-double WarpingToolSubWindow::GetClipLocalTimeS()
-{
-	TrackClip* clip = TrackClip::GetClip(this);
-	if (!clip) return 0;	// eg welcome screen
-
-	int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
-
-	return (iPlayhead10msTicks - clip->m_iStartPos10msUnits)/100.0;
-}
-

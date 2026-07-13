@@ -1,10 +1,13 @@
 #include "stdafx.h"
+#include "../../!!adGUI/arrow.h"
 #include "MorphingToolSubWindow.h"
 #include "GlobalParamsSubWindow.h"
 #include "GLSL_Pipeline.h"
 #include "../../!!adGlobals/glut/glut.h"
 #include "../../!!adExtensions/extensions.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
+#include "../../!!adGUI/TrackClip.h"
+#include "../../!!adGUI/VideoPositionMediator.h"
 
 
 const int  _fFinalizationRadius = 9;
@@ -41,12 +44,31 @@ MorphingToolSubWindow::MorphingToolSubWindow(int iParentWidth, int iParentHeight
 	PopulateGUI();
 
 	morphFBOprocessor = new MorphFBOprocessor(0, 0, 800, 450, texBank);
+
+	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
+	{
+		RecalcAnimatedParamsFromKeyframes();
+	});
 }
+
 
 MorphingToolSubWindow::~MorphingToolSubWindow()
 {
 	delete morphFBOprocessor;
 }
+
+
+void MorphingToolSubWindow::RecalcAnimatedParamsFromKeyframes()
+{
+	if (bSrcCurveIsDone && bDstCurveIsDone)
+	{
+		liSource      = animatedPolylineSrc.Evaluate( GetClipLocalTimeS() );
+		liDestination = animatedPolylineDst.Evaluate( GetClipLocalTimeS() );
+
+		UploadMorphingLines();
+	}
+}
+
 
 
 void MorphingToolSubWindow::PopulateGUI()
@@ -56,6 +78,7 @@ void MorphingToolSubWindow::PopulateGUI()
 	buttonSource->OnClick = [this]() { return SourcePolylineClicked(); };
 	liGUI_Elements.push_back(buttonSource);
 
+	Arrow*  arrow;
 	arrow = new Arrow("", -120,10 + 8, 30, 6.3);
 	arrow->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
 	liGUI_Elements.push_back(arrow);
@@ -183,6 +206,27 @@ void MorphingToolSubWindow::Draw()
 
 	if (morphFBOprocessor->bOutdated || !bFBOparamsInSync)
 		ReDrawFBOprocessors();
+}
+
+
+void MorphingToolSubWindow::SaveMorphingLinesIntoAnimationSequence()
+{
+	TrackClip* clip = TrackClip::GetClip(this);
+
+	if (clip && clip->bKeyframeEditing)
+	{
+		if (bSrcCurveIsDone)
+			animatedPolylineSrc.SetValueAt( GetClipLocalTimeS(), liSource );
+		if (bDstCurveIsDone)
+			animatedPolylineDst.SetValueAt( GetClipLocalTimeS(), liDestination );
+	}
+	else
+	{
+		if (bSrcCurveIsDone)
+			animatedPolylineSrc.SetValueAt( 0.0, liSource );
+		if (bDstCurveIsDone)
+			animatedPolylineDst.SetValueAt( 0.0, liDestination );
+	}
 }
 
 
@@ -335,6 +379,8 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 				else if (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)
 					bDstCurveIsDone = true;
 
+				SaveMorphingLinesIntoAnimationSequence();
+
 				stateCurrent = STATE_IDLE;
 
 				m_bMouseDrawingInProgress = false;
@@ -354,6 +400,8 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 					bSrcCurveIsDone = true;
 				else if (stateCurrent == STATE_DESTINATION_POINT_INPUT)
 					bDstCurveIsDone = true;
+
+				SaveMorphingLinesIntoAnimationSequence();
 
 				stateCurrent = STATE_IDLE;
 
@@ -410,6 +458,7 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 								if (liSource.size() + 1 == liDestination.size())
 								{
 									liSource.insert(liSource.begin()+i + 1, (liSource[i] + liSource[i + 1]) / 2.0f);
+									SaveMorphingLinesIntoAnimationSequence();
 									UploadMorphingLines();
 								}
 
@@ -450,6 +499,7 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 								if (liSource.size() - 1 == liDestination.size())
 								{
 									liSource.erase(liSource.begin() + i);
+									SaveMorphingLinesIntoAnimationSequence();
 									UploadMorphingLines();
 								}
 
@@ -515,7 +565,10 @@ void MorphingToolSubWindow::MotionFunc(int x, int y)
 
 			// both curves are done (condition of mouse down)
 			if (liDestination.size() == liSource.size())
+			{
+				SaveMorphingLinesIntoAnimationSequence();
 				UploadMorphingLines();
+			}
 		}
 	}
 }
@@ -546,7 +599,7 @@ bool MorphingToolSubWindow::ResetView()
 bool MorphingToolSubWindow::ClearMorph()
 {
 	ClearSourceLine();
-	ClearDestinationLine();
+	ClearDestinationLine();	// TODO!!!SaveMorphingLinesIntoAnimationSequence();
 	UploadMorphingLines();
 
 	return true;
@@ -635,7 +688,10 @@ bool MorphingToolSubWindow::DestinationPolylineClicked()
 bool MorphingToolSubWindow::MorphNow()
 {
 	if (liSource.size() == liDestination.size())
+	{
+		SaveMorphingLinesIntoAnimationSequence();
 		UploadMorphingLines();
+	}
 
 	return true;
 }
@@ -671,3 +727,14 @@ void MorphingToolSubWindow::StartNextGeneration()
 
 	free(data);
 }
+
+double MorphingToolSubWindow::GetClipLocalTimeS()
+{
+	TrackClip* clip = TrackClip::GetClip(this);
+	if (!clip) return 0;	// eg welcome screen
+
+	int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
+
+	return (iPlayhead10msTicks - clip->m_iStartPos10msUnits)/100.0;
+}
+

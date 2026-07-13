@@ -164,6 +164,7 @@
     <ClInclude Include="..\..\!!adGlobals\PNG\lodepng.h" />
     <ClInclude Include="..\..\!!adGlobals\TextureDescriptor.h" />
     <ClInclude Include="..\..\!!adGlobals\vector_math.h" />
+    <ClInclude Include="..\..\!!adGlobals\VideoAnimatedParams.h" />
     <ClInclude Include="..\..\!!adGUI\Arrow.h" />
     <ClInclude Include="..\..\!!adGUI\button.h" />
     <ClInclude Include="..\..\!!adGUI\ComboBox.h" />
@@ -217,6 +218,7 @@
     <ClCompile Include="..\..\!!adGlobals\TextureDescriptor.cpp" />
     <ClCompile Include="..\..\!!adGlobals\trackball.cpp" />
     <ClCompile Include="..\..\!!adGlobals\vector_math.cpp" />
+    <ClCompile Include="..\..\!!adGlobals\VideoAnimatedParams.cpp" />
     <ClCompile Include="..\..\!!adGlobals\wdir.cpp" />
     <ClCompile Include="..\..\!!adGUI\Arrow.cpp" />
     <ClCompile Include="..\..\!!adGUI\button.cpp" />

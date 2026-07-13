@@ -169,8 +169,10 @@ bool MediaSubWindow::AddTrackPicture()
 		wndWarpingTool->TextureUpdateInputFBOprocessor(width, height, image);
 
 	TrackClip* clip = windowTimeLine->AddClip(newToolWindow, 60*100);
-		clip->textureIcon = LoadTexture(width, height, image);
 		clip->mediaType = CLIP_IMAGE;
+		clip->textureIcon = LoadTexture(width, height, image);
+		clip->RegisterTRSparam( &(wndWarpingTool->animatedTRSTransform.liKeys) );
+		clip->RegisterMorphDSTparam( &(wndWarpingTool->animatedPolylineDst.liKeys) );
 
 	free(image);
 
@@ -191,7 +193,7 @@ bool MediaSubWindow::AddTrackVideo()
 	// WIDEN TIMELINE IF NEEDED
 	if (PositionMediator::Get()->Duration10msUnits() < video->liIndex[video->iTotalFrames-1]*100.0)
 	{
-		PositionMediator::Get()->Init(NULL, 0.0f, 2*video->liIndex[video->iTotalFrames-1]*100.0);
+		PositionMediator::Get()->Init(NULL, 0.0f, 1.2*video->liIndex[video->iTotalFrames-1]*100.0);
 	}
 
 	// CREATE TOOL AND PARAMS WINDOWS
@@ -214,6 +216,8 @@ bool MediaSubWindow::AddTrackVideo()
 
 		clip->mediaType = CLIP_VIDEO;
 		clip->video     = video;
+		clip->RegisterTRSparam( &(wndWarpingTool->animatedTRSTransform.liKeys) );
+		clip->RegisterMorphDSTparam( &(wndWarpingTool->animatedPolylineDst.liKeys) );
 
 	return true;
 }
@@ -269,7 +273,7 @@ void MediaSubWindow::Draw()
 
 				if (iterClip->mediaType == CLIP_IMAGE)
 				{
-					//wndWarpingTool->ReDrawFBOprocessors();
+					wndWarpingTool->ReDrawFBOprocessors();
 					wndWarpingTool->DrawFBOquad();
 				}
 				else
@@ -550,13 +554,16 @@ void MediaSubWindow::callback_RegisterTrackClip()
 			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)
 			TrackClip* clipSelected = TrackClip::GetSelectedClip();
 
+			// UNREGISTER ANIMATED PARAMS
+			clipSelected->RegisterTRSparam(NULL);
+
 			// REMOVE TOOL WINDOW FROM SIBLINGS LIST
 			WarpingToolSubWindow::RemoveSibling(clipSelected->windowTool);
 
 			// REMOVE CLIP FROM TRACKS LIST
 			TrackClip::RemoveSelectedClip();
 
-			// SELECT WELCOME TOOL
+			// DELETE TOOL AND PARAMS WNDS & SELECT WELCOME TOOL
 			clipSelected->OnClipChange(WARPING_TOOL_WELCOME);
 
 			// DELETE CLIP

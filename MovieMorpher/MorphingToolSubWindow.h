@@ -5,7 +5,6 @@
 #include "ParamsSubWindow.h"
 #include "MorphFBOprocessor.h"
 #include "../../!!adGUI/button.h"
-#include "../../!!adGUI/arrow.h"
 #include <functional>
 
 
@@ -24,6 +23,11 @@ public:
 						  float fBottomLeftXperc, float fBottomLeftYperc,
 						  float fWidthPerc, float fHeightPerc);
 	~MorphingToolSubWindow();
+
+	AnimatedParamPolyline2D animatedPolylineSrc;
+	AnimatedParamPolyline2D animatedPolylineDst;
+
+	virtual void RecalcAnimatedParamsFromKeyframes();
 
 	void Draw() override;
 
@@ -56,7 +60,6 @@ protected:
 
 	void UploadMorphingLines();
 
-	Arrow*  arrow;
 	Button* buttonResetView;
 	Button* buttonSource;
 	Button* buttonDestination;
@@ -76,6 +79,10 @@ protected:
 
 	TextureBank  texBank;
 
+	double GetClipLocalTimeS();
+
+	void SaveMorphingLinesIntoAnimationSequence();
+
 private:
 	StateInput_enum stateCurrent;
 
@@ -89,6 +96,7 @@ private:
 	bool DestinationPolylineClicked();
 
 	void StartNextGeneration();
+
 };
 
 #endif
