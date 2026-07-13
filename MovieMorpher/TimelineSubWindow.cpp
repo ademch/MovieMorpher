@@ -369,8 +369,8 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 
 				int iTail10msUnits = mediator->Duration10msUnits()*m_fSelEndX0_1;
 
-				// make sure the head of selection is not earlier than 0ms timeline and not closer to the tail of selection than 1s
-				m_fSelStartX0_1 = CLAMP(fX0_1, 0.0, double(iTail10msUnits - 100)/double(mediator->Duration10msUnits()));
+				// make sure the head of selection is not earlier than 0ms timeline and not closer to the tail of selection than 100ms
+				m_fSelStartX0_1 = CLAMP(fX0_1, 0.0, double(iTail10msUnits - 10)/double(mediator->Duration10msUnits()));
 				if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
 
 				return;
@@ -384,8 +384,8 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 
 				int iHead10msUnits = PositionMediator::Get()->Duration10msUnits()*m_fSelStartX0_1;
 
-				// make sure the tail of selection is not later than the end of the timeline and not closer to the head of selection than 1s
-				m_fSelEndX0_1 = CLAMP(fX0_1, double(iHead10msUnits + 100)/double(mediator->Duration10msUnits()), 1.0);
+				// make sure the tail of selection is not later than the end of the timeline and not closer to the head of selection than 100ms
+				m_fSelEndX0_1 = CLAMP(fX0_1, double(iHead10msUnits + 10)/double(mediator->Duration10msUnits()), 1.0);
 				if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
 
 				return;
