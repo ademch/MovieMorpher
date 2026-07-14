@@ -47,6 +47,8 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 	matrImmediateVisualization     = Mat4MakeIdent();
 	matrObjectOrigin2joystickBasis = Mat4MakeIdent();
 
+	animatedTRSTransform.SetValueAt( 0.0, Mat4Decompose( Mat4MakeIdent()) );
+
 	hCursorScaleProportional = LoadCursorFromFileW(L"Cursors\\aero_moveProp.cur");
 	hCursorRotateAngle		 = LoadCursorFromFileW(L"Cursors\\aero_rotateAngle.cur");
 
