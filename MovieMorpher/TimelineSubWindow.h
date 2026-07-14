@@ -170,6 +170,9 @@ public:
 		vUserSceneTranslation = _translation;
 	}
 
+	static std::vector<bool> liVisible;
+	static float GetTrackVisibility(int iTrack);
+
 protected:
 	void PopulateGUI() override;
 

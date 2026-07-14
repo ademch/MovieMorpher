@@ -536,30 +536,26 @@ TrackParamsSubWindow::TrackParamsSubWindow(int iParentWidth, int iParentHeight,
 					  OpenGLSubWindowWithGUI(iParentWidth, iParentHeight,
 											 fBottomLeftXperc, fBottomLeftYperc, fWidthPerc, fHeightPerc)
 {
-	//OnChange = [this, mediator](float fVal)
-	//{
-	//	mediator->SetSliderPos0_1(this, fVal);
-	//};
-	//mediator->subscribeForPosInit([this](void* origin, float fVal, unsigned int _iStartSec, int _iDuration10msTicks)
-	//{
-	//	if (origin != videoSlider) SetPosInit(fVal, _iStartSec, _iDuration10msTicks);
-	//});
-
 	PopulateGUI();
 }
+
+
+std::vector<bool> TrackParamsSubWindow::liVisible;
 
 void TrackParamsSubWindow::PopulateGUI()
 {
 	for (int16_t iTrack = 1; iTrack <= g_iTrackCount; iTrack++)
 	{
 		ButtonImage* buttonImg = new ButtonImage("", -60, -g_iTrackHeight*iTrack - g_iTrackPadding*iTrack + 4, 32);
-		std::string filename = "Icons\\Number" +  std::to_string(iTrack) + ".bmp";
+		std::string filename = "Icons\\Number" + std::to_string(iTrack) + ".bmp";
 		buttonImg->LoadImg(filename.c_str());
 		buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_TOP);
 		buttonImg->bEnabled = false;
 		buttonImg->bDrawFrame = false;
 		liGUI_Elements.push_back(buttonImg);
 	}
+
+	liVisible.push_back(true);	// zero track
 
 	for (int16_t iTrack = 1; iTrack <= g_iTrackCount; iTrack++)
 	{
@@ -568,9 +564,22 @@ void TrackParamsSubWindow::PopulateGUI()
 		buttonImg->LoadImgDownState("Icons\\Image13.bmp");
 		buttonImg->SetAlignment(HALIGN_RIGHT, VALIGN_TOP);
 		buttonImg->bDrawFrame = false;
+		buttonImg->OnClick = [buttonImg, iTrack]()
+							 {
+								liVisible[iTrack] = buttonImg->bDownState;
+								return true;
+							 };
 		liGUI_Elements.push_back(buttonImg);
+
+		liVisible.push_back(true);
 	}
 }
+
+float TrackParamsSubWindow::GetTrackVisibility(int iTrack)
+{
+	return liVisible[iTrack];
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,7 @@
 #include "../../!!adGUI/TrackClip.h"
 #include "GLSL_Pipeline.h"
 #include <algorithm>
+#include "TimelineSubWindow.h"
 
 
 const float const_fPointsDepth   = 3;
@@ -160,7 +161,8 @@ void WarpingToolSubWindow::Draw()
 			if ( (iPlayhead10msTicks >= clip->m_iStartPos10msUnits) &&
 				 (iPlayhead10msTicks <  clip->m_iStartPos10msUnits + clip->m_iLength10msUnits) )
 			{
-				//TrackTranspSubWindow::GetTrackTransp(clip->iTrack-1)/100.0f;
+				if (!TrackParamsSubWindow::GetTrackVisibility(clip->iTrack)) continue;
+
 				m_liSiblings[i]->DrawFBOquad();
 
 				// analyze this tool window
@@ -259,39 +261,35 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 
 			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-			for (auto& point : liScalingHandles)
-			{
-				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(point.X, point.Y, const_fPointsDepth);
-				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
+				Vec3 dxdydz;
+				for (auto& point : liScalingHandles)
 				{
-					if (GetKeyState(VK_SHIFT) & 0x8000)
-						glutSetCursor(GLUT_CURSOR_INFO);
-					else
+					dxdydz = Vecc3(v3DCoords) - Vecc3(point.X, point.Y, const_fPointsDepth);
+					if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 					{
-						if (GetCursor() != hCursorScaleProportional)
+						if (GetKeyState(VK_SHIFT) & 0x8000)
+							glutSetCursor(GLUT_CURSOR_INFO);
+						else
 						{
-							glutSetCursor(200);
-							SetCursor(hCursorScaleProportional);
+							if (GetCursor() != hCursorScaleProportional)
+							{
+								glutSetCursor(200);
+								SetCursor(hCursorScaleProportional);
+							}
 						}
-					}
 					
-					return true;
+						return true;
+					}
 				}
-			}
 
-			Vec2& ptTrans = ptTranslHandle;
-			{
-				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(ptTrans.X, ptTrans.Y, const_fPointsDepth);
+				dxdydz = Vecc3(v3DCoords) - Vecc3(ptTranslHandle.X, ptTranslHandle.Y, const_fPointsDepth);
 				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
 					glutSetCursor(GLUT_CURSOR_INFO);
 					return true;
 				}
-			}
 
-			Vec2& ptRotate = ptRotateHandle;
-			{
-				Vec3 dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotate.X, ptRotate.Y, const_fPointsDepth);
+				dxdydz = Vecc3(v3DCoords) - Vecc3(ptRotateHandle.X, ptRotateHandle.Y, const_fPointsDepth);
 				if ( VecLengthSqr(dxdydz) < sqr(const_fHandleRadius/fUserScale) )
 				{
 					if (GetKeyState(VK_SHIFT) & 0x8000)
@@ -308,7 +306,6 @@ bool WarpingToolSubWindow::PassiveMotionFunc(int x, int y)
 					}
 					return true;
 				}
-			}
 
 		}
 	}
@@ -449,14 +446,7 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 		matrObjectOrigin2joystickBasis.m[3][3] = 1.0;
 
 		// Save matrix into animation sequence
-		{
-			TrackClip* clip = TrackClip::GetClip(this);
-			 
-			if (clip && clip->bKeyframeEditing)
-				animatedTRSTransform.SetValueAt( GetClipLocalTimeS(), Mat4Decompose(matrObjectOrigin2joystickBasis) );
-			else
-				animatedTRSTransform.SetValueAt( 0.0, Mat4Decompose(matrObjectOrigin2joystickBasis) );
-		};
+		animatedTRSTransform.SetValueAt( GetClipLocalTimeS(), Mat4Decompose(matrObjectOrigin2joystickBasis) );
 	}
 
 	return MorphingToolSubWindow::MouseFunc(button, state, x, y);

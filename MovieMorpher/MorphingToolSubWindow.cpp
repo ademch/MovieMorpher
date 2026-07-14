@@ -14,6 +14,7 @@ const int  _fFinalizationRadius = 9;
 const float const_fPointsDepth	= 0.2;
 const float const_fPointsSize	= 7;
 const float const_fLineWidth	= 2;
+const float const_fJitter       = 5;
 
 
 bool bDoubleClick = false;
@@ -60,13 +61,18 @@ MorphingToolSubWindow::~MorphingToolSubWindow()
 
 void MorphingToolSubWindow::RecalcAnimatedParamsFromKeyframes()
 {
-	if (bSrcCurveIsDone && bDstCurveIsDone)
-	{
-		liSource      = animatedPolylineSrc.Evaluate( GetClipLocalTimeS() );
-		liDestination = animatedPolylineDst.Evaluate( GetClipLocalTimeS() );
+	liSource      = animatedPolylineSrc.Evaluate( GetClipLocalTimeS() );
+	liDestination = animatedPolylineDst.Evaluate( GetClipLocalTimeS() );
 
+	// keyframes dictate current state, the spline not saved into keyframe is lost
+	if (liSource.size())
+		bSrcCurveIsDone = true;
+
+	if (liDestination.size())
+		bDstCurveIsDone = true;
+
+	if (liSource.size() == liDestination.size())
 		UploadMorphingLines();
-	}
 }
 
 
@@ -123,6 +129,9 @@ void MorphingToolSubWindow::Draw()
 
 	SetupGraphicsPipeline();
 
+	GLfloat mv[16];
+	glGetFloatv(GL_MODELVIEW_MATRIX, mv);
+
 		sprintf(m_strCaption, "%s %5.0f%%", "Zoom", fUserScale*100.0f);
 
 		if (GlobalParamsSubWindow::Get()->PointsAreVisible())
@@ -172,7 +181,8 @@ void MorphingToolSubWindow::Draw()
 
 			glColor3f(1,0,0);
 			glLineWidth(3);
-			float fFinRadCorrected = _fFinalizationRadius / fUserScale;
+			float fFinRadCorrected = _fFinalizationRadius / mv[0];
+
 			if ((stateCurrent == STATE_SOURCE_POINT_INPUT) && (liSource.size() > 0))
 				DrawCircle(Vecc3(liSource.back(), 0.3), fFinRadCorrected, 20);
 			if ((stateCurrent == STATE_DESTINATION_POINT_INPUT) && (liDestination.size() > 0))
@@ -190,11 +200,11 @@ void MorphingToolSubWindow::Draw()
 		}
 	///////
 
-	if (SrcCurveIsDone()) {
+	if (bSrcCurveIsDone) {
 		buttonSource->_text = "Clear Src";
 		buttonSource->bEnabled = true;
 	}
-	if (DstCurveIsDone()) {
+	if (bDstCurveIsDone) {
 		buttonDestination->_text = "Clear Dst";
 		buttonDestination->bEnabled = true;
 	}
@@ -211,21 +221,11 @@ void MorphingToolSubWindow::Draw()
 
 void MorphingToolSubWindow::SaveMorphingLinesIntoAnimationSequence()
 {
-	TrackClip* clip = TrackClip::GetClip(this);
-
-	if (clip && clip->bKeyframeEditing)
+	// save keyframe only when src and destination is done
+	if (bSrcCurveIsDone && bDstCurveIsDone)
 	{
-		if (bSrcCurveIsDone)
-			animatedPolylineSrc.SetValueAt( GetClipLocalTimeS(), liSource );
-		if (bDstCurveIsDone)
-			animatedPolylineDst.SetValueAt( GetClipLocalTimeS(), liDestination );
-	}
-	else
-	{
-		if (bSrcCurveIsDone)
-			animatedPolylineSrc.SetValueAt( 0.0, liSource );
-		if (bDstCurveIsDone)
-			animatedPolylineDst.SetValueAt( 0.0, liDestination );
+		animatedPolylineSrc.SetValueAt( GetClipLocalTimeS(), liSource );
+		animatedPolylineDst.SetValueAt( GetClipLocalTimeS(), liDestination );
 	}
 }
 
@@ -281,7 +281,6 @@ void MorphingToolSubWindow::UploadMorphingLines()
 bool MorphingToolSubWindow::PassiveMotionFunc(int x, int y)
 {
 	Vec3d v3DCoords;
-	float fJitter = 5;
 
 	if (OpenGLSubWindowWithGUI::PassiveMotionFunc(x, y)) return true;
 
@@ -292,16 +291,20 @@ bool MorphingToolSubWindow::PassiveMotionFunc(int x, int y)
 		{
 			SetupGraphicsPipeline();
 
+			// transform mouse screen coords back to object coords
 			gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-			for (auto point : liDestination)
-			{
-				if (VecLengthSqr(v3DCoords - Vecc3d(point.X, point.Y, const_fPointsDepth)) < sqr(fJitter/fUserScale))
+			GLfloat mv[16];
+			glGetFloatv(GL_MODELVIEW_MATRIX, mv);
+
+				for (auto point : liDestination)
 				{
-					glutSetCursor(GLUT_CURSOR_TOP_SIDE);
-					return true;
+					if (VecLengthSqr(v3DCoords - Vecc3d(point.X, point.Y, const_fPointsDepth)) < sqr(const_fJitter/(mv[0])))
+					{
+						glutSetCursor(GLUT_CURSOR_TOP_SIDE);
+						return true;
+					}
 				}
-			}
 		}
 		else if ((stateCurrent == STATE_SOURCE_POINT_INPUT)   || (stateCurrent == STATE_DESTINATION_POINT_INPUT) ||
 			     (stateCurrent == STATE_SOURCE_DRAWING_INPUT) || (stateCurrent == STATE_DESTINATION_DRAWING_INPUT))
@@ -317,7 +320,6 @@ bool MorphingToolSubWindow::PassiveMotionFunc(int x, int y)
 // Mouse button callback
 bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 {
-	float fJitter       = 5;
 	float fJitterLine   = 12;
 	float fBlindZoneRad = 20;
 
@@ -332,200 +334,204 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 		Vec3d v3DCoords;
 		gluUnProjectFriendly(x, y, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
 
-		// We enter here if drawing mode has been initiated from outside and that is our first mouse click
-		if ( ((stateCurrent == STATE_SOURCE_DRAWING_INPUT) || (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)) &&
-			 (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
-		{
-			if (stateCurrent == STATE_SOURCE_DRAWING_INPUT)
-				liSource.push_back( Vecc2(v3DCoords) );
-			else if (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)
-				liDestination.push_back( Vecc2(v3DCoords) );
+		GLfloat mv[16];
+		glGetFloatv(GL_MODELVIEW_MATRIX, mv);
 
-			ptPrevPoint = Vecc2(x, y);
-
-			// MouseMove does not have a way to get button state, we signal the drawing has started
-			m_bMouseDrawingInProgress = true;
-
-			return true;
-		}
-		// If button has been released in drawing mode there are two options:
-		// 1. released at the same !starting! point- switch to point input mode
-		// 2. released at the other point- input is done
-		else if (((stateCurrent == STATE_SOURCE_DRAWING_INPUT) || (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)) &&
-			     (button == GLUT_LEFT_BUTTON) && (state == GLUT_UP))
-		{
-			if ((stateCurrent == STATE_SOURCE_DRAWING_INPUT) &&
-				(liSource.size() == 1) && (PointDist(Vecc2(x, y), ptPrevPoint) < 5))
-			{
-				stateCurrent = STATE_SOURCE_POINT_INPUT;
-
-				m_bMouseDrawingInProgress = false;
-
-				return true;
-			}
-			else if ((stateCurrent == STATE_DESTINATION_DRAWING_INPUT) &&
-				(liDestination.size() == 1) && (PointDist(Vecc2(x, y), ptPrevPoint) < 5))
-			{
-				stateCurrent = STATE_DESTINATION_POINT_INPUT;
-
-				m_bMouseDrawingInProgress = false;
-
-				return true;
-			}
-			else
+			// We enter here if drawing mode has been initiated from outside and that is our first mouse click
+			if ( ((stateCurrent == STATE_SOURCE_DRAWING_INPUT) || (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)) &&
+				 (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 			{
 				if (stateCurrent == STATE_SOURCE_DRAWING_INPUT)
-					bSrcCurveIsDone = true;
-				else if (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)
-					bDstCurveIsDone = true;
-
-				SaveMorphingLinesIntoAnimationSequence();
-
-				stateCurrent = STATE_IDLE;
-
-				m_bMouseDrawingInProgress = false;
-
-				return true;
-			}
-		}
-		// if button has been pressed in point input mode there are two options:
-		// * pressed at the same point- input is done
-		// * pressed at the other point- register input
-		else if (((stateCurrent == STATE_SOURCE_POINT_INPUT) || (stateCurrent == STATE_DESTINATION_POINT_INPUT)) &&
-			     (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
-		{
-			if (PointDist(Vecc2(x, y), ptPrevPoint) <= _fFinalizationRadius)
-			{
-				if (stateCurrent == STATE_SOURCE_POINT_INPUT)
-					bSrcCurveIsDone = true;
-				else if (stateCurrent == STATE_DESTINATION_POINT_INPUT)
-					bDstCurveIsDone = true;
-
-				SaveMorphingLinesIntoAnimationSequence();
-
-				stateCurrent = STATE_IDLE;
-
-				return true;
-			}
-			else
-			{
-				if (stateCurrent == STATE_SOURCE_POINT_INPUT)
 					liSource.push_back( Vecc2(v3DCoords) );
-				else if (stateCurrent == STATE_DESTINATION_POINT_INPUT)
+				else if (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)
 					liDestination.push_back( Vecc2(v3DCoords) );
 
 				ptPrevPoint = Vecc2(x, y);
 
+				// MouseMove does not have a way to get button state, we signal the drawing has started
+				m_bMouseDrawingInProgress = true;
+
 				return true;
 			}
-		}
-		// 1. We enter here for recording of initial position of a point for drag
-		// 2. We enter here to add additional point to a finished line
-		else if ((stateCurrent == STATE_IDLE) && (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
-		{
-			if (bSrcCurveIsDone || bDstCurveIsDone)
+			// If button has been released in drawing mode there are two options:
+			// 1. released at the same !starting! point- switch to point input mode
+			// 2. released at the other point- input is done
+			else if (((stateCurrent == STATE_SOURCE_DRAWING_INPUT) || (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)) &&
+					 (button == GLUT_LEFT_BUTTON) && (state == GLUT_UP))
 			{
-				for (auto& point : liDestination)
+				if ((stateCurrent == STATE_SOURCE_DRAWING_INPUT) &&
+					(liSource.size() == 1) && (PointDist(Vecc2(x, y), ptPrevPoint) < 5))
 				{
-					if (VecLengthSqr(v3DCoords - Vecc3d(point.X, point.Y, const_fPointsDepth)) < sqr(fJitter/fUserScale))
-					{
-						glutSetCursor(GLUT_CURSOR_TOP_SIDE);
-						stateCurrent = STATE_POINT_DRAG;
-						m_ptrDraggedPoint = &point;
+					stateCurrent = STATE_SOURCE_POINT_INPUT;
 
-						return true;
-					}
+					m_bMouseDrawingInProgress = false;
+
+					return true;
+				}
+				else if ((stateCurrent == STATE_DESTINATION_DRAWING_INPUT) &&
+					(liDestination.size() == 1) && (PointDist(Vecc2(x, y), ptPrevPoint) < 5))
+				{
+					stateCurrent = STATE_DESTINATION_POINT_INPUT;
+
+					m_bMouseDrawingInProgress = false;
+
+					return true;
+				}
+				else
+				{
+					if (stateCurrent == STATE_SOURCE_DRAWING_INPUT)
+						bSrcCurveIsDone = true;
+					else if (stateCurrent == STATE_DESTINATION_DRAWING_INPUT)
+						bDstCurveIsDone = true;
+
+					SaveMorphingLinesIntoAnimationSequence();
+
+					stateCurrent = STATE_IDLE;
+
+					m_bMouseDrawingInProgress = false;
+
+					return true;
 				}
 			}
-
-			// allow adding points only after both curves are done (disputable)
-			if (bSrcCurveIsDone && bDstCurveIsDone)
+			// if button has been pressed in point input mode there are two options:
+			// * pressed at the same point- input is done
+			// * pressed at the other point- register input
+			else if (((stateCurrent == STATE_SOURCE_POINT_INPUT) || (stateCurrent == STATE_DESTINATION_POINT_INPUT)) &&
+					 (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 			{
-				for (unsigned int i = 0; i < liDestination.size() - 1; i++)
+				if (PointDist(Vecc2(x, y), ptPrevPoint) <= _fFinalizationRadius)
 				{
-					if ((PointDistSqr(Vecc2(v3DCoords), liDestination[i])   > sqr(fBlindZoneRad/fUserScale)) &&
-						(PointDistSqr(Vecc2(v3DCoords), liDestination[i+1]) > sqr(fBlindZoneRad/fUserScale)))
+					if (stateCurrent == STATE_SOURCE_POINT_INPUT)
+						bSrcCurveIsDone = true;
+					else if (stateCurrent == STATE_DESTINATION_POINT_INPUT)
+						bDstCurveIsDone = true;
+
+					SaveMorphingLinesIntoAnimationSequence();
+
+					stateCurrent = STATE_IDLE;
+
+					return true;
+				}
+				else
+				{
+					if (stateCurrent == STATE_SOURCE_POINT_INPUT)
+						liSource.push_back( Vecc2(v3DCoords) );
+					else if (stateCurrent == STATE_DESTINATION_POINT_INPUT)
+						liDestination.push_back( Vecc2(v3DCoords) );
+
+					ptPrevPoint = Vecc2(x, y);
+
+					return true;
+				}
+			}
+			// 1. We enter here for recording of initial position of a point for drag
+			// 2. We enter here to add additional point to a finished line
+			else if ((stateCurrent == STATE_IDLE) && (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
+			{
+				if (bSrcCurveIsDone || bDstCurveIsDone)
+				{
+					for (auto& point : liDestination)
 					{
-						Vec3 ptOut;
-						if (PointDistToLineSegment(Vecc3(v3DCoords), Vecc3(liDestination[i]), Vecc3(liDestination[i + 1]), ptOut) < (fJitterLine / fUserScale))
+						if (VecLengthSqr(v3DCoords - Vecc3d(point.X, point.Y, const_fPointsDepth)) < sqr(const_fJitter/mv[0]))
 						{
+							glutSetCursor(GLUT_CURSOR_TOP_SIDE);
+							stateCurrent = STATE_POINT_DRAG;
+							m_ptrDraggedPoint = &point;
 
-							if (bDoubleClick)
-							{
-								// insert before second point
-								liDestination.insert(liDestination.begin() + i + 1, Vecc2(v3DCoords));
-
-								if (liSource.size() + 1 == liDestination.size())
-								{
-									liSource.insert(liSource.begin()+i + 1, (liSource[i] + liSource[i + 1]) / 2.0f);
-									SaveMorphingLinesIntoAnimationSequence();
-									UploadMorphingLines();
-								}
-
-								bDoubleClick = false;
-
-								return true;
-							}
-							else
-							{
-								bDoubleClick = true;
-								glutTimerFunc(250, DoubleClickTimer, 0);
-
-								return true;
-							}
+							return true;
 						}
 					}
 				}
+
+				// allow adding points only after both curves are done (disputable)
+				if (bSrcCurveIsDone && bDstCurveIsDone)
+				{
+					for (unsigned int i = 0; i < liDestination.size() - 1; i++)
+					{
+						if ((PointDistSqr(Vecc2(v3DCoords), liDestination[i])   > sqr(fBlindZoneRad/mv[0])) &&
+							(PointDistSqr(Vecc2(v3DCoords), liDestination[i+1]) > sqr(fBlindZoneRad/mv[0])))
+						{
+							Vec3 ptOut;
+							if (PointDistToLineSegment(Vecc3(v3DCoords), Vecc3(liDestination[i]), Vecc3(liDestination[i + 1]), ptOut) <
+							   (fJitterLine / mv[0]))
+							{
+
+								if (bDoubleClick)
+								{
+									// insert before second point
+									liDestination.insert(liDestination.begin() + i + 1, Vecc2(v3DCoords));
+
+									if (liSource.size() + 1 == liDestination.size())
+									{
+										liSource.insert(liSource.begin()+i + 1, (liSource[i] + liSource[i + 1]) / 2.0f);
+										SaveMorphingLinesIntoAnimationSequence();
+										UploadMorphingLines();
+									}
+
+									bDoubleClick = false;
+
+									return true;
+								}
+								else
+								{
+									bDoubleClick = true;
+									glutTimerFunc(250, DoubleClickTimer, 0);
+
+									return true;
+								}
+							}
+						}
+					}
 				
+				}
 			}
-		}
-		// 1. We enter here to remove a point from a finished line
-		else if ((stateCurrent == STATE_IDLE) && (button == GLUT_RIGHT_BUTTON) && (state == GLUT_DOWN))
-		{
-			// allow removing points only after both curves are done (disputable)
-			if (bSrcCurveIsDone && bDstCurveIsDone)
+			// 1. We enter here to remove a point from a finished line
+			else if ((stateCurrent == STATE_IDLE) && (button == GLUT_RIGHT_BUTTON) && (state == GLUT_DOWN))
 			{
-				if (liDestination.size() > 1)
+				// allow removing points only after both curves are done (disputable)
+				if (bSrcCurveIsDone && bDstCurveIsDone)
 				{
-					for (unsigned int i = 0; i < liDestination.size(); i++)
+					if (liDestination.size() > 1)
 					{
-						if (PointDistSqr(Vecc2(v3DCoords), liDestination[i]) < sqr(fJitter / fUserScale))
+						for (unsigned int i = 0; i < liDestination.size(); i++)
 						{
-
-							if (bDoubleClick)
+							if (PointDistSqr(Vecc2(v3DCoords), liDestination[i]) < sqr(const_fJitter / mv[0]))
 							{
-								liDestination.erase(liDestination.begin() + i);
 
-								if (liSource.size() - 1 == liDestination.size())
+								if (bDoubleClick)
 								{
-									liSource.erase(liSource.begin() + i);
-									SaveMorphingLinesIntoAnimationSequence();
-									UploadMorphingLines();
+									liDestination.erase(liDestination.begin() + i);
+
+									if (liSource.size() - 1 == liDestination.size())
+									{
+										liSource.erase(liSource.begin() + i);
+										SaveMorphingLinesIntoAnimationSequence();
+										UploadMorphingLines();
+									}
+
+									bDoubleClick = false;
+
+									return true;
 								}
+								else
+								{
+									bDoubleClick = true;
+									glutTimerFunc(250, DoubleClickTimer, 0);
 
-								bDoubleClick = false;
-
-								return true;
-							}
-							else
-							{
-								bDoubleClick = true;
-								glutTimerFunc(250, DoubleClickTimer, 0);
-
-								return true;
+									return true;
+								}
 							}
 						}
 					}
 				}
 			}
-		}
-		// Left mouse button has been released being in drag mode
-		else if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP) && (stateCurrent == STATE_POINT_DRAG))
-		{
-			stateCurrent = STATE_IDLE;
+			// Left mouse button has been released being in drag mode
+			else if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP) && (stateCurrent == STATE_POINT_DRAG))
+			{
+				stateCurrent = STATE_IDLE;
 
-			return true;
-		}
+				return true;
+			}
 	}
 
 	return false;
@@ -574,17 +580,23 @@ void MorphingToolSubWindow::MotionFunc(int x, int y)
 }
 
 
-void MorphingToolSubWindow::ClearSourceLine() {
+void MorphingToolSubWindow::ClearSourceLine()
+{
 	liSource.clear();
+
 	bSrcCurveIsDone = false;
 	stateCurrent = STATE_IDLE;
+
 	buttonSource->_text = "Draw src";
 }
 
-void MorphingToolSubWindow::ClearDestinationLine() {
+void MorphingToolSubWindow::ClearDestinationLine()
+{
 	liDestination.clear();
+
 	bDstCurveIsDone = false;
 	stateCurrent = STATE_IDLE;
+
 	buttonDestination->_text = "Draw dst";
 }
 
@@ -599,7 +611,8 @@ bool MorphingToolSubWindow::ResetView()
 bool MorphingToolSubWindow::ClearMorph()
 {
 	ClearSourceLine();
-	ClearDestinationLine();	// TODO!!!SaveMorphingLinesIntoAnimationSequence();
+	ClearDestinationLine();
+
 	UploadMorphingLines();
 
 	return true;
@@ -640,7 +653,7 @@ void MorphingToolSubWindow::ReDrawFBOprocessors()
 bool MorphingToolSubWindow::SourcePolylineClicked()
 {
 	// Sequence here matters
-	if (SrcCurveIsDone())
+	if (bSrcCurveIsDone)
 	{
 		ClearSourceLine();
 	}
@@ -665,7 +678,7 @@ bool MorphingToolSubWindow::SourcePolylineClicked()
 bool MorphingToolSubWindow::DestinationPolylineClicked()
 {
 	// Sequence here matters
-	if (DstCurveIsDone())
+	if (bDstCurveIsDone)
 	{
 		ClearDestinationLine();
 	}

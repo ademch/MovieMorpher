@@ -63,12 +63,7 @@ void ParamsSubWindow::PopulateGUI()
 	SliderTransparency->fTickGranularity = 25;
 	SliderTransparency->OnClick = [this]()
 	{
-		TrackClip* clip = TrackClip::GetSelectedClip();
-
-		if (clip && clip->bKeyframeEditing)
-			animatedfTransparency.SetValueAt(TrackClip::GetSelectedClipLocalTimeS(), fTransparency);
-		else
-			animatedfTransparency.SetValueAt(0.0, fTransparency);
+		animatedfTransparency.SetValueAt(TrackClip::GetSelectedClipLocalTimeS(), fTransparency);
 
 		return true;
 	};

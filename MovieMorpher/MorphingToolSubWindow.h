@@ -36,9 +36,6 @@ public:
 	void MotionFunc(int x, int y) override;
 	bool KeyboardFunc(unsigned char key, int x, int y) override;
 
-	bool SrcCurveIsDone() { return bSrcCurveIsDone; }
-	bool DstCurveIsDone() { return bDstCurveIsDone; }
-
 	void ClearSourceLine();
 	void ClearDestinationLine();
 	bool MorphNow();

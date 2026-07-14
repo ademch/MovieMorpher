@@ -268,6 +268,8 @@ void MediaSubWindow::Draw()
 			if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msUnits) &&
 				 (iPlayhead10msTicks < (iterClip->m_iStartPos10msUnits + iterClip->m_iLength10msUnits)) )
 			{
+				if (!TrackParamsSubWindow::GetTrackVisibility(iterClip->iTrack)) continue;
+				
 				WarpingToolSubWindow* wndWarpingTool;
 				wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
 
@@ -317,7 +319,10 @@ void MediaSubWindow::RenderGUI()
 	if (stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING)
 	{
 		if (iSlider10msUnitsAtStart + fElapsedTimer10ms > iEnd10msUnits)
+		{
+			mediator->SetPos0_1(this, double(iEnd10msUnits)/iTotal10msUnits, true);
 			OnButtonPush(pushButtonStop);
+		}
 		else
 			mediator->SetPos0_1(this, (iSlider10msUnitsAtStart + fElapsedTimer10ms)/iTotal10msUnits, true);
 	}
@@ -545,7 +550,6 @@ void MediaSubWindow::callback_RegisterTrackClip()
 		{
 			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)
 			TrackClip* clipSelected = TrackClip::GetSelectedClip();
-			clipSelected->bKeyframeEditing = !clipSelected->bKeyframeEditing;
 
 			break;
 		}
