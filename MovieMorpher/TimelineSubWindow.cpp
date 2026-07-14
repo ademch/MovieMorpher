@@ -85,7 +85,7 @@ TrackClip* TimelineSubWindow::AddClip(OpenGLSubWindowWithGUI* wndTool, int i10ms
 {
 	int iActiveTrack = TimelineTrack::iSelected;
 
-	TrackClip* clip = new TrackClip(TrackClip::liClips.size(),														// id
+	TrackClip* clip = new TrackClip(TrackClip::iAutoIncrID++,														// id
 		                            iBorder,																		// x
 									-g_iTrackHeight*iActiveTrack - g_iTrackPadding*iActiveTrack + g_iClipPadding,	// y
 									Width(),																		// width
