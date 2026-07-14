@@ -32,7 +32,7 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 
 	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
 	{
-		if (origin != this) UpdateVideoTrackPosition(fVal);
+		if (origin != this) UpdateMediaPosition(fVal);
 	});
 
 	fElapsedTimer10ms = 0.0;
@@ -261,29 +261,7 @@ void MediaSubWindow::Draw()
 		(stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED) ||
 		(stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH))
 	{
-		int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
-
-		for (auto iterClip : TrackClip::liClips)
-		{
-			if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msUnits) &&
-				 (iPlayhead10msTicks < (iterClip->m_iStartPos10msUnits + iterClip->m_iLength10msUnits)) )
-			{
-				if (!TrackParamsSubWindow::GetTrackVisibility(iterClip->iTrack)) continue;
-				
-				WarpingToolSubWindow* wndWarpingTool;
-				wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
-
-				if (iterClip->mediaType == CLIP_IMAGE)
-				{
-					wndWarpingTool->ReDrawFBOprocessors();
-					wndWarpingTool->DrawFBOquad();
-				}
-				else
-				{
-					GetFrameFromVideoAndRender(iterClip, iPlayhead10msTicks);
-				}
-			}
-		}
+		UpdateMediaPosition(0);
 
 		if (bRecordingInProgress)
 		{
@@ -384,7 +362,7 @@ void MediaSubWindow::RenderGUI()
 }
 
 
-void MediaSubWindow::UpdateVideoTrackPosition(double fVal)
+void MediaSubWindow::UpdateMediaPosition(double fVal)
 {
 	int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
 
@@ -395,9 +373,20 @@ void MediaSubWindow::UpdateVideoTrackPosition(double fVal)
 		if ( (iPlayhead10msTicks >= iterClip->m_iStartPos10msUnits) &&
 			 (iPlayhead10msTicks < (iterClip->m_iStartPos10msUnits + iterClip->m_iLength10msUnits)) )
 		{
-			if (iterClip->mediaType == CLIP_IMAGE) continue;
+			if (!TrackParamsSubWindow::GetTrackVisibility(iterClip->iTrack)) continue;
 
-			GetFrameFromVideoAndRender(iterClip, iPlayhead10msTicks);
+			WarpingToolSubWindow* wndWarpingTool;
+			wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(iterClip->windowTool);
+
+			if (iterClip->mediaType == CLIP_IMAGE)
+			{
+				wndWarpingTool->ReDrawFBOprocessors();
+				wndWarpingTool->DrawFBOquad();
+			}
+			else
+			{
+				GetFrameFromVideoAndRender(iterClip, iPlayhead10msTicks);
+			}
 		}
 	}
 
