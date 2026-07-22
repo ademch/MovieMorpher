@@ -7,16 +7,16 @@
 void MorphFBOprocessor::GenMeshToListEmu(float fX_bottom, float fY_bottom, float fWidth, float fHeight, float fZ, int iHorSlices, int iVertSlices)
 {
 	mesh_listEmu.clear();
-	for (int j = 0; j < iVertSlices; j++) {
+
+	for (int j = 0; j < iVertSlices; j++)
+	{
 		for (int i = 0; i <= iHorSlices; i++)
 		{
-			Vec2 u01 = Vecc2(fX_bottom + fWidth * (i / float(iHorSlices)), fY_bottom + fHeight * ((j + 1) / float(iVertSlices)));
-			Vec2 u00 = Vecc2(fX_bottom + fWidth * (i / float(iHorSlices)), fY_bottom + fHeight * (j / float(iVertSlices)));
+			Vec2 u01 = Vecc2(fX_bottom + fWidth*(i/float(iHorSlices)), fY_bottom + fHeight*((j + 1)/float(iVertSlices)));
+			Vec2 u00 = Vecc2(fX_bottom + fWidth*(i/float(iHorSlices)), fY_bottom + fHeight* (j     /float(iVertSlices)));
 
-			//glVertex3f(u01.X, u01.Y, fZ);
 			mesh_listEmu.push_back(Vecc2(u01.X, u01.Y));
 
-			//glVertex3f(u00.X, u00.Y, fZ);
 			mesh_listEmu.push_back(Vecc2(u00.X, u00.Y));
 		}
 	}
@@ -28,28 +28,25 @@ void MorphFBOprocessor::RenderFromMeshListEmu(unsigned int tex, float fX_bottom,
 	glEnable(GL_TEXTURE_2D);
 
 	glBindTexture(GL_TEXTURE_2D, tex);
-
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	glColor3f(0.0, 1.0, 0.0);
 
-	for (int j = 0; j < iVertSlices; j++) {
+	for (int j = 0; j < iVertSlices; j++)
+	{
 		glBegin(GL_TRIANGLE_STRIP);
-		for (int i = 0; i <= iHorSlices; i++)
-		{
-			Vec2 u01 = Vecc2(fX_bottom + fWidth * (i / float(iHorSlices)), fY_bottom + fHeight * ((j + 1) / float(iVertSlices)));
-			Vec2 u00 = Vecc2(fX_bottom + fWidth * (i / float(iHorSlices)), fY_bottom + fHeight * (j / float(iVertSlices)));
+			for (int i = 0; i <= iHorSlices; i++)
+			{
+				glTexCoord2f((j + 1)/float(iVertSlices), i/float(iHorSlices));
+				Vec2 item = mesh_listEmu.front();
+				mesh_listEmu.pop_front();
+				glVertex3f(item.X, item.Y, fZ);
 
-			glTexCoord2f((j + 1) / float(iVertSlices), i / float(iHorSlices));
-			Vec2 item = mesh_listEmu.front();
-			mesh_listEmu.pop_front();
-			glVertex3f(item.X, item.Y, fZ);
-
-			glTexCoord2f(j / float(iVertSlices), i / float(iHorSlices));
-			item = mesh_listEmu.front();
-			mesh_listEmu.pop_front();
-			glVertex3f(item.X, item.Y, fZ);
-		}
+				glTexCoord2f(j/float(iVertSlices), i/float(iHorSlices));
+				item = mesh_listEmu.front();
+				mesh_listEmu.pop_front();
+				glVertex3f(item.X, item.Y, fZ);
+			}
 		glEnd();
 	}
 
