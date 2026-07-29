@@ -94,30 +94,37 @@ void MorphingToolSubWindow::PopulateGUI()
 	buttonDestination->OnClick = [this]() { return DestinationPolylineClicked(); };
 	liGUI_Elements.push_back(buttonDestination);
 
-	buttonMorphNow = new Button("Morph now", 40,10, 100, 6.3);
-	buttonMorphNow->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
-	buttonMorphNow->OnClick = [this]() { return MorphNow(); };
-	liGUI_Elements.push_back(buttonMorphNow);
+	buttonClear = new Button("Clear", 40,10, 100, 6.3);
+	buttonClear->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
+	buttonClear->strHint = "Clear keyframe morphing splines";
+	buttonClear->OnClick = [this]() { return ClearMorph(); };
+	liGUI_Elements.push_back(buttonClear);
 
 	buttonResetView = new Button("Reset view", -180,-30, 100, 6); 
 	buttonResetView->SetAlignment(HALIGN_RIGHT, VALIGN_TOP);
 	buttonResetView->OnClick = [this]() { return ResetView(); };
 	liGUI_Elements.push_back(buttonResetView);
 
-	buttonClear = new Button("Clear", 190,10, 100, 6.3);
-	buttonClear->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
-	buttonClear->OnClick = [this]() { return ClearMorph(); };
-	liGUI_Elements.push_back(buttonClear);
+	buttonMorphNow = new Button("Morph now", 190,10, 100, 6.3);
+	buttonMorphNow->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
+	buttonMorphNow->OnClick = [this]() { return MorphNow(); };
+	liGUI_Elements.push_back(buttonMorphNow);
+
+	buttonBake = new Button("Bake", 310,10, 100, 6.3);
+	buttonBake->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
+	buttonBake->strHint = "Bake the change permanently";
+	buttonBake->OnClick = [this]() { return StartNextGeneration(); };
+	liGUI_Elements.push_back(buttonBake);
 
 }
 
 
-void MorphingToolSubWindow::ReshapeFBOprocessors(int _iBottomLeftX, int _iBottomLeftY, int _iWidth, int _iHeight)
+void MorphingToolSubWindow::FBOprocessorReshape(int _iBottomLeftX, int _iBottomLeftY, int _iWidth, int _iHeight)
 {
 	morphFBOprocessor->Reshape(_iBottomLeftX, _iBottomLeftY, _iWidth, _iHeight);
 }
 
-void MorphingToolSubWindow::TextureUpdateInputFBOprocessor(int _iWidth, int _iHeight, unsigned char* image)
+void MorphingToolSubWindow::FBOprocessorUpdateInputTexture(int _iWidth, int _iHeight, unsigned char* image)
 {
 	morphFBOprocessor->TextureUpdate(_iWidth, _iHeight, image);
 }
@@ -212,6 +219,7 @@ void MorphingToolSubWindow::Draw()
 	bool bFBOparamsInSync = (morphFBOprocessor->fMorphRadius   == m_ParamsSubWindow->MorphRadius()) &&
 						    (morphFBOprocessor->fMorphPower    == m_ParamsSubWindow->MorphPower()) &&
 						    (morphFBOprocessor->fMorphRatio    == m_ParamsSubWindow->MorphRatio()) &&
+							(morphFBOprocessor->fShadow		   == m_ParamsSubWindow->ShadowInUse()) &&
 						    (morphFBOprocessor->bShowWireframe == GlobalParamsSubWindow::Get()->IsWireframeShown());
 
 	if (morphFBOprocessor->bOutdated || !bFBOparamsInSync)
@@ -239,10 +247,10 @@ void MorphingToolSubWindow::UploadMorphingLines()
 	assert(liSource.size() == liDestination.size());
 
 	std::vector<Vec2> listOutSrc;
-	CatmullSubdivide(liSource, listOutSrc, 20);
+	CatmullSubdivide(liSource, listOutSrc, 200);
 
 	std::vector<Vec2> listOutDst;
-	CatmullSubdivide(liDestination, listOutDst, 20);
+	CatmullSubdivide(liDestination, listOutDst, 200);
 
 	assert(listOutSrc.size() == listOutDst.size());
 
@@ -613,6 +621,9 @@ bool MorphingToolSubWindow::ClearMorph()
 	ClearSourceLine();
 	ClearDestinationLine();
 
+	animatedPolylineSrc.DeleteValueAt( GetClipLocalTimeS() );
+	animatedPolylineDst.DeleteValueAt( GetClipLocalTimeS() );
+
 	UploadMorphingLines();
 
 	return true;
@@ -644,6 +655,7 @@ void MorphingToolSubWindow::ReDrawFBOprocessors()
 	morphFBOprocessor->fMorphRadius   = m_ParamsSubWindow->MorphRadius();
 	morphFBOprocessor->fMorphPower    = m_ParamsSubWindow->MorphPower();
 	morphFBOprocessor->fMorphRatio    = m_ParamsSubWindow->MorphRatio();
+	morphFBOprocessor->fShadow		  = m_ParamsSubWindow->ShadowInUse();
 	morphFBOprocessor->bShowWireframe = GlobalParamsSubWindow::Get()->IsWireframeShown();
 
 	morphFBOprocessor->Render();
@@ -710,7 +722,7 @@ bool MorphingToolSubWindow::MorphNow()
 }
 
 
-void MorphingToolSubWindow::StartNextGeneration()
+bool MorphingToolSubWindow::StartNextGeneration()
 {
 	ClearSourceLine();
 	ClearDestinationLine();
@@ -739,6 +751,8 @@ void MorphingToolSubWindow::StartNextGeneration()
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, iWidthDst, iHeightDst, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	free(data);
+
+	return true;
 }
 
 double MorphingToolSubWindow::GetClipLocalTimeS()

@@ -1,10 +1,13 @@
-R"(#version 140
+#version 140
 
 uniform sampler2D tex1;	// src/dst morphing lists
 
 uniform float fMorphRadius;
 uniform float fMorphPower;
 uniform float fMorphRatio;
+
+varying vec3 eyePos;
+varying vec3 objPos;
 
 const float PI = 3.14159265359;
 const float FLOAT_EPS = 0.001;
@@ -20,6 +23,10 @@ void main(void)
 	{
 		// empty texture marker received
 		gl_Position = gl_ModelViewProjectionMatrix*vPosition;
+
+		eyePos = (gl_ModelViewMatrix*vPosition).xyz;
+		objPos = (gl_ModelViewMatrix*gl_Vertex).xyz;
+
 		return;
 	}
 
@@ -74,5 +81,7 @@ void main(void)
    
 	vPosition += vec4(vShift, 0, 0);
 	gl_Position = gl_ModelViewProjectionMatrix*vPosition;
+
+	eyePos = (gl_ModelViewMatrix*vPosition).xyz;
+	objPos = (gl_ModelViewMatrix*gl_Vertex).xyz;
 }
-)"

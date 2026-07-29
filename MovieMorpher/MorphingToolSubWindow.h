@@ -46,8 +46,8 @@ public:
 	}
 	ParamsSubWindow* GetParamsSubWindow() { return m_ParamsSubWindow; }
 
-	void ReshapeFBOprocessors(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
-	void TextureUpdateInputFBOprocessor(int iWidth, int iHeight, unsigned char* image);
+	void FBOprocessorReshape(int iBottomLeftX, int iBottomLeftY, int iWidth, int iHeight);
+	void FBOprocessorUpdateInputTexture(int iWidth, int iHeight, unsigned char* image);
 
 	void ReDrawFBOprocessors();
 
@@ -62,6 +62,7 @@ protected:
 	Button* buttonDestination;
 	Button* buttonMorphNow;
 	Button* buttonClear;
+	Button* buttonBake;
 
 	bool ResetView();
 	bool ClearMorph();
@@ -92,7 +93,7 @@ private:
 	bool SourcePolylineClicked();
 	bool DestinationPolylineClicked();
 
-	void StartNextGeneration();
+	bool StartNextGeneration();
 
 };
 

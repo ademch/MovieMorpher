@@ -108,8 +108,8 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 		{
 			ImageSaveLoadHelper::_FlipImage(image, width, height);
 
-			windowToolEditor->ReshapeFBOprocessors(0, 0, width, height);
-			windowToolEditor->TextureUpdateInputFBOprocessor(width, height, image);
+			windowToolEditor->FBOprocessorReshape(0, 0, width, height);
+			windowToolEditor->FBOprocessorUpdateInputTexture(width, height, image);
 
 			free(image);
 		}

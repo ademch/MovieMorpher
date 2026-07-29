@@ -29,12 +29,12 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 	OnSelectionChange = [this](double fSelectionStart, double fSelectionEnd)
 	                    { PositionMediator::Get()->SetSelection0_1(this, fSelectionStart, fSelectionEnd); };
 	
-	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
-						{ if (origin != this) SetSliderPos0_1(fVal); });
-	PositionMediator::Get()->subscribeForPosInit(this, [this](void* origin, double fVal, int _iDuration10msTicks)
-						{ if (origin != this) SetSliderPos0_1(fVal); });
-	PositionMediator::Get()->subscribeForMarker(this, [this](void* origin, double fVal)
-						{ if (origin != this) SetMarker0_1(fVal); });
+	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fPos0_1)
+						{ if (origin != this) SetSliderPos0_1(fPos0_1); });
+	PositionMediator::Get()->subscribeForPosInit(this, [this](void* origin, double fPos0_1, int _iDuration10msTicks)
+						{ if (origin != this) SetSliderPos0_1(fPos0_1); });
+	PositionMediator::Get()->subscribeForMarker(this, [this](void* origin, double fPos0_1)
+						{ if (origin != this) SetMarker0_1(fPos0_1); });
 
 	PopulateGUI();
 
@@ -462,13 +462,13 @@ void TimelineSliderSubWindow::PopulateGUI()
 	{
 		PositionMediator::Get()->SetPos0_1(videoSlider, fVal);
 	};
-	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
+	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fPos0_1)
 	{
-		if (origin != videoSlider) videoSlider->SetPos0_1(fVal);
+		if (origin != videoSlider) videoSlider->SetPos0_1(fPos0_1);
 	});
-	PositionMediator::Get()->subscribeForPosInit(this, [this](void* origin, double fVal, int _iDuration10msTicks)
+	PositionMediator::Get()->subscribeForPosInit(this, [this](void* origin, double fPos0_1, int _iDuration10msTicks)
 	{
-		if (origin != videoSlider) videoSlider->SetPosInit(fVal, _iDuration10msTicks);
+		if (origin != videoSlider) videoSlider->SetPosInit(fPos0_1, _iDuration10msTicks);
 	});
 	liGUI_Elements.push_back(videoSlider);
 }

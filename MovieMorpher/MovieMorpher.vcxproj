@@ -262,6 +262,7 @@
     <ResourceCompile Include="MovieMorpher.rc" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Debug\Shaders\Morph.geom" />
     <None Include="..\Debug\Shaders\Morph.vert" />
     <None Include="..\Debug\Shaders\Morph.frag" />
   </ItemGroup>

@@ -165,8 +165,8 @@ bool MediaSubWindow::AddTrackPicture()
 
 	// load image into the tool input fbo
 	WarpingToolSubWindow* wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(newToolWindow);
-		wndWarpingTool->ReshapeFBOprocessors(0, 0, width, height);
-		wndWarpingTool->TextureUpdateInputFBOprocessor(width, height, image);
+		wndWarpingTool->FBOprocessorReshape(0, 0, width, height);
+		wndWarpingTool->FBOprocessorUpdateInputTexture(width, height, image);
 
 	TrackClip* clip = windowTimeLine->AddClip(newToolWindow, 60*100);
 		clip->mediaType = CLIP_IMAGE;
@@ -205,8 +205,8 @@ bool MediaSubWindow::AddTrackVideo()
 	// load image into the tool input fbo
 	FrameItem* frame = video->videoCacheThread->GetFrame(0);
 		assert(frame);
-		wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
-		wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
+		wndWarpingTool->FBOprocessorReshape(0, 0, frame->width, frame->height);
+		wndWarpingTool->FBOprocessorUpdateInputTexture(frame->width, frame->height, frame->data);
 
 	TrackClip* clip = windowTimeLine->AddClip(newToolWindow, video->liIndex[video->iTotalFrames-1]*100.0);
 
@@ -420,8 +420,8 @@ void MediaSubWindow::GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10
 
 	if (iFramePrev != vid->iCurrentFrame)
 	{
-		//wndWarpingTool->ReshapeFBOprocessors(0, 0, frame->width, frame->height);
-		wndWarpingTool->TextureUpdateInputFBOprocessor(frame->width, frame->height, frame->data);
+		//wndWarpingTool->FBOprocessorReshape(0, 0, frame->width, frame->height);
+		wndWarpingTool->FBOprocessorUpdateInputTexture(frame->width, frame->height, frame->data);
 		wndWarpingTool->ReDrawFBOprocessors();
 
 		printf("Frame Rendered: %d\n", vid->iCurrentFrame);

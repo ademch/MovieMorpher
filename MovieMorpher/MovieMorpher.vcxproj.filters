@@ -384,5 +384,8 @@
     <None Include="..\Debug\Shaders\Morph.vert">
       <Filter>Source Files\ShaderSources</Filter>
     </None>
+    <None Include="..\Debug\Shaders\Morph.geom">
+      <Filter>Source Files\ShaderSources</Filter>
+    </None>
   </ItemGroup>
 </Project>

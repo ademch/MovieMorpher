@@ -23,6 +23,7 @@ public:
 	float fMorphRadius;
 	float fMorphPower;
 	float fMorphRatio;
+	float fShadow;
 	bool  bShowWireframe;
 
 	bool bOutdated;

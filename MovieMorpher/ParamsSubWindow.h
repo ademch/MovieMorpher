@@ -3,7 +3,7 @@
 
 #include "../../!!adGUI/SubWindowWithGUI.h"
 #include "../../!!adGUI/Slider.h"
-#include "../../!!adGUI/button.h"
+#include "../../!!adGUI/OnOffFlipSwitch.h"
 #include "../../!!adGlobals/VideoAnimatedParams.h"
 
 
@@ -37,22 +37,20 @@ public:
 	float MorphRadius()	{ return fMorphRadius;  }
 	float MorphRatio()	{ return fMorphRatio;   }
 	float MorphPower()	{ return fMorphPower;   }
+	float ShadowInUse()	{ return onoffswitchShadow->bON ? 1.0f : 0.0f;   }
 	float Transparency(double time) { return animatedfTransparency.Evaluate(time); }
 
 protected:
 
 	void PopulateGUI() override;
 
-	bool StartNextGeneration();
-
 private:
 
-	Slider<SL_INT>*   SliderMorphRatio;
-	Slider<SL_INT>*   SliderMorphRadius;
-	SliderCenterLine* SliderMorphPower;
-	Slider<SL_INT>*   SliderTransparency;
-
-	Button*			  buttonMorphNext;
+	Slider<SL_INT>*   sliderMorphRatio;
+	Slider<SL_INT>*   sliderMorphRadius;
+	SliderCenterLine* sliderMorphPower;
+	Slider<SL_INT>*   sliderTransparency;
+	OnOffFlipSwitch*  onoffswitchShadow;
 
 	float fMorphRadius;
 	float fMorphRatio;

@@ -26,9 +26,10 @@ MorphFBOprocessor::MorphFBOprocessor(int iBottomLeftX, int iBottomLeftY, int iWi
 	fbo = new FrameBufferObject(iWidth, iHeight);
 	texBank.bank[TEXTURE_MORPHED_IMAGE] = fbo->Init();
 
-	fMorphRadius = 1.0f;
-	fMorphPower  = 1.0f;
-	fMorphRatio  = 1.0f;
+	fMorphRadius   = 1.0f;
+	fMorphPower    = 1.0f;
+	fMorphRatio    = 1.0f;
+	fShadow		   = 0.0;
 	bShowWireframe = false;
 
 	bOutdated = true;
@@ -45,15 +46,15 @@ void MorphFBOprocessor::Reshape(int iBottomLeftX, int iBottomLeftY, int iWidth, 
 	OpenGLSubWindow::Reshape(iBottomLeftX,iBottomLeftY, iWidth,iHeight);
 
 	glBindTexture(GL_TEXTURE_2D, texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iWidth, m_iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	texBank[TEXTURE_INPUT_IMAGE]->m_width  = m_iWidth;
-	texBank[TEXTURE_INPUT_IMAGE]->m_height = m_iHeight;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iWidth, m_iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		texBank[TEXTURE_INPUT_IMAGE]->m_width  = m_iWidth;
+		texBank[TEXTURE_INPUT_IMAGE]->m_height = m_iHeight;
 
 	// FBO (texture is not tied to TMU being render target)
 	glBindTexture(GL_TEXTURE_2D, texBank[TEXTURE_MORPHED_IMAGE]->m_uiTextureID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iWidth, m_iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	texBank[TEXTURE_MORPHED_IMAGE]->m_width  = m_iWidth;
-	texBank[TEXTURE_MORPHED_IMAGE]->m_height = m_iHeight;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_iWidth, m_iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		texBank[TEXTURE_MORPHED_IMAGE]->m_width  = m_iWidth;
+		texBank[TEXTURE_MORPHED_IMAGE]->m_height = m_iHeight;
 }
 
 
@@ -86,6 +87,7 @@ void MorphFBOprocessor::Render()
 			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRadius"), fMorphRadius);
 			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphPower"),  fMorphPower);
 			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fMorphRatio"),  fMorphRatio);
+			glUniform1fARB(glsl_pipeline.GPUPrograms["morph"]->GetUniform("fShadow"),      fShadow);
 
 					RenderTexturedQuadMesh( texBank[TEXTURE_INPUT_IMAGE]->m_uiTextureID,
 										    float(-m_iWidth/2),
@@ -118,23 +120,23 @@ TextureDescriptor* MorphFBOprocessor::AllocFrameTexture(int iWidth, int iHeight,
 	glGenTextures(1, &iTexture);
 	glBindTexture(GL_TEXTURE_2D, iTexture);
 
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// set the texture wrapping/filtering options (on the currently bound texture object)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	// NPOT Texture!!! (supported since GL v2.0)
-	unsigned char* data = NULL;
-	data = (unsigned char *)malloc(iWidth*iHeight*nrChannels);
+		// NPOT Texture!!! (supported since GL v2.0)
+		unsigned char* data = NULL;
+		data = (unsigned char *)malloc(iWidth*iHeight*nrChannels);
 
-		//ZeroMemory(data, width*height*nrChannels);
-		memset(data, 120, iWidth*iHeight*nrChannels);
+			//ZeroMemory(data, width*height*nrChannels);
+			memset(data, 120, iWidth*iHeight*nrChannels);
 
-		//           targ         mml  int frmt              brdr inc frmt   inc data type   inc data
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, iWidth, iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			//           targ         mml  int frmt              brdr inc frmt   inc data type   inc data
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, iWidth, iHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
-	free(data);
+		free(data);
 
 	return new TextureDescriptor(iTexture, iWidth, iHeight);
 }
@@ -145,28 +147,28 @@ TextureDescriptor* MorphFBOprocessor::AllocFloatBufferTexture(int iWidth, int iH
 	glGenTextures(1, &iTexture);
 	glBindTexture(GL_TEXTURE_2D, iTexture);
 
-	// set the texture wrapping/filtering options (on the currently bound texture object)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		// set the texture wrapping/filtering options (on the currently bound texture object)
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-	// NPOT Texture!!! (supported since GL v2.0)
-	float* data = (float *)malloc(iWidth*iHeight*sizeof(float)*nrChannels);
-	ZeroMemory(data, iWidth*iHeight*sizeof(float)*nrChannels);
-	//memset(data, 120, iWidth*iHeight*nrChannels);
+		// NPOT Texture!!! (supported since GL v2.0)
+		float* data = (float *)malloc(iWidth*iHeight*sizeof(float)*nrChannels);
+		ZeroMemory(data, iWidth*iHeight*sizeof(float)*nrChannels);
+		//memset(data, 120, iWidth*iHeight*nrChannels);
 
-		data[0] = 0.5f;  data[1] = 1.0f;
-		data[2] = 0.7f;  data[3] = 0.2f;
+			data[0] = 0.5f;  data[1] = 1.0f;
+			data[2] = 0.7f;  data[3] = 0.2f;
 
-		data[4] = 0.35f; data[5] = 0.1f;
-		data[6] = 0.17f; data[7] = 0.28f;
+			data[4] = 0.35f; data[5] = 0.1f;
+			data[6] = 0.17f; data[7] = 0.28f;
 
-		//           targ         mml  int frmt                brdr inc frmt inc data type   inc data
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, iWidth, iHeight, 0, GL_RG, GL_FLOAT, data);
-		glError();
+			//           targ         mml  int frmt                brdr inc frmt inc data type   inc data
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RG32F, iWidth, iHeight, 0, GL_RG, GL_FLOAT, data);
+			glError();
 
-	free(data);
+		free(data);
 
 	return new TextureDescriptor(iTexture, iWidth, iHeight);
 }
