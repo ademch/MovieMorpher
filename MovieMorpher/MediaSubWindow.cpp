@@ -8,6 +8,7 @@
 #include "../../!!adGlobals/wdir.h"
 #include "ImageSaveLoad.h"
 #include "../../!!adGUI/TrackClipMenu.h"
+#include <algorithm>
 
 
 // welcome screen
@@ -367,6 +368,13 @@ void MediaSubWindow::UpdateMediaPosition(double fVal)
 	int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
 
 	//printf("Callback on frame: %d\n", iPlayhead10msTicks);
+
+	// sort clips from farthest (track 0) to closest (track 5)
+	std::sort(	TrackClip::liClips.begin(), TrackClip::liClips.end(),
+				[](const auto& a, const auto& b)
+				{
+					return a->iTrack < b->iTrack;
+				});
 
 	for (auto iterClip : TrackClip::liClips)
 	{
