@@ -371,6 +371,9 @@
     <ClCompile Include="..\..\!!adGlobals\VideoAnimatedParams.cpp">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\!!adGUI\TrackClipMenu.cpp">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="MovieMorpher.rc">

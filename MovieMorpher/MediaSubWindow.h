@@ -70,7 +70,9 @@ private:
 	void UpdateMediaPosition(double fVal);
 	void GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10msTicks);
 
-	void callback_RegisterTrackClip();
+	void callback_RegisterTrackClipMenu();
+	void callback_RegisterClipTRSkeyframeMenu();
+	void callback_RegisterClipMorphDSTkeyframeMenu();
 
 };
 

@@ -44,7 +44,10 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 
 	PopulateGUI();
 
-	callback_RegisterTrackClip();
+	callback_RegisterTrackClipMenu();
+	callback_RegisterClipTRSkeyframeMenu();
+	callback_RegisterClipMorphDSTkeyframeMenu();
+
 }
 
 
@@ -172,8 +175,8 @@ bool MediaSubWindow::AddTrackPicture()
 	TrackClip* clip = windowTimeLine->AddClip(newToolWindow, 60*100);
 		clip->mediaType = CLIP_IMAGE;
 		clip->textureIcon = LoadTexture(width, height, image);
-		clip->RegisterTRSparam( &(wndWarpingTool->animatedTRSTransform.liKeys) );
-		clip->RegisterMorphDSTparam( &(wndWarpingTool->animatedPolylineDst.liKeys) );
+		clip->RegisterTRSparam( &(wndWarpingTool->animatedTRSTransform) );
+		clip->RegisterMorphDSTparam( &(wndWarpingTool->animatedPolylineDst) );
 
 	free(image);
 
@@ -217,8 +220,8 @@ bool MediaSubWindow::AddTrackVideo()
 
 		clip->mediaType = CLIP_VIDEO;
 		clip->video     = video;
-		clip->RegisterTRSparam( &(wndWarpingTool->animatedTRSTransform.liKeys) );
-		clip->RegisterMorphDSTparam( &(wndWarpingTool->animatedPolylineDst.liKeys) );
+		clip->RegisterTRSparam( &(wndWarpingTool->animatedTRSTransform) );
+		clip->RegisterMorphDSTparam( &(wndWarpingTool->animatedPolylineDst) );
 
 	return true;
 }
@@ -537,19 +540,12 @@ bool MediaSubWindow::OnButtonPush(PushButtonImage* target)
 }
 
 
-void MediaSubWindow::callback_RegisterTrackClip()
+void MediaSubWindow::callback_RegisterTrackClipMenu()
 {
-	TrackClipMenu::Get()->OnClick =	[this](int item)
+	TrackClipMenu::Get()->OnClick = [this](int item)
 	{
 		switch(item)
 		{
-		case TrackClipMenu::ITEM_KEYFRAME_EDITING:
-		{
-			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)
-			TrackClip* clipSelected = TrackClip::GetSelectedClip();
-
-			break;
-		}
 		case TrackClipMenu::ITEM_DELETE:
 		{
 			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)
@@ -569,6 +565,58 @@ void MediaSubWindow::callback_RegisterTrackClip()
 
 			// DELETE CLIP
 			windowTimeLine->DeleteGUIelement(clipSelected);
+
+			break;
+		}
+		}
+	};
+}
+
+void MediaSubWindow::callback_RegisterClipTRSkeyframeMenu()
+{
+	TrackTRSkeyframeMenu::Get()->OnClick = [this](int item)
+	{
+		switch(item)
+		{
+		case TrackTRSkeyframeMenu::ITEM_DELETE:
+		{
+			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)
+			TrackClip* clipSelected = TrackClip::GetSelectedClip();
+
+			WarpingToolSubWindow* wndWarpingTool;
+			wndWarpingTool = dynamic_cast<WarpingToolSubWindow*>(clipSelected->windowTool);
+
+			wndWarpingTool->animatedTRSTransform.DeleteValueAt(clipSelected->fSelectedKeyframeTRS_time);
+			clipSelected->fSelectedKeyframeTRS_time = -1.0;
+
+			wndWarpingTool->RecalcAnimatedParamsFromKeyframes();
+
+			break;
+		}
+		}
+	};
+}
+
+void MediaSubWindow::callback_RegisterClipMorphDSTkeyframeMenu()
+{
+	Track2DpolylineKeyframeMenu::Get()->OnClick = [this](int item)
+	{
+		switch(item)
+		{
+		case Track2DpolylineKeyframeMenu::ITEM_DELETE:
+		{
+			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)
+			TrackClip* clipSelected = TrackClip::GetSelectedClip();
+
+			MorphingToolSubWindow* wndMorphingTool;
+			wndMorphingTool = dynamic_cast<MorphingToolSubWindow*>(clipSelected->windowTool);
+
+			// keyframe becomes present at timeline only when both lines have been specified
+			wndMorphingTool->animatedPolylineDst.DeleteValueAt(clipSelected->fSelectedKeyframePolylineDst_time);
+			wndMorphingTool->animatedPolylineSrc.DeleteValueAt(clipSelected->fSelectedKeyframePolylineDst_time);
+			clipSelected->fSelectedKeyframePolylineDst_time = -1.0;
+
+			wndMorphingTool->RecalcAnimatedParamsFromKeyframes();
 
 			break;
 		}

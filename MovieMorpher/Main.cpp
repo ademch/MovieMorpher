@@ -177,7 +177,9 @@ int _tmain(int argc, TCHAR* argv[], TCHAR* envp[])
 
 	ToolTip::Get();
 
-	TrackClipMenu::Get()->Create(handle);
+	TrackClipMenu::Get()->Init(handle);
+	TrackTRSkeyframeMenu::Get()->Init(handle);
+	Track2DpolylineKeyframeMenu::Get()->Init(handle);
 
 	//передача управлени€ циклу прорисовки сцены
     glutMainLoop();
