@@ -312,8 +312,9 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 
 	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP) && (stateTimeLine = STATE_TIMELINE_DEFINE_SELECTION))
 	{
-		// make sure start is earlier than end
-		if (m_fSelStartX0_1 > m_fSelEndX0_1)
+		// make sure selection start is earlier than end
+		// BB: this check can not be integrated into MotionFunc, because teverse direction becomes impossible
+		if ((bSelectionIsValid) && (m_fSelStartX0_1 > m_fSelEndX0_1))
 		{
 			std::swap(m_fSelStartX0_1, m_fSelEndX0_1);
 			if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
