@@ -144,6 +144,8 @@ private:
 
 	std::function<void(OpenGLSubWindowWithGUI*)> m_setWindowCallback;
 
+	void TryToSnapPositionToKeyframe(double& fPos0_1);
+
 };
 
 

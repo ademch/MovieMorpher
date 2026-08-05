@@ -12,6 +12,8 @@ const int g_iClipPadding	= 7;
 const int g_iTrackCount		= 5;
 const int g_iTimelineBorder = 5;
 const int g_iHorrScrollBarBorder = 1;
+const int g_iSnapPx           = 9;
+const int g_iSnapPxToKeyframe = 4;
 
 TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 									 float fBottomLeftXperc, float fBottomLeftYperc,
@@ -313,7 +315,7 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 	if ((button == GLUT_LEFT_BUTTON) && (state == GLUT_UP) && (stateTimeLine = STATE_TIMELINE_DEFINE_SELECTION))
 	{
 		// make sure selection start is earlier than end
-		// BB: this check can not be integrated into MotionFunc, because teverse direction becomes impossible
+		// NB: this check can not be integrated into MotionFunc, because teverse direction becomes impossible
 		if ((bSelectionIsValid) && (m_fSelStartX0_1 > m_fSelEndX0_1))
 		{
 			std::swap(m_fSelStartX0_1, m_fSelEndX0_1);
@@ -329,8 +331,6 @@ bool TimelineSubWindow::MouseFunc(int button, int state, int x, int y)
 // OnDrag
 void TimelineSubWindow::MotionFunc(int x, int y)
 {
-	int iSnapPx = 9;
-
 	OpenGLSubWindowWithGUI::MotionFunc(x, y);
 
 	if ((x > m_iBottomLeftX) && (x < m_iBottomLeftX + m_iWidth) &&
@@ -339,13 +339,12 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 		// Ignore under 1 pixel drag for all cases
 		if (abs(x - iStartDragX) < 1) return;
 
-		// Pixels per 10ms
-		float fPPU = float(m_iWidth)/PositionMediator::Get()->Duration10msUnits();
-		
 		SetupGraphicsPipelineWithIdentityModelViewMatrix();
 
 			Vec3d v3DCoords;
 			gluUnProjectFriendlyZ(x, y, 0.5, 0, v3DCoords.X, v3DCoords.Y, v3DCoords.Z);
+
+			PositionMediator* mediator = PositionMediator::Get();
 
 			double fX0_1 = ((matrSliderNonInverted * Vecc3(v3DCoords.X)).X + Width()/2) / Width();
 
@@ -363,10 +362,7 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 			}
 			if ((stateTimeLine == STATE_TIMELINE_DRAG_SELECTION_HEAD) && bSelectionIsValid)
 			{
-				PositionMediator* mediator = PositionMediator::Get();
-
-				if ( abs(fX0_1*mediator->Duration10msUnits() - mediator->Pos10msUnits()) < (iSnapPx*matrSliderNonInverted.m[0][0])/fPPU )
-					fX0_1 = mediator->Pos0_1();
+				TryToSnapPositionToKeyframe(fX0_1);
 
 				int iTail10msUnits = mediator->Duration10msUnits()*m_fSelEndX0_1;
 
@@ -378,12 +374,9 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 			}
 			if ((stateTimeLine == STATE_TIMELINE_DRAG_SELECTION_TAIL) && bSelectionIsValid)
 			{
-				PositionMediator* mediator = PositionMediator::Get();
+				TryToSnapPositionToKeyframe(fX0_1);
 
-				if ( abs(fX0_1*mediator->Duration10msUnits() - mediator->Pos10msUnits()) < (iSnapPx*matrSliderNonInverted.m[0][0])/fPPU )
-					fX0_1 = mediator->Pos0_1();
-
-				int iHead10msUnits = PositionMediator::Get()->Duration10msUnits()*m_fSelStartX0_1;
+				int iHead10msUnits = mediator->Duration10msUnits()*m_fSelStartX0_1;
 
 				// make sure the tail of selection is not later than the end of the timeline and not closer to the head of selection than 100ms
 				m_fSelEndX0_1 = CLAMP(fX0_1, double(iHead10msUnits + 10)/double(mediator->Duration10msUnits()), 1.0);
@@ -437,6 +430,44 @@ void TimelineSubWindow::DeleteGUIelement(GUI_Element* _GUIelement)
 	}
 }
 
+
+void TimelineSubWindow::TryToSnapPositionToKeyframe(double& fPos0_1)
+{
+	PositionMediator* mediator = PositionMediator::Get();
+
+	// Pixels per 10ms
+	float fPPU = float(m_iWidth)/mediator->Duration10msUnits();
+
+	if ( abs(fPos0_1*mediator->Duration10msUnits() - mediator->Pos10msUnits()) < (g_iSnapPx*matrSliderNonInverted.m[0][0])/fPPU )
+	{
+		fPos0_1 = mediator->Pos0_1();
+		return;
+	}
+
+	TrackClip* clip = TrackClip::GetSelectedClip();
+	if (!clip) return;
+
+	for (const auto& item : clip->animatedTRSTransformPtr->liKeys)
+	{
+		if (abs(item.time*100.0 + clip->m_iStartPos10msUnits - fPos0_1*mediator->Duration10msUnits()) <
+			(g_iSnapPxToKeyframe*matrSliderNonInverted.m[0][0])/fPPU )
+		{
+			fPos0_1 = (item.time*100.0 + clip->m_iStartPos10msUnits)/mediator->Duration10msUnits();
+			return;
+		}
+	}
+
+	for (const auto& item : clip->animatedPolylineDstPtr->liKeys)
+	{
+		if (abs(item.time*100.0 + clip->m_iStartPos10msUnits - fPos0_1*mediator->Duration10msUnits()) <
+			(g_iSnapPxToKeyframe*matrSliderNonInverted.m[0][0])/fPPU )
+		{
+			fPos0_1 = (item.time*100.0 + clip->m_iStartPos10msUnits)/mediator->Duration10msUnits();
+			return;
+		}
+	}
+
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
