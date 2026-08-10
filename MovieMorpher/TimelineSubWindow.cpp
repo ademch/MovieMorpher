@@ -6,14 +6,14 @@
 #include "../../!!adGlobals/glut/glut.h"
 
 
-const int g_iTrackHeight	= 40;
-const int g_iTrackPadding	= 10;
-const int g_iClipPadding	= 7;
-const int g_iTrackCount		= 5;
-const int g_iTimelineBorder = 5;
+const int g_iTrackHeight		 = 40;
+const int g_iTrackPadding		 = 10;
+const int g_iClipPadding		 = 7;
+const int g_iTrackCount			 = 5;
+const int g_iTimelineBorder		 = 5;
 const int g_iHorrScrollBarBorder = 1;
-const int g_iSnapPx           = 9;
-const int g_iSnapPxToKeyframe = 4;
+const int g_iSnapPx				 = 9;
+const int g_iSnapPxToKeyframe	 = 4;
 
 TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 									 float fBottomLeftXperc, float fBottomLeftYperc,
@@ -42,9 +42,10 @@ TimelineSubWindow::TimelineSubWindow(int iParentWidth, int iParentHeight,
 
 	iVerticalPan = 0.0;
 
-	bSelectionIsValid   = false;
-	m_fSelStartX0_1		= 0.0;
-	m_fSelEndX0_1		= 1.0;
+	bSelectionIsValid = false;
+	m_fSelStartX0_1	  = 0.0;
+	m_fSelEndX0_1	  = 1.0;
+
 	OnSelectionChange( 0.0f, 1.0f );	// empty selection means the whole timeline
 
 	stateTimeLine = STATE_TIMELINE_IDLE;
@@ -494,6 +495,10 @@ void TimelineSliderSubWindow::PopulateGUI()
 	{
 		PositionMediator::Get()->SetPos0_1(videoSlider, fVal);
 	};
+	videoSlider->OnChangeSpaceScroller = [this](double fVal)
+	{
+		PositionMediator::Get()->SetPos0_1(videoSlider, fVal, true);
+	};
 	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fPos0_1)
 	{
 		if (origin != videoSlider) videoSlider->SetPos0_1(fPos0_1);
@@ -523,6 +528,17 @@ void TimelineSliderSubWindow::Draw()
 		iterElement->Draw();
 
 	//printf("Val=%f\n", videoSlider->GetPos01());
+}
+
+void TimelineSliderSubWindow::KeyboardAux(int key, int state, int x, int y)
+{
+	if (key == VK_F14)
+	{
+		videoSlider->MoveByScreenPixels(-1);
+	}
+	else if (key == VK_F15)
+	{
+		videoSlider->MoveByScreenPixels(1);	}
 }
 
 

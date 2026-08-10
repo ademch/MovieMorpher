@@ -33,7 +33,7 @@ MediaSubWindow::MediaSubWindow(int iParentWidth, int iParentHeight,
 
 	PositionMediator::Get()->subscribeForPos(this, [this](void* origin, double fVal)
 	{
-		if (origin != this) UpdateMediaPosition(fVal);
+		if (origin != this) UpdateMediaPosition();
 	});
 
 	fElapsedTimer10ms = 0.0;
@@ -265,7 +265,7 @@ void MediaSubWindow::Draw()
 		(stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED) ||
 		(stateMediaPlayer == STATE_MEDIAPLAYER_PLAYING_LOOPED_BACKFORTH))
 	{
-		UpdateMediaPosition(0);
+		UpdateMediaPosition();
 
 		if (bRecordingInProgress)
 		{
@@ -366,7 +366,7 @@ void MediaSubWindow::RenderGUI()
 }
 
 
-void MediaSubWindow::UpdateMediaPosition(double fVal)
+void MediaSubWindow::UpdateMediaPosition()
 {
 	int iPlayhead10msTicks = PositionMediator::Get()->Pos10msUnits();
 
@@ -426,7 +426,7 @@ void MediaSubWindow::GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10
 	while ((frame = vid->videoCacheThread->GetFrame(vid->iCurrentFrame)) == NULL)
 	{
 		Sleep(10);
-		printf("Waiting for frame: %d\n", vid->iCurrentFrame);
+		printf("media: waiting for frame: %d\n", vid->iCurrentFrame);
 	}
 
 	if (iFramePrev != vid->iCurrentFrame)

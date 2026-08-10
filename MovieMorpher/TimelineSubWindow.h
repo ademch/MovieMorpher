@@ -28,6 +28,7 @@ public:
 	// We render liGUI_Elements through Draw to have matrUserScale applied during rendering of liGUI_Elements
 	// matrSliderNonInverted is applied manually during mouse calls because float can not work through int types of Mouse handlers
 	void RenderGUI() override {}
+	void KeyboardAux(int key, int state, int x, int y) override;
 
 	void Draw() override;
 

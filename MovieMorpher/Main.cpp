@@ -553,6 +553,9 @@ static LRESULT CALLBACK winProcUser(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 
 		keyboardAux(wParam, GLUT_DOWN, p.x, p.y);
 
+		// a hack, but we need to make sure repaint happens after every frame decoding
+		globaldraw();
+
 		return CallWindowProc(currentWndProc, handle, Msg, wParam, lParam);
 		break;
 	}

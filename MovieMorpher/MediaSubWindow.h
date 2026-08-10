@@ -67,7 +67,7 @@ private:
 
 	PushButtonImage* pushButtonStop;
 
-	void UpdateMediaPosition(double fVal);
+	void UpdateMediaPosition();
 	void GetFrameFromVideoAndRender(TrackClip* clip, int iPlayhead10msTicks);
 
 	void callback_RegisterTrackClipMenu();
