@@ -188,7 +188,7 @@ void MorphingToolSubWindow::Draw()
 
 			glColor3f(1,0,0);
 			glLineWidth(3);
-			float fFinRadCorrected = _fFinalizationRadius / mv[0];
+			float fFinRadCorrected = _fFinalizationRadius / fabs(mv[0]);
 
 			if ((stateCurrent == STATE_SOURCE_POINT_INPUT) && (liSource.size() > 0))
 				DrawCircle(Vecc3(liSource.back(), 0.3), fFinRadCorrected, 20);
@@ -307,7 +307,7 @@ bool MorphingToolSubWindow::PassiveMotionFunc(int x, int y)
 
 				for (auto point : liDestination)
 				{
-					if (VecLengthSqr(v3DCoords - Vecc3d(point.X, point.Y, const_fPointsDepth)) < sqr(const_fJitter/(mv[0])))
+					if (VecLengthSqr(v3DCoords - Vecc3d(point.X, point.Y, const_fPointsDepth)) < sqr(const_fJitter/fabs(mv[0])))
 					{
 						glutSetCursor(GLUT_CURSOR_TOP_SIDE);
 						return true;
@@ -440,7 +440,7 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 				{
 					for (auto& point : liDestination)
 					{
-						if (VecLengthSqr(v3DCoords - Vecc3d(point.X, point.Y, const_fPointsDepth)) < sqr(const_fJitter/mv[0]))
+						if ( VecLengthSqr(v3DCoords - Vecc3d(point.X, point.Y, const_fPointsDepth)) < sqr(const_fJitter/fabs(mv[0])) )
 						{
 							glutSetCursor(GLUT_CURSOR_TOP_SIDE);
 							stateCurrent = STATE_POINT_DRAG;
@@ -456,14 +456,12 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 				{
 					for (unsigned int i = 0; i < liDestination.size() - 1; i++)
 					{
-						if ((PointDistSqr(Vecc2(v3DCoords), liDestination[i])   > sqr(fBlindZoneRad/mv[0])) &&
-							(PointDistSqr(Vecc2(v3DCoords), liDestination[i+1]) > sqr(fBlindZoneRad/mv[0])))
+						if ((PointDistSqr(Vecc2(v3DCoords), liDestination[i])   > sqr(fBlindZoneRad/fabs(mv[0]))) &&
+							(PointDistSqr(Vecc2(v3DCoords), liDestination[i+1]) > sqr(fBlindZoneRad/fabs(mv[0]))))
 						{
-							Vec3 ptOut;
-							if (PointDistToLineSegment(Vecc3(v3DCoords), Vecc3(liDestination[i]), Vecc3(liDestination[i + 1]), ptOut) <
-							   (fJitterLine / mv[0]))
+							Vec2 ptOut;
+							if (PointDistToLineSegment(Vecc2(v3DCoords), liDestination[i], liDestination[i+1], ptOut) < (fJitterLine / fabs(mv[0])))
 							{
-
 								if (bDoubleClick)
 								{
 									// insert before second point
@@ -471,7 +469,7 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 
 									if (liSource.size() + 1 == liDestination.size())
 									{
-										liSource.insert(liSource.begin()+i + 1, (liSource[i] + liSource[i + 1]) / 2.0f);
+										liSource.insert(liSource.begin()+i + 1, (liSource[i] + liSource[i+1]) / 2.0f);
 										SaveMorphingLinesIntoAnimationSequence();
 										UploadMorphingLines();
 									}
@@ -503,7 +501,7 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 					{
 						for (unsigned int i = 0; i < liDestination.size(); i++)
 						{
-							if (PointDistSqr(Vecc2(v3DCoords), liDestination[i]) < sqr(const_fJitter / mv[0]))
+							if ( PointDistSqr(Vecc2(v3DCoords), liDestination[i]) < sqr(const_fJitter / fabs(mv[0])) )
 							{
 
 								if (bDoubleClick)

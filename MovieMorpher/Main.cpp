@@ -544,21 +544,6 @@ static LRESULT CALLBACK winProcUser(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 		return 0;
 		break;
 	
-	case WM_KEYDOWN:
-	{
-		POINT p;
-
-		GetCursorPos(&p);
-		ScreenToClient(hwnd, &p);
-
-		keyboardAux(wParam, GLUT_DOWN, p.x, p.y);
-
-		// a hack, but we need to make sure repaint happens after every frame decoding
-		globaldraw();
-
-		return CallWindowProc(currentWndProc, handle, Msg, wParam, lParam);
-		break;
-	}
 	case WM_KEYUP:
 	{
 		POINT p;
@@ -567,6 +552,9 @@ static LRESULT CALLBACK winProcUser(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 		ScreenToClient(hwnd, &p);
 
 		keyboardAux(wParam, GLUT_UP, p.x, p.y);
+
+		// a hack to make sure every frame is followed by screen update
+		globaldraw();
 
 		return CallWindowProc(currentWndProc, handle, Msg, wParam, lParam);
 		break;
