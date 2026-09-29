@@ -544,6 +544,7 @@ static LRESULT CALLBACK winProcUser(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 		return 0;
 		break;
 	
+	case WM_KEYDOWN:
 	case WM_KEYUP:
 	{
 		POINT p;
@@ -551,7 +552,7 @@ static LRESULT CALLBACK winProcUser(HWND hwnd, UINT Msg, WPARAM wParam, LPARAM l
 		GetCursorPos(&p);
 		ScreenToClient(hwnd, &p);
 
-		keyboardAux(wParam, GLUT_UP, p.x, p.y);
+		keyboardAux(wParam, (Msg == WM_KEYDOWN) ? GLUT_DOWN : GLUT_UP, p.x, p.y);
 
 		// a hack to make sure every frame is followed by screen update
 		globaldraw();

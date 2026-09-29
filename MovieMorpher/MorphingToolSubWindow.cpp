@@ -10,11 +10,11 @@
 #include "../../!!adGUI/VideoPositionMediator.h"
 
 
-const int  _fFinalizationRadius = 9;
-const float const_fPointsDepth	= 0.2;
-const float const_fPointsSize	= 7;
-const float const_fLineWidth	= 2;
-const float const_fJitter       = 5;
+const float const_fFinalizationRadius	= 9;
+const float const_fPointsDepth			= 0.2;
+const float const_fPointsSize			= 7;
+const float const_fLineWidth			= 2;
+const float const_fJitter				= 5;
 
 
 bool bDoubleClick = false;
@@ -188,7 +188,7 @@ void MorphingToolSubWindow::Draw()
 
 			glColor3f(1,0,0);
 			glLineWidth(3);
-			float fFinRadCorrected = _fFinalizationRadius / fabs(mv[0]);
+			float fFinRadCorrected = const_fFinalizationRadius / fabs(mv[0]);
 
 			if ((stateCurrent == STATE_SOURCE_POINT_INPUT) && (liSource.size() > 0))
 				DrawCircle(Vecc3(liSource.back(), 0.3), fFinRadCorrected, 20);
@@ -407,7 +407,7 @@ bool MorphingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 			else if (((stateCurrent == STATE_SOURCE_POINT_INPUT) || (stateCurrent == STATE_DESTINATION_POINT_INPUT)) &&
 					 (button == GLUT_LEFT_BUTTON) && (state == GLUT_DOWN))
 			{
-				if (PointDist(Vecc2(x, y), ptPrevPoint) <= _fFinalizationRadius)
+				if (PointDist(Vecc2(x, y), ptPrevPoint) <= const_fFinalizationRadius)
 				{
 					if (stateCurrent == STATE_SOURCE_POINT_INPUT)
 						bSrcCurveIsDone = true;

@@ -353,10 +353,14 @@ void TimelineSubWindow::MotionFunc(int x, int y)
 			{
 				bSelectionIsValid = true;
 
+				TryToSnapPositionToKeyframe(m_fSelStartX0_1);
+
 				m_fSliderPos01 = m_fSelStartX0_1;
 				if (OnSliderPosChange != NULL) OnSliderPosChange( m_fSliderPos01 );
 
 				m_fSelEndX0_1 = CLAMP(fX0_1, 0.0, 1.0);
+				TryToSnapPositionToKeyframe(m_fSelEndX0_1);
+
 				if (OnSelectionChange != NULL) OnSelectionChange( m_fSelStartX0_1, m_fSelEndX0_1 );
 
 				return;
@@ -439,6 +443,7 @@ void TimelineSubWindow::TryToSnapPositionToKeyframe(double& fPos0_1)
 	// Pixels per 10ms
 	float fPPU = float(m_iWidth)/mediator->Duration10msUnits();
 
+	// slider
 	if ( abs(fPos0_1*mediator->Duration10msUnits() - mediator->Pos10msUnits()) < (g_iSnapPx*matrSliderNonInverted.m[0][0])/fPPU )
 	{
 		fPos0_1 = mediator->Pos0_1();
@@ -448,6 +453,7 @@ void TimelineSubWindow::TryToSnapPositionToKeyframe(double& fPos0_1)
 	TrackClip* clip = TrackClip::GetSelectedClip();
 	if (!clip) return;
 
+	// TRS keyframes
 	for (const auto& item : clip->animatedTRSTransformPtr->liKeys)
 	{
 		if (abs(item.time*100.0 + clip->m_iStartPos10msUnits - fPos0_1*mediator->Duration10msUnits()) <
@@ -458,7 +464,8 @@ void TimelineSubWindow::TryToSnapPositionToKeyframe(double& fPos0_1)
 		}
 	}
 
-	for (const auto& item : clip->animatedPolylineDstPtr->liKeys)
+	// morph keyframes
+	for (const auto& item : clip->animatedMorphDstPtr->liKeys)
 	{
 		if (abs(item.time*100.0 + clip->m_iStartPos10msUnits - fPos0_1*mediator->Duration10msUnits()) <
 			(g_iSnapPxToKeyframe*matrSliderNonInverted.m[0][0])/fPPU )
@@ -532,13 +539,17 @@ void TimelineSliderSubWindow::Draw()
 
 void TimelineSliderSubWindow::KeyboardAux(int key, int state, int x, int y)
 {
-	if (key == VK_F14)
+	if (state == GLUT_UP)
 	{
-		videoSlider->MoveByScreenPixels(-1);
+		if (key == VK_F14)
+		{
+			videoSlider->MoveByScreenPixels(-1);
+		}
+		else if (key == VK_F15)
+		{
+			videoSlider->MoveByScreenPixels(1);
+		}
 	}
-	else if (key == VK_F15)
-	{
-		videoSlider->MoveByScreenPixels(1);	}
 }
 
 

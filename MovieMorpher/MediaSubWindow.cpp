@@ -612,9 +612,9 @@ void MediaSubWindow::callback_RegisterClipMorphDSTkeyframeMenu()
 			wndMorphingTool = dynamic_cast<MorphingToolSubWindow*>(clipSelected->windowTool);
 
 			// keyframe becomes present at timeline only when both lines have been specified
-			wndMorphingTool->animatedPolylineDst.DeleteValueAt(clipSelected->fSelectedKeyframePolylineDst_time);
-			wndMorphingTool->animatedPolylineSrc.DeleteValueAt(clipSelected->fSelectedKeyframePolylineDst_time);
-			clipSelected->fSelectedKeyframePolylineDst_time = -1.0;
+			wndMorphingTool->animatedPolylineDst.DeleteValueAt(clipSelected->fSelectedKeyframePolylineDst_10ms);
+			wndMorphingTool->animatedPolylineSrc.DeleteValueAt(clipSelected->fSelectedKeyframePolylineDst_10ms);
+			clipSelected->fSelectedKeyframePolylineDst_10ms = -1.0;
 
 			wndMorphingTool->RecalcAnimatedParamsFromKeyframes();
 
