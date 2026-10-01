@@ -36,10 +36,6 @@ public:
 	void MotionFunc(int x, int y) override;
 	bool KeyboardFunc(unsigned char key, int x, int y) override;
 
-	void ClearSourceLine();
-	void ClearDestinationLine();
-	bool MorphNow();
-
 	void SetParamsSubWindow(ParamsSubWindow* m_Wnd)
 	{
 		m_ParamsSubWindow = m_Wnd;
@@ -50,6 +46,8 @@ public:
 	void FBOprocessorUpdateInputTexture(int iWidth, int iHeight, unsigned char* image);
 
 	void ReDrawFBOprocessors();
+
+	bool ClearMorphBtnClick();
 
 protected:
 
@@ -65,7 +63,6 @@ protected:
 	Button* buttonBake;
 
 	bool ResetView();
-	bool ClearMorph();
 
 	std::vector<Vec2> liSource;
 	std::vector<Vec2> liDestination;
@@ -81,6 +78,10 @@ protected:
 
 	void SaveMorphingLinesIntoAnimationSequence();
 
+	bool MorphNow();
+	void ClearSourceLine();
+	void ClearDestinationLine();
+
 private:
 	StateInput_enum stateCurrent;
 
@@ -90,8 +91,8 @@ private:
 	bool bSrcCurveIsDone;
 	bool bDstCurveIsDone;
 
-	bool SourcePolylineClicked();
-	bool DestinationPolylineClicked();
+	bool SourcePolylineBtnClick();
+	bool DestinationPolylineBtnClick();
 
 	bool StartNextGeneration();
 

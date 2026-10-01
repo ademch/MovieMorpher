@@ -81,7 +81,7 @@ void MorphingToolSubWindow::PopulateGUI()
 {
 	buttonSource = new Button("Draw src", -230,10, 100, 6.3);
 	buttonSource->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
-	buttonSource->OnClick = [this]() { return SourcePolylineClicked(); };
+	buttonSource->OnClick = [this]() { return SourcePolylineBtnClick(); };
 	liGUI_Elements.push_back(buttonSource);
 
 	Arrow*  arrow;
@@ -91,13 +91,13 @@ void MorphingToolSubWindow::PopulateGUI()
 
 	buttonDestination = new Button("Draw dst", -80,10, 100, 6.3);
 	buttonDestination->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
-	buttonDestination->OnClick = [this]() { return DestinationPolylineClicked(); };
+	buttonDestination->OnClick = [this]() { return DestinationPolylineBtnClick(); };
 	liGUI_Elements.push_back(buttonDestination);
 
 	buttonClear = new Button("Clear", 40,10, 100, 6.3);
 	buttonClear->SetAlignment(HALIGN_CENTER, VALIGN_BOTTOM);
 	buttonClear->strHint = "Clear keyframe morphing splines";
-	buttonClear->OnClick = [this]() { return ClearMorph(); };
+	buttonClear->OnClick = [this]() { return ClearMorphBtnClick(); };
 	liGUI_Elements.push_back(buttonClear);
 
 	buttonResetView = new Button("Reset view", -180,-30, 100, 6); 
@@ -247,10 +247,10 @@ void MorphingToolSubWindow::UploadMorphingLines()
 	assert(liSource.size() == liDestination.size());
 
 	std::vector<Vec2> listOutSrc;
-	CatmullSubdivide(liSource, listOutSrc, 200);
+	CatmullSubdivide(liSource, listOutSrc, 20);
 
 	std::vector<Vec2> listOutDst;
-	CatmullSubdivide(liDestination, listOutDst, 200);
+	CatmullSubdivide(liDestination, listOutDst, 20);
 
 	assert(listOutSrc.size() == listOutDst.size());
 
@@ -614,7 +614,7 @@ bool MorphingToolSubWindow::ResetView()
 	return true;
 }
 
-bool MorphingToolSubWindow::ClearMorph()
+bool MorphingToolSubWindow::ClearMorphBtnClick()
 {
 	ClearSourceLine();
 	ClearDestinationLine();
@@ -660,7 +660,7 @@ void MorphingToolSubWindow::ReDrawFBOprocessors()
 }
 
 
-bool MorphingToolSubWindow::SourcePolylineClicked()
+bool MorphingToolSubWindow::SourcePolylineBtnClick()
 {
 	// Sequence here matters
 	if (bSrcCurveIsDone)
@@ -685,7 +685,7 @@ bool MorphingToolSubWindow::SourcePolylineClicked()
 }
 
 
-bool MorphingToolSubWindow::DestinationPolylineClicked()
+bool MorphingToolSubWindow::DestinationPolylineBtnClick()
 {
 	// Sequence here matters
 	if (bDstCurveIsDone)

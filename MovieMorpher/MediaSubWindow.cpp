@@ -611,12 +611,35 @@ void MediaSubWindow::callback_RegisterClipMorphDSTkeyframeMenu()
 			MorphingToolSubWindow* wndMorphingTool;
 			wndMorphingTool = dynamic_cast<MorphingToolSubWindow*>(clipSelected->windowTool);
 
-			// keyframe becomes present at timeline only when both lines have been specified
+			// keyframe can be present at timeline only when both lines have been specified
 			wndMorphingTool->animatedPolylineDst.DeleteValueAt(clipSelected->fSelectedKeyframePolylineDst_10ms);
 			wndMorphingTool->animatedPolylineSrc.DeleteValueAt(clipSelected->fSelectedKeyframePolylineDst_10ms);
 			clipSelected->fSelectedKeyframePolylineDst_10ms = -1.0;
 
-			wndMorphingTool->RecalcAnimatedParamsFromKeyframes();
+			if (wndMorphingTool->animatedPolylineDst.liKeys.size() == 0)
+				wndMorphingTool->ClearMorphBtnClick();	// called for correct update of button naming
+			else
+				wndMorphingTool->RecalcAnimatedParamsFromKeyframes();
+
+			break;
+		}
+		case Track2DpolylineKeyframeMenu::ITEM_DELETE_SEGEMENT:
+		{
+			// GET SELECTED CLIP (CLIP HAS TO BE SELECTED BEFORE CALLING DELETE)
+			TrackClip* clipSelected = TrackClip::GetSelectedClip();
+
+			MorphingToolSubWindow* wndMorphingTool;
+			wndMorphingTool = dynamic_cast<MorphingToolSubWindow*>(clipSelected->windowTool);
+
+			// keyframe can be present at timeline only when both lines have been specified
+			wndMorphingTool->animatedPolylineDst.DeleteValueSegmentAround(clipSelected->fSelectedKeyframePolylineDst_10ms);
+			wndMorphingTool->animatedPolylineSrc.DeleteValueSegmentAround(clipSelected->fSelectedKeyframePolylineDst_10ms);
+			clipSelected->fSelectedKeyframePolylineDst_10ms = -1.0;
+
+			if (wndMorphingTool->animatedPolylineDst.liKeys.size() == 0)
+				wndMorphingTool->ClearMorphBtnClick();	// called for correct update of button naming
+			else
+				wndMorphingTool->RecalcAnimatedParamsFromKeyframes();
 
 			break;
 		}
