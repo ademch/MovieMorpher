@@ -70,8 +70,8 @@ private:
 	HCURSOR hCursorRotateAngle;
 
 	// shortcut for fbo width and height
-	int m_iJoystickFrameWidth;
-	int m_iJoystickFrameHeight;
+	int m_iJoystickFrameW;
+	int m_iJoystickFrameH;
 
 };
 

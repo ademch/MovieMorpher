@@ -33,16 +33,16 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 
 	m_liSiblings.push_back(this);
 
-	m_iJoystickFrameWidth  = morphFBOprocessor->Width();
-	m_iJoystickFrameHeight = morphFBOprocessor->Height();
+	m_iJoystickFrameW  = morphFBOprocessor->Width();
+	m_iJoystickFrameH = morphFBOprocessor->Height();
 
-	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0 ) );
-	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0 ) );
-	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0 ) );
-	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0 ) );
+	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameW/2.0,  m_iJoystickFrameH/2.0 ) );
+	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameW/2.0, -m_iJoystickFrameH/2.0 ) );
+	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameW/2.0, -m_iJoystickFrameH/2.0 ) );
+	liScalingHandles.push_back( Vecc2( -m_iJoystickFrameW/2.0,  m_iJoystickFrameH/2.0 ) );
 
 	ptTranslHandle = Vecc2();
-	ptRotateHandle = Vecc2(m_iJoystickFrameWidth/2.0*0.618, 0);
+	ptRotateHandle = Vecc2(m_iJoystickFrameW/2.0*0.618, 0);
 
 	matrImmediateVisualization     = Mat4MakeIdent();
 	matrObjectOrigin2joystickBasis = Mat4MakeIdent();
@@ -69,13 +69,13 @@ void WarpingToolSubWindow::RecalcAnimatedParamsFromKeyframes()
 
 	Matr4 m = animatedTRSTransform.Evaluate( GetClipLocalTimeS() );
 
-	liScalingHandles[0] = Vecc2( m*Vecc3(  m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0 ) );
-	liScalingHandles[1] = Vecc2( m*Vecc3(  m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0 ) );
-	liScalingHandles[2] = Vecc2( m*Vecc3( -m_iJoystickFrameWidth/2.0, -m_iJoystickFrameHeight/2.0 ) );
-	liScalingHandles[3] = Vecc2( m*Vecc3( -m_iJoystickFrameWidth/2.0,  m_iJoystickFrameHeight/2.0 ) );
+	liScalingHandles[0] = Vecc2( m*Vecc3(  m_iJoystickFrameW/2.0,  m_iJoystickFrameH/2.0 ) );
+	liScalingHandles[1] = Vecc2( m*Vecc3(  m_iJoystickFrameW/2.0, -m_iJoystickFrameH/2.0 ) );
+	liScalingHandles[2] = Vecc2( m*Vecc3( -m_iJoystickFrameW/2.0, -m_iJoystickFrameH/2.0 ) );
+	liScalingHandles[3] = Vecc2( m*Vecc3( -m_iJoystickFrameW/2.0,  m_iJoystickFrameH/2.0 ) );
 
 	ptTranslHandle = Vecc2( m*Vecc3() );
-	ptRotateHandle = Vecc2( m*Vecc3(m_iJoystickFrameWidth/2.0*0.618, 0) );
+	ptRotateHandle = Vecc2( m*Vecc3(m_iJoystickFrameW/2.0*0.618, 0) );
 }
 
 
@@ -438,8 +438,8 @@ bool WarpingToolSubWindow::MouseFunc(int button, int state, int x, int y)
 		m_ptHandlePivotRight	= liScalingHandles[TRANS_PIVOTRIGHT];
 
 		matrObjectOrigin2joystickBasis = Mat4MakeTransformFromVectors(Vecc3(),											// origin
-																	  Vecc3(m_iJoystickFrameWidth, 0),
-			                                                          Vecc3(0, m_iJoystickFrameHeight),
+																	  Vecc3(m_iJoystickFrameW, 0),
+			                                                          Vecc3(0, m_iJoystickFrameH),
 																	  Vecc3(ptTranslHandle),							// new origin
 																	  Vecc3(m_ptHandlePivotRight - m_ptHandlePivot),
 																	  Vecc3(m_ptHandlePivotUp    - m_ptHandlePivot));
