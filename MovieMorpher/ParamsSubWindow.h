@@ -42,7 +42,7 @@ public:
 
 protected:
 
-	void PopulateGUI() override;
+	void PopulateGUI();
 
 private:
 

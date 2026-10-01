@@ -51,7 +51,7 @@ public:
 
 protected:
 
-	void PopulateGUI() override;
+	void PopulateGUI();
 
 	void UploadMorphingLines();
 

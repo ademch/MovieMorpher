@@ -56,6 +56,8 @@ protected:
 
 	static std::vector<WarpingToolSubWindow*> m_liSiblings;
 
+	void PopulateGUI();
+
 private:
 
 	// immediate named copies of the handles' coordinates
@@ -73,6 +75,9 @@ private:
 	int m_iJoystickFrameW;
 	int m_iJoystickFrameH;
 
+	std::vector<PushButtonImage*> liButtonsGroup;
+
+	bool OnTransformButtonPush(PushButtonImage* target);
 };
 
 

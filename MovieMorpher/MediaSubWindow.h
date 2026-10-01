@@ -43,7 +43,7 @@ protected:
 	bool AddTrackPicture();
 	bool AddTrackVideo();
 
-	void PopulateGUI() override;
+	void PopulateGUI();
 
 	TimelineSubWindow* windowTimeLine;
 	Label*             labelPlayhead;

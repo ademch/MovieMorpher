@@ -31,9 +31,11 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 {
 	stateTransform = STATE_TRANS_IDLE;
 
+	PopulateGUI();
+
 	m_liSiblings.push_back(this);
 
-	m_iJoystickFrameW  = morphFBOprocessor->Width();
+	m_iJoystickFrameW = morphFBOprocessor->Width();
 	m_iJoystickFrameH = morphFBOprocessor->Height();
 
 	liScalingHandles.push_back( Vecc2(  m_iJoystickFrameW/2.0,  m_iJoystickFrameH/2.0 ) );
@@ -58,6 +60,48 @@ WarpingToolSubWindow::WarpingToolSubWindow(int iParentWidth, int iParentHeight,
 WarpingToolSubWindow::~WarpingToolSubWindow()
 {
 	PositionMediator::Get()->unsubscribeForPos(this);
+}
+
+void WarpingToolSubWindow::PopulateGUI()
+{
+	PushButtonImage* pushButtonImg;
+
+	pushButtonImg = new PushButtonImage("TransformImage", 10, 50, 30);
+	pushButtonImg->LoadImg("Icons\\Image51.bmp");
+	pushButtonImg->strHint = "Transform image";
+	pushButtonImg->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
+
+	liButtonsGroup.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnTransformButtonPush(pushButtonImg); };
+
+	pushButtonImg = new PushButtonImage("TransformDestination", 10, 10, 30);
+	pushButtonImg->LoadImg("Icons\\Image52.bmp");
+	pushButtonImg->strHint = "Transform destination";
+	pushButtonImg->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
+
+	liButtonsGroup.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnTransformButtonPush(pushButtonImg); };
+
+	pushButtonImg = new PushButtonImage("TransformSource", 10, -30, 30);
+	pushButtonImg->LoadImg("Icons\\Image53.bmp");
+	pushButtonImg->strHint = "Transform source";
+	pushButtonImg->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
+
+	liButtonsGroup.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnTransformButtonPush(pushButtonImg); };
+
+	pushButtonImg = new PushButtonImage("TransformSrcDst", 10, -70, 30);
+	pushButtonImg->LoadImg("Icons\\Image54.bmp");
+	pushButtonImg->strHint = "Transform src + dst";
+	pushButtonImg->SetAlignment(HALIGN_LEFT, VALIGN_CENTER);
+	liGUI_Elements.push_back(pushButtonImg);
+
+	liButtonsGroup.push_back(pushButtonImg);
+	pushButtonImg->OnClick = [this, pushButtonImg]() { return OnTransformButtonPush(pushButtonImg); };
+
 }
 
 
@@ -586,4 +630,34 @@ void WarpingToolSubWindow::RemoveSibling(OpenGLSubWindowWithGUI* _sibling)
 			break;
 		}
 	}
+}
+
+
+
+bool WarpingToolSubWindow::OnTransformButtonPush(PushButtonImage* target)
+{
+	if (target->bPushed) return true;
+
+	for (auto* b : liButtonsGroup)
+		b->bPushed = false;
+
+	if (target->_text == "TransformImage")
+	{
+		target->bPushed = true;
+	}
+	if (target->_text == "TransformSource")
+	{
+		target->bPushed = true;
+	}
+	if (target->_text == "TransformDestination")
+	{
+		target->bPushed = true;
+	}
+	if (target->_text == "TransformSrcDst")
+	{
+		target->bPushed = true;
+
+	}
+
+	return true;
 }

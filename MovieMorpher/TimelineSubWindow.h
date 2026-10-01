@@ -40,7 +40,7 @@ public:
 
 protected:
 
-	void PopulateGUI() override;
+	void PopulateGUI();
 
 private:
 
@@ -64,7 +64,7 @@ public:
 	HorScrollBar* scrollBar;
 
 protected:
-	void PopulateGUI() override;
+	void PopulateGUI();
 };
 
 enum StateTimeLineDrag_enum {
@@ -121,7 +121,7 @@ public:
 
 protected:
 
-	void PopulateGUI() override;
+	void PopulateGUI();
 
 	double m_fSliderPos01;
 	double m_fMarkerPos01;
@@ -177,7 +177,7 @@ public:
 	static float GetTrackVisibility(int iTrack);
 
 protected:
-	void PopulateGUI() override;
+	void PopulateGUI();
 
 private:
 
@@ -207,7 +207,7 @@ private:
 //	static float GetTrackTransp(int iTrack);
 //
 //protected:
-//	void PopulateGUI() override;
+//	void PopulateGUI();
 //
 //private:
 //

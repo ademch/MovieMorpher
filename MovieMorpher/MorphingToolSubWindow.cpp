@@ -3,7 +3,6 @@
 #include "MorphingToolSubWindow.h"
 #include "GlobalParamsSubWindow.h"
 #include "GLSL_Pipeline.h"
-#include "../../!!adGlobals/glut/glut.h"
 #include "../../!!adExtensions/extensions.h"
 #include "../../!!adGlobals/adOpenGLUtilities.h"
 #include "../../!!adGUI/TrackClip.h"
@@ -115,7 +114,6 @@ void MorphingToolSubWindow::PopulateGUI()
 	buttonBake->strHint = "Bake the change permanently";
 	buttonBake->OnClick = [this]() { return StartNextGeneration(); };
 	liGUI_Elements.push_back(buttonBake);
-
 }
 
 

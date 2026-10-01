@@ -162,6 +162,7 @@
     <ClInclude Include="..\..\!!adGlobals\globalToolTip.h" />
     <ClInclude Include="..\..\!!adGlobals\JPG\JPEG_library.h" />
     <ClInclude Include="..\..\!!adGlobals\PNG\lodepng.h" />
+    <ClInclude Include="..\..\!!adGlobals\RSTcontroller.h" />
     <ClInclude Include="..\..\!!adGlobals\TextureDescriptor.h" />
     <ClInclude Include="..\..\!!adGlobals\vector_math.h" />
     <ClInclude Include="..\..\!!adGlobals\VideoAnimatedParams.h" />
@@ -215,6 +216,7 @@
     <ClCompile Include="..\..\!!adGlobals\JPG\JPEG_library.cpp" />
     <ClCompile Include="..\..\!!adGlobals\PNG\lodepng.cpp" />
     <ClCompile Include="..\..\!!adGlobals\Quaternion.cpp" />
+    <ClCompile Include="..\..\!!adGlobals\RSTcontroller.cpp" />
     <ClCompile Include="..\..\!!adGlobals\TextureDescriptor.cpp" />
     <ClCompile Include="..\..\!!adGlobals\trackball.cpp" />
     <ClCompile Include="..\..\!!adGlobals\vector_math.cpp" />

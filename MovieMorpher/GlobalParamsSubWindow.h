@@ -30,7 +30,7 @@ protected:
 
 	bool CompileShaders(bool);
 
-	void PopulateGUI() override;
+	void PopulateGUI();
 
 private:
 
